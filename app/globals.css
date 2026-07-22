@@ -45,82 +45,51 @@ body {
 
 /* ── Intro full-bleed wing flag ── */
 .bleed-flag {
-  perspective: 1400px;
   background: #120306;
 }
 
 .bleed-flag-glow {
   background:
-    radial-gradient(ellipse 55% 50% at 50% 45%, rgba(176, 16, 32, 0.45), transparent 70%),
+    radial-gradient(ellipse 60% 55% at 50% 42%, rgba(225, 29, 46, 0.4), transparent 72%),
     linear-gradient(180deg, #2a080c 0%, #120306 55%, #070405 100%);
 }
 
-.flag-wing {
+.flag-wing-stage {
+  perspective: 1600px;
   transform-style: preserve-3d;
+}
+
+.flag-wing-beat {
+  transform-origin: 50% 0%;
+  transform-style: preserve-3d;
+  animation: wing-beat 3.4s ease-in-out infinite;
   will-change: transform;
-}
-
-.flag-wing-left {
-  animation: wing-flap-left 3.6s ease-in-out infinite;
-}
-
-.flag-wing-right {
-  animation: wing-flap-right 3.6s ease-in-out infinite;
 }
 
 .flag-wing-cloth {
   background: linear-gradient(
-    180deg,
-    #c41e2e 0%,
-    #b01020 35%,
-    #7a0c16 70%,
-    #3a0610 100%
+    165deg,
+    #e11d2e 0%,
+    #c41e2e 22%,
+    #9a1524 55%,
+    #5a0a12 82%,
+    #2a0610 100%
   );
 }
 
-.flag-wing-left .flag-wing-cloth {
-  background: linear-gradient(
-    90deg,
-    #3a0610 0%,
-    #9a1524 35%,
-    #d41e30 70%,
-    #e11d2e 100%
-  );
-}
-
-.flag-wing-right .flag-wing-cloth {
-  background: linear-gradient(
-    270deg,
-    #3a0610 0%,
-    #9a1524 35%,
-    #d41e30 70%,
-    #e11d2e 100%
-  );
-}
-
-@keyframes wing-flap-left {
+@keyframes wing-beat {
   0%,
   100% {
-    transform: rotateY(0deg) rotateZ(0deg);
+    transform: rotateX(0deg) scaleY(1) scaleX(1);
   }
-  40% {
-    transform: rotateY(28deg) rotateZ(-1.2deg);
+  35% {
+    transform: rotateX(18deg) scaleY(1.04) scaleX(1.015);
   }
-  70% {
-    transform: rotateY(-8deg) rotateZ(0.6deg);
+  55% {
+    transform: rotateX(-10deg) scaleY(0.97) scaleX(0.99);
   }
-}
-
-@keyframes wing-flap-right {
-  0%,
-  100% {
-    transform: rotateY(0deg) rotateZ(0deg);
-  }
-  40% {
-    transform: rotateY(-28deg) rotateZ(1.2deg);
-  }
-  70% {
-    transform: rotateY(8deg) rotateZ(-0.6deg);
+  75% {
+    transform: rotateX(6deg) scaleY(1.015) scaleX(1.005);
   }
 }
 

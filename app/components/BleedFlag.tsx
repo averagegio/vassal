@@ -4,23 +4,19 @@ type BleedFlagProps = {
   className?: string;
 };
 
-/** Full-bleed dual-wing flag — smooth flap, no folds. */
+/** Full-bleed flag with smooth wing-beat motion — no folds or strips. */
 export function BleedFlag({ className = "" }: BleedFlagProps) {
   return (
     <div className={`bleed-flag absolute inset-0 overflow-hidden ${className}`} aria-hidden>
       <div className="bleed-flag-glow absolute inset-0" />
 
-      <div className="absolute inset-0 flex" style={{ perspective: "1400px" }}>
-        <div className="flag-wing flag-wing-left relative h-full w-1/2 origin-right">
-          <div className="flag-wing-cloth absolute inset-0" />
-        </div>
-        <div className="flag-wing flag-wing-right relative h-full w-1/2 origin-left">
+      <div className="flag-wing-stage absolute inset-[-8%]">
+        <div className="flag-wing-beat absolute inset-0">
           <div className="flag-wing-cloth absolute inset-0" />
         </div>
       </div>
 
-      {/* Soft vignette so brand stays readable */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(7,4,5,0.15)_0%,rgba(7,4,5,0.55)_70%,rgba(7,4,5,0.85)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(7,4,5,0.08)_0%,rgba(7,4,5,0.45)_68%,rgba(7,4,5,0.82)_100%)]" />
     </div>
   );
 }
