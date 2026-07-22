@@ -81,8 +81,9 @@ body {
 .flag-wing-left .flag-wing-cloth {
   background: linear-gradient(
     90deg,
-    #5a0a12 0%,
-    #c41e2e 45%,
+    #3a0610 0%,
+    #9a1524 35%,
+    #d41e30 70%,
     #e11d2e 100%
   );
 }
@@ -90,11 +91,11 @@ body {
 .flag-wing-right .flag-wing-cloth {
   background: linear-gradient(
     270deg,
-    #5a0a12 0%,
-    #c41e2e 45%,
+    #3a0610 0%,
+    #9a1524 35%,
+    #d41e30 70%,
     #e11d2e 100%
   );
-  transform: none;
 }
 
 @keyframes wing-flap-left {

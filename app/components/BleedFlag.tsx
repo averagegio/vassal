@@ -10,12 +10,12 @@ export function BleedFlag({ className = "" }: BleedFlagProps) {
     <div className={`bleed-flag absolute inset-0 overflow-hidden ${className}`} aria-hidden>
       <div className="bleed-flag-glow absolute inset-0" />
 
-      <div className="absolute inset-0 flex">
+      <div className="absolute inset-0 flex" style={{ perspective: "1400px" }}>
         <div className="flag-wing flag-wing-left relative h-full w-1/2 origin-right">
           <div className="flag-wing-cloth absolute inset-0" />
         </div>
         <div className="flag-wing flag-wing-right relative h-full w-1/2 origin-left">
-          <div className="flag-wing-cloth absolute inset-0 scale-x-[-1]" />
+          <div className="flag-wing-cloth absolute inset-0" />
         </div>
       </div>
 
