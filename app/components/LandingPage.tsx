@@ -167,60 +167,70 @@ function Torch({
 function LatticeGateHalf({ side }: { side: "left" | "right" }) {
   const edge =
     side === "left"
-      ? "border-r border-[#8a8580]/60"
-      : "border-l border-[#8a8580]/60";
+      ? "border-r-2 border-[#9a9690]/70"
+      : "border-l-2 border-[#9a9690]/70";
 
   return (
     <div className={`absolute inset-0 ${edge}`} aria-hidden>
-      {/* Metal lattice mesh */}
+      {/* Open diamond lattice — metal lines only, see-through gaps */}
       <div
-        className="absolute inset-0 opacity-95"
+        className="absolute inset-0"
         style={{
-          backgroundColor: "rgba(18, 16, 14, 0.55)",
           backgroundImage: `
-            linear-gradient(45deg, #6a6560 1.5px, transparent 1.5px),
-            linear-gradient(-45deg, #6a6560 1.5px, transparent 1.5px),
-            linear-gradient(45deg, transparent 48%, #3a3834 49%, #8a8580 50%, #3a3834 51%, transparent 52%),
-            linear-gradient(-45deg, transparent 48%, #3a3834 49%, #8a8580 50%, #3a3834 51%, transparent 52%)
+            repeating-linear-gradient(
+              45deg,
+              transparent 0 16px,
+              #7a7670 16px 19px,
+              transparent 19px 34px
+            ),
+            repeating-linear-gradient(
+              -45deg,
+              transparent 0 16px,
+              #7a7670 16px 19px,
+              transparent 19px 34px
+            )
           `,
-          backgroundSize: "28px 28px, 28px 28px, 56px 56px, 56px 56px",
-          backgroundPosition: "0 0, 0 0, 0 0, 0 0",
-          boxShadow: "inset 0 0 40px rgba(0,0,0,0.65)",
+          filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.8))",
         }}
       />
 
-      {/* Vertical iron bars */}
+      {/* Vertical iron pickets */}
       <div
-        className="absolute inset-0 opacity-80"
+        className="absolute inset-0"
         style={{
           backgroundImage:
-            "repeating-linear-gradient(90deg, transparent 0 18px, rgba(140,136,130,0.55) 18px 21px, transparent 21px 38px)",
+            "repeating-linear-gradient(90deg, transparent 0 22px, #9a9690 22px 26px, #4a4844 26px 27px, transparent 27px 44px)",
+          opacity: 0.95,
         }}
       />
 
       {/* Horizontal braces */}
-      <div className="absolute inset-x-0 top-[16%] h-[5px] bg-gradient-to-b from-[#9a9690] via-[#4a4844] to-[#9a9690] shadow-[0_2px_6px_rgba(0,0,0,0.7)]" />
-      <div className="absolute inset-x-0 top-[48%] h-[6px] bg-gradient-to-b from-[#9a9690] via-[#4a4844] to-[#9a9690] shadow-[0_2px_6px_rgba(0,0,0,0.7)]" />
-      <div className="absolute inset-x-0 top-[80%] h-[5px] bg-gradient-to-b from-[#9a9690] via-[#4a4844] to-[#9a9690] shadow-[0_2px_6px_rgba(0,0,0,0.7)]" />
+      <div className="absolute inset-x-0 top-[14%] h-[7px] bg-gradient-to-b from-[#c0bbb4] via-[#4a4844] to-[#c0bbb4] shadow-[0_3px_8px_rgba(0,0,0,0.75)]" />
+      <div className="absolute inset-x-0 top-[48%] h-[8px] bg-gradient-to-b from-[#c0bbb4] via-[#4a4844] to-[#c0bbb4] shadow-[0_3px_8px_rgba(0,0,0,0.75)]" />
+      <div className="absolute inset-x-0 top-[82%] h-[7px] bg-gradient-to-b from-[#c0bbb4] via-[#4a4844] to-[#c0bbb4] shadow-[0_3px_8px_rgba(0,0,0,0.75)]" />
 
-      {/* Speartip tops */}
+      {/* Spear tips */}
       <div
-        className="absolute inset-x-[6%] top-[2%] h-10 opacity-90"
+        className="absolute inset-x-[4%] top-0 h-12"
         style={{
           backgroundImage:
-            "repeating-linear-gradient(90deg, transparent 0 14px, #8a8580 14px 18px, transparent 18px 32px)",
-          clipPath: "polygon(0 100%, 0 35%, 3% 0, 6% 35%, 6% 100%, 100% 100%)",
+            "repeating-linear-gradient(90deg, transparent 0 18px, #b0aaa4 18px 26px, transparent 26px 40px)",
+          maskImage:
+            "repeating-linear-gradient(90deg, transparent 0 18px, #000 18px 26px, transparent 26px 40px)",
+          WebkitMaskImage:
+            "repeating-linear-gradient(90deg, transparent 0 18px, #000 18px 26px, transparent 26px 40px)",
+          clipPath: "polygon(0 100%, 0 40%, 50% 0, 100% 40%, 100% 100%)",
         }}
       />
 
-      {/* Center lock plate on meeting edge */}
+      {/* Lock plates */}
       {side === "left" ? (
-        <div className="absolute right-2 top-1/2 h-16 w-10 -translate-y-1/2 rounded-sm border border-[#9a9690] bg-gradient-to-b from-[#5a5854] to-[#2a2826] shadow-[inset_0_0_8px_rgba(0,0,0,0.7)]">
-          <div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#c0bbb4]" />
+        <div className="absolute right-1 top-1/2 h-[4.5rem] w-11 -translate-y-1/2 rounded-sm border border-[#c0bbb4] bg-gradient-to-b from-[#6a6864] to-[#2a2826] shadow-[inset_0_0_10px_rgba(0,0,0,0.75)]">
+          <div className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#d8d2ca]" />
         </div>
       ) : (
-        <div className="absolute left-2 top-1/2 h-16 w-10 -translate-y-1/2 rounded-sm border border-[#9a9690] bg-gradient-to-b from-[#5a5854] to-[#2a2826] shadow-[inset_0_0_8px_rgba(0,0,0,0.7)]">
-          <div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#c0bbb4]" />
+        <div className="absolute left-1 top-1/2 h-[4.5rem] w-11 -translate-y-1/2 rounded-sm border border-[#c0bbb4] bg-gradient-to-b from-[#6a6864] to-[#2a2826] shadow-[inset_0_0_10px_rgba(0,0,0,0.75)]">
+          <div className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#d8d2ca]" />
         </div>
       )}
     </div>
