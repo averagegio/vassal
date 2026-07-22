@@ -19,32 +19,32 @@ export function BleedFlag({ className = "" }: BleedFlagProps) {
               <stop offset="70%" stopColor="#6e0e18" />
               <stop offset="100%" stopColor="#2a0610" />
             </linearGradient>
-            <filter id="flagWind" x="-10%" y="-10%" width="120%" height="120%">
+            <filter id="flagWind" x="-12%" y="-12%" width="124%" height="124%">
               <feTurbulence
                 type="fractalNoise"
-                baseFrequency="0.008 0.02"
-                numOctaves="2"
+                baseFrequency="0.011 0.025"
+                numOctaves="3"
                 seed="3"
                 result="noise"
               >
                 <animate
                   attributeName="baseFrequency"
-                  dur="9s"
-                  values="0.008 0.02;0.012 0.028;0.007 0.018;0.01 0.024;0.008 0.02"
+                  dur="11s"
+                  values="0.011 0.025;0.014 0.032;0.009 0.022;0.013 0.028;0.011 0.025"
                   repeatCount="indefinite"
                 />
               </feTurbulence>
               <feDisplacementMap
                 in="SourceGraphic"
                 in2="noise"
-                scale="18"
+                scale="28"
                 xChannelSelector="R"
                 yChannelSelector="G"
               >
                 <animate
                   attributeName="scale"
-                  dur="7s"
-                  values="14;22;16;20;14"
+                  dur="8s"
+                  values="22;34;26;32;22"
                   repeatCount="indefinite"
                 />
               </feDisplacementMap>
