@@ -4,15 +4,18 @@ type BleedFlagProps = {
   className?: string;
 };
 
-/** Full-bleed flag with smooth wing-beat motion — no folds or strips. */
+/** Full-bleed flag with ripple motion — no folds or strips. */
 export function BleedFlag({ className = "" }: BleedFlagProps) {
   return (
     <div className={`bleed-flag absolute inset-0 overflow-hidden ${className}`} aria-hidden>
       <div className="bleed-flag-glow absolute inset-0" />
 
-      <div className="flag-wing-stage absolute inset-[-8%]">
+      <div className="flag-wing-stage absolute inset-[-6%]">
         <div className="flag-wing-beat absolute inset-0">
           <div className="flag-wing-cloth absolute inset-0" />
+          <div className="flag-ripple flag-ripple-a absolute inset-0" />
+          <div className="flag-ripple flag-ripple-b absolute inset-0" />
+          <div className="flag-ripple flag-ripple-c absolute inset-0" />
         </div>
       </div>
 

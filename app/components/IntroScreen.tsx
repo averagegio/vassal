@@ -61,6 +61,9 @@ export function IntroScreen({
         <h1 className="font-[family-name:var(--font-display)] text-[clamp(1.45rem,4.8vw,2.35rem)] font-medium leading-none tracking-[0.5em] text-[var(--vassal-cream)] drop-shadow-[0_4px_20px_rgba(0,0,0,0.7)]">
           VASSAL
         </h1>
+        <p className="mt-5 font-[family-name:var(--font-display)] text-[0.7rem] tracking-[0.38em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_72%,transparent)] sm:text-xs">
+          Loyalty AI
+        </p>
       </div>
 
       <button
