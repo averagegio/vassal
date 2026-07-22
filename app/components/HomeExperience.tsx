@@ -25,7 +25,9 @@ export function HomeExperience() {
           onExitComplete={handleIntroFinished}
         />
       )}
-      {(entered || introGone) && <LandingPage active={entered || introGone} />}
+      {/* Mount under the intro so the transition feels continuous;
+          only start gate/lamp choreography once the intro has cleared. */}
+      {(entered || introGone) && <LandingPage active={introGone} />}
     </div>
   );
 }

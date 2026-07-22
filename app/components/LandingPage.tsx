@@ -16,9 +16,9 @@ export function LandingPage({ active }: LandingPageProps) {
 
   useEffect(() => {
     if (!active) return;
-    // Hold closed briefly so the sealed gate reads clearly, then open
-    const gateTimer = window.setTimeout(() => setGatesOpen(true), 900);
-    const lampTimer = window.setTimeout(() => setLampsLit(true), 2800);
+    // Hold sealed doors briefly so the closed gate reads, then open
+    const gateTimer = window.setTimeout(() => setGatesOpen(true), 700);
+    const lampTimer = window.setTimeout(() => setLampsLit(true), 3200);
     return () => {
       window.clearTimeout(gateTimer);
       window.clearTimeout(lampTimer);
@@ -143,7 +143,7 @@ function Torch({
 
   return (
     <div
-      className={`pointer-events-none absolute top-[26%] z-10 ${position}`}
+      className={`pointer-events-none absolute top-[26%] z-[25] ${position}`}
       aria-hidden
     >
       <div
