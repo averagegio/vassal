@@ -81,13 +81,14 @@ body {
   pointer-events: none;
   position: absolute;
   inset: 0;
+  z-index: 2;
   background: radial-gradient(
     circle at 50% 48%,
-    rgba(255, 80, 90, 0.55) 0%,
-    rgba(176, 16, 32, 0.2) 35%,
-    transparent 62%
+    rgba(255, 90, 100, 0.65) 0%,
+    rgba(225, 29, 46, 0.28) 32%,
+    transparent 58%
   );
-  animation: flag-pulse 2.4s ease-in-out infinite;
+  animation: flag-pulse 2.2s ease-in-out infinite;
   mix-blend-mode: screen;
   will-change: opacity, transform;
 }
@@ -97,20 +98,20 @@ body {
   position: absolute;
   left: 50%;
   top: 48%;
-  width: min(48vw, 380px);
-  height: min(48vw, 380px);
-  margin-left: calc(min(48vw, 380px) / -2);
-  margin-top: calc(min(48vw, 380px) / -2);
+  z-index: 3;
+  width: min(52vw, 420px);
+  height: min(52vw, 420px);
   border-radius: 50%;
-  background: transparent;
-  border: 4px solid rgba(255, 220, 200, 0.85);
-  box-shadow:
-    0 0 32px rgba(255, 140, 110, 0.7),
-    0 0 8px rgba(255, 255, 255, 0.35),
-    inset 0 0 24px rgba(255, 180, 160, 0.35);
-  transform-origin: center;
+  background: radial-gradient(
+    circle,
+    transparent 58%,
+    rgba(255, 200, 180, 0.35) 64%,
+    rgba(255, 230, 210, 0.9) 70%,
+    transparent 76%
+  );
+  box-shadow: 0 0 40px rgba(255, 150, 120, 0.45);
   will-change: transform, opacity;
-  animation: flag-ripple 2.6s linear infinite;
+  animation: flag-ripple 2.4s linear infinite;
 }
 
 .flag-ripple-a {
@@ -118,15 +119,15 @@ body {
 }
 
 .flag-ripple-b {
-  animation-delay: 0.7s;
+  animation-delay: 0.6s;
 }
 
 .flag-ripple-c {
-  animation-delay: 1.4s;
+  animation-delay: 1.2s;
 }
 
 .flag-ripple-d {
-  animation-delay: 2.1s;
+  animation-delay: 1.8s;
 }
 
 @keyframes wing-beat {
@@ -148,29 +149,26 @@ body {
 @keyframes flag-pulse {
   0%,
   100% {
-    opacity: 0.35;
-    transform: scale(0.92);
+    opacity: 0.4;
+    transform: scale(0.9);
   }
   50% {
-    opacity: 0.9;
-    transform: scale(1.12);
+    opacity: 1;
+    transform: scale(1.18);
   }
 }
 
 @keyframes flag-ripple {
   0% {
-    transform: scale(0.2);
-    opacity: 0.95;
-    border-color: rgba(255, 230, 210, 0.9);
+    transform: translate(-50%, -50%) scale(0.15);
+    opacity: 1;
   }
-  70% {
-    opacity: 0.45;
-    border-color: rgba(255, 140, 120, 0.55);
+  65% {
+    opacity: 0.55;
   }
   100% {
-    transform: scale(3.4);
+    transform: translate(-50%, -50%) scale(3.8);
     opacity: 0;
-    border-color: rgba(176, 16, 32, 0);
   }
 }
 
