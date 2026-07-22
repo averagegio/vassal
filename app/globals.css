@@ -178,9 +178,9 @@ body {
     20px 50px;
 }
 
-.gate-door {
+.portcullis {
   background: transparent;
-  transition: transform 2.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 2.8s cubic-bezier(0.33, 0.1, 0.2, 1);
   will-change: transform;
 }
 
@@ -308,7 +308,7 @@ body {
     filter: none !important;
   }
 
-  .gate-door {
+  .portcullis {
     transition: none;
   }
 }

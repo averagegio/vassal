@@ -17,7 +17,7 @@ export function LandingPage({ active }: LandingPageProps) {
 
   useEffect(() => {
     if (!active) return;
-    // Hold sealed doors briefly so the closed gate reads, then open
+    // Hold sealed portcullis briefly, then raise it
     const gateTimer = window.setTimeout(() => setGatesOpen(true), 700);
     const lampTimer = window.setTimeout(() => setLampsLit(true), 3200);
     return () => {
@@ -80,7 +80,7 @@ export function LandingPage({ active }: LandingPageProps) {
           </a>
         </div>
 
-        {/* Gate assembly — lattice metal halves sit above hero until they open */}
+        {/* Gate assembly — portcullis rises vertically */}
         <div className="pointer-events-none absolute inset-0 z-20 flex items-stretch justify-center">
           <div className="relative h-full w-full max-w-5xl">
             <div className="absolute inset-x-[5%] top-[5%] bottom-0 border-[12px] border-b-0 border-[#4a4540] opacity-95 [border-radius:999px_999px_0_0/42%_42%_0_0] shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] sm:inset-x-[9%] sm:border-[14px]" />
@@ -88,24 +88,14 @@ export function LandingPage({ active }: LandingPageProps) {
 
             <div className="absolute inset-x-[7%] top-[11%] bottom-0 overflow-hidden sm:inset-x-[11%]">
               <div
-                className="gate-door absolute left-0 top-0 h-full w-1/2"
+                className="portcullis absolute inset-x-0 top-0 h-full"
                 style={{
                   transform: gatesOpen
-                    ? "translate3d(-105%, 0, 0)"
+                    ? "translate3d(0, -108%, 0)"
                     : "translate3d(0, 0, 0)",
                 }}
               >
-                <LatticeGateHalf side="left" />
-              </div>
-              <div
-                className="gate-door absolute right-0 top-0 h-full w-1/2"
-                style={{
-                  transform: gatesOpen
-                    ? "translate3d(105%, 0, 0)"
-                    : "translate3d(0, 0, 0)",
-                }}
-              >
-                <LatticeGateHalf side="right" />
+                <Portcullis />
               </div>
             </div>
           </div>
@@ -164,15 +154,26 @@ function Torch({
   );
 }
 
-function LatticeGateHalf({ side }: { side: "left" | "right" }) {
-  const edge =
-    side === "left"
-      ? "border-r-2 border-[#9a9690]/70"
-      : "border-l-2 border-[#9a9690]/70";
-
+function Portcullis() {
   return (
-    <div className={`absolute inset-0 ${edge}`} aria-hidden>
-      {/* Open diamond lattice — metal lines only, see-through gaps */}
+    <div className="absolute inset-0" aria-hidden>
+      {/* Chains on either side */}
+      <div
+        className="absolute left-[6%] top-[-8%] h-[20%] w-2 rounded-full opacity-90"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(180deg, #c0bbb4 0 8px, #4a4844 8px 12px, #8a8580 12px 16px)",
+        }}
+      />
+      <div
+        className="absolute right-[6%] top-[-8%] h-[20%] w-2 rounded-full opacity-90"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(180deg, #c0bbb4 0 8px, #4a4844 8px 12px, #8a8580 12px 16px)",
+        }}
+      />
+
+      {/* Diamond lattice */}
       <div
         className="absolute inset-0"
         style={{
@@ -190,7 +191,7 @@ function LatticeGateHalf({ side }: { side: "left" | "right" }) {
               transparent 19px 34px
             )
           `,
-          filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.8))",
+          filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.75))",
         }}
       />
 
@@ -199,40 +200,39 @@ function LatticeGateHalf({ side }: { side: "left" | "right" }) {
         className="absolute inset-0"
         style={{
           backgroundImage:
-            "repeating-linear-gradient(90deg, transparent 0 22px, #9a9690 22px 26px, #4a4844 26px 27px, transparent 27px 44px)",
-          opacity: 0.95,
+            "repeating-linear-gradient(90deg, transparent 0 20px, #9a9690 20px 25px, #4a4844 25px 26px, transparent 26px 42px)",
         }}
       />
 
       {/* Horizontal braces */}
-      <div className="absolute inset-x-0 top-[14%] h-[7px] bg-gradient-to-b from-[#c0bbb4] via-[#4a4844] to-[#c0bbb4] shadow-[0_3px_8px_rgba(0,0,0,0.75)]" />
-      <div className="absolute inset-x-0 top-[48%] h-[8px] bg-gradient-to-b from-[#c0bbb4] via-[#4a4844] to-[#c0bbb4] shadow-[0_3px_8px_rgba(0,0,0,0.75)]" />
-      <div className="absolute inset-x-0 top-[82%] h-[7px] bg-gradient-to-b from-[#c0bbb4] via-[#4a4844] to-[#c0bbb4] shadow-[0_3px_8px_rgba(0,0,0,0.75)]" />
+      <div className="absolute inset-x-0 top-[10%] h-[8px] bg-gradient-to-b from-[#c0bbb4] via-[#4a4844] to-[#c0bbb4] shadow-[0_3px_8px_rgba(0,0,0,0.75)]" />
+      <div className="absolute inset-x-0 top-[32%] h-[8px] bg-gradient-to-b from-[#c0bbb4] via-[#4a4844] to-[#c0bbb4] shadow-[0_3px_8px_rgba(0,0,0,0.75)]" />
+      <div className="absolute inset-x-0 top-[54%] h-[9px] bg-gradient-to-b from-[#c0bbb4] via-[#4a4844] to-[#c0bbb4] shadow-[0_3px_8px_rgba(0,0,0,0.75)]" />
+      <div className="absolute inset-x-0 top-[76%] h-[8px] bg-gradient-to-b from-[#c0bbb4] via-[#4a4844] to-[#c0bbb4] shadow-[0_3px_8px_rgba(0,0,0,0.75)]" />
 
-      {/* Spear tips */}
-      <div
-        className="absolute inset-x-[4%] top-0 h-12"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(90deg, transparent 0 18px, #b0aaa4 18px 26px, transparent 26px 40px)",
-          maskImage:
-            "repeating-linear-gradient(90deg, transparent 0 18px, #000 18px 26px, transparent 26px 40px)",
-          WebkitMaskImage:
-            "repeating-linear-gradient(90deg, transparent 0 18px, #000 18px 26px, transparent 26px 40px)",
-          clipPath: "polygon(0 100%, 0 40%, 50% 0, 100% 40%, 100% 100%)",
-        }}
-      />
-
-      {/* Lock plates */}
-      {side === "left" ? (
-        <div className="absolute right-1 top-1/2 h-[4.5rem] w-11 -translate-y-1/2 rounded-sm border border-[#c0bbb4] bg-gradient-to-b from-[#6a6864] to-[#2a2826] shadow-[inset_0_0_10px_rgba(0,0,0,0.75)]">
-          <div className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#d8d2ca]" />
-        </div>
-      ) : (
-        <div className="absolute left-1 top-1/2 h-[4.5rem] w-11 -translate-y-1/2 rounded-sm border border-[#c0bbb4] bg-gradient-to-b from-[#6a6864] to-[#2a2826] shadow-[inset_0_0_10px_rgba(0,0,0,0.75)]">
-          <div className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#d8d2ca]" />
-        </div>
-      )}
+      {/* Bottom spear tips — classic portcullis edge */}
+      <svg
+        className="absolute inset-x-0 bottom-0 h-12 w-full"
+        viewBox="0 0 400 48"
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <linearGradient id="spearMetal" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#c0bbb4" />
+            <stop offset="100%" stopColor="#4a4844" />
+          </linearGradient>
+        </defs>
+        {Array.from({ length: 16 }, (_, i) => {
+          const x = 12 + i * 24;
+          return (
+            <polygon
+              key={i}
+              points={`${x},0 ${x + 10},0 ${x + 5},48`}
+              fill="url(#spearMetal)"
+            />
+          );
+        })}
+      </svg>
     </div>
   );
 }
