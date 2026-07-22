@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { VassalLogo } from "./VassalLogo";
+import { WavingFlag } from "./WavingFlag";
 
 type IntroScreenProps = {
   exiting: boolean;
@@ -49,36 +51,36 @@ export function IntroScreen({
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {/* Ambient flag banners */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-[-2%] top-[4%] h-[78vh] w-[42vw] max-w-[460px] origin-top-left flag-wave">
-          <div className="flag-cloth relative h-full w-full [clip-path:polygon(0_0,100%_0,96%_100%,0_100%)]">
-            <FlagEmblem />
-          </div>
+      {/* Single waving banner with wind folds */}
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
+        <div className="absolute left-[6%] top-[10%] hidden h-[70vh] w-[min(34vw,320px)] sm:block">
+          <WavingFlag className="h-full w-full opacity-90" />
         </div>
-        <div className="absolute right-[-4%] top-[8%] h-[72vh] w-[40vw] max-w-[420px] origin-top-right flag-wave [animation-delay:-2s]">
-          <div className="flag-cloth relative h-full w-full opacity-95 [clip-path:polygon(4%_0,100%_0,100%_100%,0_100%)]">
-            <FlagEmblem flipped />
-          </div>
+        <div className="absolute right-[4%] top-[14%] hidden h-[62vh] w-[min(30vw,280px)] opacity-70 sm:block [transform:scaleX(-1)]">
+          <WavingFlag className="h-full w-full" delay={-1.4} />
+        </div>
+        {/* Mobile: one centered soft flag wash behind brand */}
+        <div className="absolute inset-x-[8%] top-[8%] h-[55vh] opacity-50 sm:hidden">
+          <WavingFlag className="mx-auto h-full w-full max-w-[280px]" />
         </div>
         <div className="absolute inset-x-0 bottom-0 h-[55%] intro-gradient-veil" />
       </div>
 
-      {/* Brand center */}
+      {/* Brand center — V logo + sleeker wordmark */}
       <div className="relative z-10 flex flex-col items-center px-6 text-center">
-        <p className="mb-4 font-[family-name:var(--font-body)] text-sm tracking-[0.35em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)]">
+        <VassalLogo size={92} className="mb-5 drop-shadow-[0_10px_28px_rgba(176,16,32,0.45)]" />
+        <p className="mb-3 font-[family-name:var(--font-body)] text-[0.7rem] tracking-[0.42em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
           Loyalty of the Realm
         </p>
-        <h1 className="font-[family-name:var(--font-display)] text-[clamp(3.5rem,14vw,8.5rem)] font-bold leading-none tracking-[0.18em] text-[var(--vassal-cream)] drop-shadow-[0_8px_32px_rgba(176,16,32,0.55)]">
+        <h1 className="font-[family-name:var(--font-display)] text-[clamp(1.55rem,5.2vw,2.65rem)] font-medium leading-none tracking-[0.48em] text-[var(--vassal-cream)] drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)]">
           VASSAL
         </h1>
-        <div className="mt-5 h-px w-28 bg-gradient-to-r from-transparent via-[var(--vassal-gold)] to-transparent" />
-        <p className="mt-6 max-w-md font-[family-name:var(--font-body)] text-lg italic text-[color-mix(in_srgb,var(--vassal-cream)_80%,transparent)] sm:text-xl">
+        <div className="mt-4 h-px w-16 bg-gradient-to-r from-transparent via-[var(--vassal-gold)] to-transparent" />
+        <p className="mt-5 max-w-sm font-[family-name:var(--font-body)] text-base italic text-[color-mix(in_srgb,var(--vassal-cream)_78%,transparent)] sm:text-lg">
           Raise your banner. Earn your keep. Rule your feed.
         </p>
       </div>
 
-      {/* Enter CTA */}
       <button
         type="button"
         onClick={onEnter}
@@ -101,41 +103,5 @@ export function IntroScreen({
         </span>
       </button>
     </section>
-  );
-}
-
-function FlagEmblem({ flipped = false }: { flipped?: boolean }) {
-  return (
-    <div
-      className={`absolute inset-0 flex items-center justify-center ${
-        flipped ? "scale-x-[-1]" : ""
-      }`}
-    >
-      <svg
-        viewBox="0 0 120 140"
-        className="h-[42%] w-auto opacity-80"
-        aria-hidden
-      >
-        <path
-          d="M60 12 L72 48 L110 48 L80 72 L92 110 L60 86 L28 110 L40 72 L10 48 L48 48 Z"
-          fill="none"
-          stroke="rgba(201,162,39,0.75)"
-          strokeWidth="2.5"
-        />
-        <circle
-          cx="60"
-          cy="64"
-          r="14"
-          fill="none"
-          stroke="rgba(243,230,216,0.55)"
-          strokeWidth="2"
-        />
-        <path
-          d="M60 54 V74 M50 64 H70"
-          stroke="rgba(243,230,216,0.55)"
-          strokeWidth="2"
-        />
-      </svg>
-    </div>
   );
 }

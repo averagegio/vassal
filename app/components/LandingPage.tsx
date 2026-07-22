@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { SideDrawer } from "./SideDrawer";
-import { InfoMarquee } from "./InfoMarquee";
+import { InfoCardStack } from "./InfoCardStack";
+import { VassalLogo } from "./VassalLogo";
 
 type LandingPageProps = {
   active: boolean;
@@ -63,7 +64,8 @@ export function LandingPage({ active }: LandingPageProps) {
 
         {/* Hero copy behind the gate — revealed as doors part */}
         <div className="relative z-10 flex min-h-dvh flex-col items-center justify-end px-6 pb-16 pt-28 text-center sm:pb-20">
-          <h1 className="font-[family-name:var(--font-display)] text-[clamp(2.75rem,10vw,6rem)] font-bold tracking-[0.16em] text-[var(--vassal-cream)] drop-shadow-[0_6px_28px_rgba(0,0,0,0.85)]">
+          <VassalLogo size={72} className="mb-4 drop-shadow-[0_8px_24px_rgba(0,0,0,0.65)]" />
+          <h1 className="font-[family-name:var(--font-display)] text-[clamp(1.75rem,5.5vw,2.85rem)] font-semibold tracking-[0.38em] text-[var(--vassal-cream)] drop-shadow-[0_6px_28px_rgba(0,0,0,0.85)]">
             VASSAL
           </h1>
           <p className="mt-4 max-w-lg font-[family-name:var(--font-body)] text-base italic leading-relaxed text-[color-mix(in_srgb,var(--vassal-cream)_82%,transparent)] sm:text-lg">
@@ -114,7 +116,7 @@ export function LandingPage({ active }: LandingPageProps) {
         id="realm"
         className="relative overflow-hidden border-t border-[color-mix(in_srgb,var(--vassal-red)_40%,transparent)] bg-[linear-gradient(180deg,#0c0607_0%,#14090b_40%,#070405_100%)]"
       >
-        <InfoMarquee />
+        <InfoCardStack />
       </section>
 
       <footer className="border-t border-[color-mix(in_srgb,var(--vassal-red)_30%,transparent)] px-6 py-10 text-center">

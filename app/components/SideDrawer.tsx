@@ -1,5 +1,7 @@
 "use client";
 
+import { VassalLogo } from "./VassalLogo";
+
 type SideDrawerProps = {
   open: boolean;
   visible: boolean;
@@ -44,7 +46,6 @@ export function SideDrawer({ open, visible, onOpen, onClose }: SideDrawerProps) 
         />
       </button>
 
-      {/* Backdrop */}
       <div
         className={`fixed inset-0 z-[55] bg-black/60 transition-opacity duration-300 ${
           open ? "opacity-100" : "pointer-events-none opacity-0"
@@ -62,9 +63,12 @@ export function SideDrawer({ open, visible, onOpen, onClose }: SideDrawerProps) 
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <p className="font-[family-name:var(--font-display)] text-2xl tracking-[0.2em] text-[var(--vassal-cream)]">
-          VASSAL
-        </p>
+        <div className="flex items-center gap-3">
+          <VassalLogo size={40} />
+          <p className="font-[family-name:var(--font-display)] text-xl tracking-[0.28em] text-[var(--vassal-cream)]">
+            VASSAL
+          </p>
+        </div>
         <div className="mt-3 h-px w-16 bg-[var(--vassal-red)]" />
         <nav className="mt-10 flex flex-col gap-5">
           {LINKS.map((link) => (
