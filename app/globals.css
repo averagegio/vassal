@@ -77,29 +77,53 @@ body {
   );
 }
 
-.flag-ripple {
+.flag-ripple-pulse {
   pointer-events: none;
-  mix-blend-mode: soft-light;
   background: radial-gradient(
     circle at 50% 48%,
-    rgba(255, 220, 200, 0.28) 0%,
-    rgba(255, 120, 100, 0.12) 18%,
-    transparent 42%
+    rgba(255, 80, 90, 0.55) 0%,
+    rgba(176, 16, 32, 0.2) 35%,
+    transparent 62%
   );
-  transform-origin: 50% 48%;
+  animation: flag-pulse 2.4s ease-in-out infinite;
+  mix-blend-mode: screen;
+  will-change: opacity, transform;
+}
+
+.flag-ripple {
+  pointer-events: none;
+  border-radius: 50%;
+  left: 50%;
+  top: 48%;
+  width: min(42vw, 340px);
+  height: min(42vw, 340px);
+  margin-left: calc(min(42vw, 340px) / -2);
+  margin-top: calc(min(42vw, 340px) / -2);
+  inset: auto;
+  background: transparent;
+  border: 3px solid rgba(255, 210, 190, 0.75);
+  box-shadow:
+    0 0 24px rgba(255, 120, 100, 0.55),
+    inset 0 0 28px rgba(255, 180, 160, 0.25);
+  transform-origin: center;
   will-change: transform, opacity;
+  animation: flag-ripple 2.8s linear infinite;
 }
 
 .flag-ripple-a {
-  animation: flag-ripple 3.8s ease-out infinite;
+  animation-delay: 0s;
 }
 
 .flag-ripple-b {
-  animation: flag-ripple 3.8s ease-out infinite 1.25s;
+  animation-delay: 0.7s;
 }
 
 .flag-ripple-c {
-  animation: flag-ripple 3.8s ease-out infinite 2.5s;
+  animation-delay: 1.4s;
+}
+
+.flag-ripple-d {
+  animation-delay: 2.1s;
 }
 
 @keyframes wing-beat {
@@ -108,27 +132,42 @@ body {
     transform: rotateX(0deg) scaleY(1) scaleX(1);
   }
   35% {
-    transform: rotateX(10deg) scaleY(1.02) scaleX(1.01);
+    transform: rotateX(8deg) scaleY(1.015) scaleX(1.008);
   }
   55% {
-    transform: rotateX(-6deg) scaleY(0.985) scaleX(0.995);
+    transform: rotateX(-5deg) scaleY(0.99) scaleX(0.996);
   }
   75% {
-    transform: rotateX(4deg) scaleY(1.01) scaleX(1.002);
+    transform: rotateX(3deg) scaleY(1.008) scaleX(1.002);
+  }
+}
+
+@keyframes flag-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.12);
   }
 }
 
 @keyframes flag-ripple {
   0% {
-    transform: scale(0.35);
-    opacity: 0.85;
+    transform: scale(0.2);
+    opacity: 0.95;
+    border-color: rgba(255, 230, 210, 0.9);
   }
-  55% {
-    opacity: 0.35;
+  70% {
+    opacity: 0.45;
+    border-color: rgba(255, 140, 120, 0.55);
   }
   100% {
-    transform: scale(2.6);
+    transform: scale(3.4);
     opacity: 0;
+    border-color: rgba(176, 16, 32, 0);
   }
 }
 
@@ -204,10 +243,7 @@ body {
 }
 
 .gate-door {
-  background: #2a1814;
-  box-shadow:
-    inset 0 0 40px rgba(0, 0, 0, 0.85),
-    0 0 30px rgba(0, 0, 0, 0.5);
+  background: transparent;
   transition: transform 2.6s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
 }
@@ -325,6 +361,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .flag-wing-beat,
   .flag-ripple,
+  .flag-ripple-pulse,
   .swipe-arrow,
   .lamp-glow.lit,
   .torch-flame.lit,

@@ -80,32 +80,32 @@ export function LandingPage({ active }: LandingPageProps) {
           </a>
         </div>
 
-        {/* Gate assembly — doors sit above hero copy until they open */}
+        {/* Gate assembly — lattice metal halves sit above hero until they open */}
         <div className="pointer-events-none absolute inset-0 z-20 flex items-stretch justify-center">
           <div className="relative h-full w-full max-w-5xl">
-            <div className="absolute inset-x-[5%] top-[5%] bottom-0 border-[12px] border-b-0 border-[#3a2820] opacity-95 [border-radius:999px_999px_0_0/42%_42%_0_0] shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] sm:inset-x-[9%] sm:border-[14px]" />
-            <div className="absolute inset-x-[5%] top-[5%] h-[14%] rounded-t-[999px] bg-gradient-to-b from-[#2a1c16] to-transparent opacity-80 sm:inset-x-[9%]" />
+            <div className="absolute inset-x-[5%] top-[5%] bottom-0 border-[12px] border-b-0 border-[#4a4540] opacity-95 [border-radius:999px_999px_0_0/42%_42%_0_0] shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] sm:inset-x-[9%] sm:border-[14px]" />
+            <div className="absolute inset-x-[5%] top-[5%] h-[14%] rounded-t-[999px] bg-gradient-to-b from-[#3a3530] to-transparent opacity-80 sm:inset-x-[9%]" />
 
             <div className="absolute inset-x-[7%] top-[11%] bottom-0 overflow-hidden sm:inset-x-[11%]">
               <div
-                className="gate-door absolute left-0 top-0 h-full w-1/2 border-r border-black/70"
+                className="gate-door absolute left-0 top-0 h-full w-1/2"
                 style={{
                   transform: gatesOpen
                     ? "translate3d(-105%, 0, 0)"
                     : "translate3d(0, 0, 0)",
                 }}
               >
-                <GateHardware />
+                <LatticeGateHalf side="left" />
               </div>
               <div
-                className="gate-door absolute right-0 top-0 h-full w-1/2 border-l border-black/70"
+                className="gate-door absolute right-0 top-0 h-full w-1/2"
                 style={{
                   transform: gatesOpen
                     ? "translate3d(105%, 0, 0)"
                     : "translate3d(0, 0, 0)",
                 }}
               >
-                <GateHardware mirror />
+                <LatticeGateHalf side="right" />
               </div>
             </div>
           </div>
@@ -164,35 +164,65 @@ function Torch({
   );
 }
 
-function GateHardware({ mirror = false }: { mirror?: boolean }) {
+function LatticeGateHalf({ side }: { side: "left" | "right" }) {
+  const edge =
+    side === "left"
+      ? "border-r border-[#8a8580]/60"
+      : "border-l border-[#8a8580]/60";
+
   return (
-    <div
-      className={`absolute inset-0 ${mirror ? "scale-x-[-1]" : ""}`}
-      aria-hidden
-    >
-      {/* Vertical planks highlight */}
-      <div className="absolute inset-y-0 left-0 w-full bg-[repeating-linear-gradient(90deg,#1a0e0a_0px,#3d241c_10px,#241510_20px,#4a2c22_30px,#1a0e0a_40px)] opacity-90" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/30" />
+    <div className={`absolute inset-0 ${edge}`} aria-hidden>
+      {/* Metal lattice mesh */}
+      <div
+        className="absolute inset-0 opacity-95"
+        style={{
+          backgroundColor: "rgba(18, 16, 14, 0.55)",
+          backgroundImage: `
+            linear-gradient(45deg, #6a6560 1.5px, transparent 1.5px),
+            linear-gradient(-45deg, #6a6560 1.5px, transparent 1.5px),
+            linear-gradient(45deg, transparent 48%, #3a3834 49%, #8a8580 50%, #3a3834 51%, transparent 52%),
+            linear-gradient(-45deg, transparent 48%, #3a3834 49%, #8a8580 50%, #3a3834 51%, transparent 52%)
+          `,
+          backgroundSize: "28px 28px, 28px 28px, 56px 56px, 56px 56px",
+          backgroundPosition: "0 0, 0 0, 0 0, 0 0",
+          boxShadow: "inset 0 0 40px rgba(0,0,0,0.65)",
+        }}
+      />
 
-      {/* Iron straps */}
-      <div className="absolute inset-x-0 top-[18%] h-4 bg-gradient-to-b from-[#6a5648] via-[#2a2018] to-[#6a5648] shadow-[0_2px_4px_rgba(0,0,0,0.6)]" />
-      <div className="absolute inset-x-0 top-[48%] h-4 bg-gradient-to-b from-[#6a5648] via-[#2a2018] to-[#6a5648] shadow-[0_2px_4px_rgba(0,0,0,0.6)]" />
-      <div className="absolute inset-x-0 top-[78%] h-4 bg-gradient-to-b from-[#6a5648] via-[#2a2018] to-[#6a5648] shadow-[0_2px_4px_rgba(0,0,0,0.6)]" />
+      {/* Vertical iron bars */}
+      <div
+        className="absolute inset-0 opacity-80"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(90deg, transparent 0 18px, rgba(140,136,130,0.55) 18px 21px, transparent 21px 38px)",
+        }}
+      />
 
-      {/* Rivets */}
-      {[18, 48, 78].map((top) =>
-        [12, 35, 58, 82].map((left) => (
-          <span
-            key={`${top}-${left}`}
-            className="absolute h-2 w-2 rounded-full bg-[#8a7868]"
-            style={{ top: `${top + 1}%`, left: `${left}%` }}
-          />
-        )),
+      {/* Horizontal braces */}
+      <div className="absolute inset-x-0 top-[16%] h-[5px] bg-gradient-to-b from-[#9a9690] via-[#4a4844] to-[#9a9690] shadow-[0_2px_6px_rgba(0,0,0,0.7)]" />
+      <div className="absolute inset-x-0 top-[48%] h-[6px] bg-gradient-to-b from-[#9a9690] via-[#4a4844] to-[#9a9690] shadow-[0_2px_6px_rgba(0,0,0,0.7)]" />
+      <div className="absolute inset-x-0 top-[80%] h-[5px] bg-gradient-to-b from-[#9a9690] via-[#4a4844] to-[#9a9690] shadow-[0_2px_6px_rgba(0,0,0,0.7)]" />
+
+      {/* Speartip tops */}
+      <div
+        className="absolute inset-x-[6%] top-[2%] h-10 opacity-90"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(90deg, transparent 0 14px, #8a8580 14px 18px, transparent 18px 32px)",
+          clipPath: "polygon(0 100%, 0 35%, 3% 0, 6% 35%, 6% 100%, 100% 100%)",
+        }}
+      />
+
+      {/* Center lock plate on meeting edge */}
+      {side === "left" ? (
+        <div className="absolute right-2 top-1/2 h-16 w-10 -translate-y-1/2 rounded-sm border border-[#9a9690] bg-gradient-to-b from-[#5a5854] to-[#2a2826] shadow-[inset_0_0_8px_rgba(0,0,0,0.7)]">
+          <div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#c0bbb4]" />
+        </div>
+      ) : (
+        <div className="absolute left-2 top-1/2 h-16 w-10 -translate-y-1/2 rounded-sm border border-[#9a9690] bg-gradient-to-b from-[#5a5854] to-[#2a2826] shadow-[inset_0_0_8px_rgba(0,0,0,0.7)]">
+          <div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#c0bbb4]" />
+        </div>
       )}
-
-      {/* Ring pull */}
-      <div className="absolute left-[22%] top-1/2 h-12 w-12 -translate-y-1/2 rounded-full border-[3px] border-[#8a7868] bg-[#1a100e] shadow-[inset_0_0_8px_rgba(0,0,0,0.8)]" />
-      <div className="absolute left-[28%] top-[58%] h-5 w-1.5 rounded-full bg-[#6a5648]" />
     </div>
   );
 }
