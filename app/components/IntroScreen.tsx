@@ -51,13 +51,13 @@ export function IntroScreen({
     >
       {/* Ambient flag banners */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-[-8%] top-[8%] h-[70vh] w-[38vw] max-w-[420px] origin-top-left flag-wave">
-          <div className="flag-cloth relative h-full w-full">
+        <div className="absolute left-[-2%] top-[4%] h-[78vh] w-[42vw] max-w-[460px] origin-top-left flag-wave">
+          <div className="flag-cloth relative h-full w-full [clip-path:polygon(0_0,100%_0,96%_100%,0_100%)]">
             <FlagEmblem />
           </div>
         </div>
-        <div className="absolute right-[-10%] top-[12%] h-[65vh] w-[36vw] max-w-[380px] origin-top-right flag-wave [animation-delay:-2s]">
-          <div className="flag-cloth relative h-full w-full opacity-90">
+        <div className="absolute right-[-4%] top-[8%] h-[72vh] w-[40vw] max-w-[420px] origin-top-right flag-wave [animation-delay:-2s]">
+          <div className="flag-cloth relative h-full w-full opacity-95 [clip-path:polygon(4%_0,100%_0,100%_100%,0_100%)]">
             <FlagEmblem flipped />
           </div>
         </div>
