@@ -43,132 +43,67 @@ body {
   color: white;
 }
 
-/* ── Intro full-bleed wing flag ── */
+/* ── Intro full-bleed wind flag ── */
 .bleed-flag {
   background: #120306;
 }
 
 .bleed-flag-glow {
   background:
-    radial-gradient(ellipse 60% 55% at 50% 42%, rgba(225, 29, 46, 0.4), transparent 72%),
+    radial-gradient(ellipse 60% 55% at 50% 42%, rgba(225, 29, 46, 0.35), transparent 72%),
     linear-gradient(180deg, #2a080c 0%, #120306 55%, #070405 100%);
 }
 
-.flag-wing-stage {
-  perspective: 1600px;
-  transform-style: preserve-3d;
-}
-
-.flag-wing-beat {
+.flag-cloth-stage {
+  animation: flag-sway 8s ease-in-out infinite;
   transform-origin: 50% 0%;
-  transform-style: preserve-3d;
-  animation: wing-beat 3.4s ease-in-out infinite;
   will-change: transform;
 }
 
-.flag-wing-cloth {
+.flag-cloth-svg {
+  display: block;
+}
+
+.flag-wind-sheen {
+  pointer-events: none;
   background: linear-gradient(
-    165deg,
-    #e11d2e 0%,
-    #c41e2e 22%,
-    #9a1524 55%,
-    #5a0a12 82%,
-    #2a0610 100%
+    105deg,
+    transparent 20%,
+    rgba(255, 210, 190, 0.08) 42%,
+    rgba(255, 230, 210, 0.14) 50%,
+    rgba(255, 210, 190, 0.06) 58%,
+    transparent 78%
   );
+  background-size: 220% 100%;
+  animation: flag-sheen 10s ease-in-out infinite;
+  mix-blend-mode: soft-light;
 }
 
-.flag-ripple-pulse {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  background: radial-gradient(
-    circle at 50% 48%,
-    rgba(255, 90, 100, 0.65) 0%,
-    rgba(225, 29, 46, 0.28) 32%,
-    transparent 58%
-  );
-  animation: flag-pulse 2.2s ease-in-out infinite;
-  mix-blend-mode: screen;
-  will-change: opacity, transform;
-}
-
-.flag-ripple {
-  pointer-events: none;
-  position: absolute;
-  left: 50%;
-  top: 48%;
-  z-index: 3;
-  width: min(52vw, 420px);
-  height: min(52vw, 420px);
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    transparent 58%,
-    rgba(255, 200, 180, 0.35) 64%,
-    rgba(255, 230, 210, 0.9) 70%,
-    transparent 76%
-  );
-  box-shadow: 0 0 40px rgba(255, 150, 120, 0.45);
-  will-change: transform, opacity;
-  animation: flag-ripple 2.4s linear infinite;
-}
-
-.flag-ripple-a {
-  animation-delay: 0s;
-}
-
-.flag-ripple-b {
-  animation-delay: 0.6s;
-}
-
-.flag-ripple-c {
-  animation-delay: 1.2s;
-}
-
-.flag-ripple-d {
-  animation-delay: 1.8s;
-}
-
-@keyframes wing-beat {
+@keyframes flag-sway {
   0%,
   100% {
-    transform: rotateX(0deg) scaleY(1) scaleX(1);
+    transform: translate3d(0, 0, 0) rotate(-0.4deg) skewX(0deg);
   }
-  35% {
-    transform: rotateX(8deg) scaleY(1.015) scaleX(1.008);
-  }
-  55% {
-    transform: rotateX(-5deg) scaleY(0.99) scaleX(0.996);
-  }
-  75% {
-    transform: rotateX(3deg) scaleY(1.008) scaleX(1.002);
-  }
-}
-
-@keyframes flag-pulse {
-  0%,
-  100% {
-    opacity: 0.4;
-    transform: scale(0.9);
+  25% {
+    transform: translate3d(0.6%, 0.4%, 0) rotate(0.5deg) skewX(0.4deg);
   }
   50% {
-    opacity: 1;
-    transform: scale(1.18);
+    transform: translate3d(-0.4%, 0.2%, 0) rotate(-0.35deg) skewX(-0.3deg);
+  }
+  75% {
+    transform: translate3d(0.5%, -0.2%, 0) rotate(0.3deg) skewX(0.25deg);
   }
 }
 
-@keyframes flag-ripple {
-  0% {
-    transform: translate(-50%, -50%) scale(0.15);
-    opacity: 1;
-  }
-  65% {
+@keyframes flag-sheen {
+  0%,
+  100% {
+    background-position: 0% 50%;
     opacity: 0.55;
   }
-  100% {
-    transform: translate(-50%, -50%) scale(3.8);
-    opacity: 0;
+  50% {
+    background-position: 100% 50%;
+    opacity: 0.9;
   }
 }
 
@@ -360,14 +295,17 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .flag-wing-beat,
-  .flag-ripple,
-  .flag-ripple-pulse,
+  .flag-cloth-stage,
+  .flag-wind-sheen,
   .swipe-arrow,
   .lamp-glow.lit,
   .torch-flame.lit,
   .intro-exit {
     animation: none !important;
+  }
+
+  .flag-cloth-rect {
+    filter: none !important;
   }
 
   .gate-door {
