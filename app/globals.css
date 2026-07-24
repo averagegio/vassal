@@ -65,64 +65,83 @@ body {
 }
 
 .flag-billow-track {
-  animation: flag-billow-loop 10s linear infinite;
+  animation-name: flag-billow-loop;
+  animation-duration: 9s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
   will-change: transform;
   pointer-events: none;
 }
 
 .flag-billow-ridge {
   position: absolute;
-  top: -8%;
-  bottom: -8%;
-  width: 42%;
-  border-radius: 48% 52% 50% 50% / 40% 42% 58% 60%;
-  filter: blur(28px);
-  mix-blend-mode: soft-light;
-  opacity: 0.9;
+  top: -10%;
+  bottom: -10%;
+  width: 44%;
+  border-radius: 46% 54% 48% 52% / 42% 40% 60% 58%;
+  filter: blur(36px);
+  opacity: 1;
+  pointer-events: none;
 }
 
 .flag-billow-ridge-a {
-  left: 4%;
+  left: 2%;
   background:
-    radial-gradient(ellipse 55% 70% at 42% 38%, rgba(255, 220, 205, 0.34), transparent 68%),
-    radial-gradient(ellipse 48% 80% at 62% 62%, rgba(20, 0, 6, 0.38), transparent 72%);
-  animation: flag-ridge-lift 10s ease-in-out infinite;
+    radial-gradient(ellipse 58% 72% at 40% 36%, rgba(255, 228, 210, 0.55), transparent 70%),
+    radial-gradient(ellipse 52% 78% at 64% 64%, rgba(8, 0, 4, 0.55), transparent 72%);
+  mix-blend-mode: soft-light;
+  animation-name: flag-ridge-lift;
+  animation-duration: 9s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
 }
 
 .flag-billow-ridge-b {
-  left: 34%;
-  width: 38%;
+  left: 32%;
+  width: 40%;
   background:
-    radial-gradient(ellipse 50% 75% at 48% 45%, rgba(255, 210, 195, 0.22), transparent 70%),
-    radial-gradient(ellipse 55% 70% at 55% 58%, rgba(40, 0, 10, 0.32), transparent 74%);
-  animation: flag-ridge-lift 10s ease-in-out infinite;
-  animation-delay: -3.3s;
-  filter: blur(34px);
+    radial-gradient(ellipse 54% 70% at 46% 42%, rgba(255, 210, 190, 0.4), transparent 68%),
+    radial-gradient(ellipse 58% 74% at 58% 60%, rgba(25, 0, 8, 0.5), transparent 72%);
+  mix-blend-mode: multiply;
+  opacity: 0.7;
+  animation-name: flag-ridge-lift;
+  animation-duration: 9s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-delay: -3s;
+  filter: blur(42px);
 }
 
 .flag-billow-ridge-c {
-  left: 62%;
-  width: 40%;
+  left: 58%;
+  width: 42%;
   background:
-    radial-gradient(ellipse 58% 68% at 40% 40%, rgba(255, 230, 210, 0.28), transparent 66%),
-    radial-gradient(ellipse 50% 78% at 68% 64%, rgba(12, 0, 4, 0.36), transparent 72%);
-  animation: flag-ridge-lift 10s ease-in-out infinite;
-  animation-delay: -6.6s;
-  filter: blur(30px);
+    radial-gradient(ellipse 60% 68% at 38% 38%, rgba(255, 236, 220, 0.48), transparent 66%),
+    radial-gradient(ellipse 50% 80% at 70% 66%, rgba(10, 0, 4, 0.52), transparent 70%);
+  mix-blend-mode: soft-light;
+  animation-name: flag-ridge-lift;
+  animation-duration: 9s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-delay: -6s;
+  filter: blur(38px);
 }
 
 .flag-wind-sheen {
   pointer-events: none;
   background: linear-gradient(
     95deg,
-    transparent 10%,
-    rgba(255, 214, 196, 0.04) 35%,
-    rgba(255, 232, 214, 0.14) 50%,
-    rgba(255, 214, 196, 0.04) 65%,
-    transparent 90%
+    transparent 8%,
+    rgba(255, 214, 196, 0.06) 32%,
+    rgba(255, 232, 214, 0.2) 50%,
+    rgba(255, 214, 196, 0.06) 68%,
+    transparent 92%
   );
   background-size: 200% 100%;
-  animation: flag-sheen-loop 10s linear infinite;
+  animation-name: flag-sheen-loop;
+  animation-duration: 9s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
   mix-blend-mode: soft-light;
 }
 
@@ -138,10 +157,10 @@ body {
 @keyframes flag-ridge-lift {
   0%,
   100% {
-    transform: translate3d(0, 1.2%, 0) scaleY(0.96) skewX(-1.2deg);
+    transform: translate3d(0, 2%, 0) scaleY(0.94) skewX(-2deg);
   }
   50% {
-    transform: translate3d(0, -2.4%, 0) scaleY(1.06) skewX(1.6deg);
+    transform: translate3d(0, -3.5%, 0) scaleY(1.08) skewX(2.4deg);
   }
 }
 
