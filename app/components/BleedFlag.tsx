@@ -32,33 +32,44 @@ export function BleedFlag({ className = "" }: BleedFlagProps) {
     let t = 0;
 
     const paintCloth = () => {
-      const g = clothCtx.createLinearGradient(0, 0, width, height);
+      const g = clothCtx.createLinearGradient(0, 0, width * 0.85, height);
       g.addColorStop(0, "#e11d2e");
-      g.addColorStop(0.22, "#c81626");
-      g.addColorStop(0.48, "#8f121e");
-      g.addColorStop(0.72, "#4e0b14");
+      g.addColorStop(0.2, "#c81626");
+      g.addColorStop(0.45, "#8f121e");
+      g.addColorStop(0.7, "#4e0b14");
       g.addColorStop(1, "#160308");
       clothCtx.fillStyle = g;
       clothCtx.fillRect(0, 0, width, height);
 
-      // Soft fold shading baked into the cloth source
-      for (let i = 0; i < 7; i++) {
-        const x = ((i + 0.5) / 7) * width;
-        const band = clothCtx.createLinearGradient(x - width * 0.08, 0, x + width * 0.08, 0);
+      // Horizontal ripple bands — these warp visibly under X displacement
+      for (let i = 0; i < 10; i++) {
+        const y = ((i + 0.35) / 10) * height;
+        const band = clothCtx.createLinearGradient(0, y - height * 0.06, 0, y + height * 0.06);
         band.addColorStop(0, "rgba(0,0,0,0)");
-        band.addColorStop(0.45, "rgba(0,0,0,0.18)");
-        band.addColorStop(0.5, "rgba(255,220,200,0.1)");
-        band.addColorStop(0.55, "rgba(0,0,0,0.2)");
+        band.addColorStop(0.4, "rgba(0,0,0,0.16)");
+        band.addColorStop(0.5, "rgba(255,220,200,0.12)");
+        band.addColorStop(0.6, "rgba(0,0,0,0.2)");
         band.addColorStop(1, "rgba(0,0,0,0)");
         clothCtx.fillStyle = band;
-        clothCtx.fillRect(x - width * 0.08, 0, width * 0.16, height);
+        clothCtx.fillRect(0, y - height * 0.06, width, height * 0.12);
       }
+
+      // Soft diagonal light for depth
+      const sheen = clothCtx.createLinearGradient(0, 0, width, height * 0.7);
+      sheen.addColorStop(0, "rgba(255,230,210,0.1)");
+      sheen.addColorStop(0.45, "rgba(255,230,210,0)");
+      sheen.addColorStop(1, "rgba(0,0,0,0.18)");
+      clothCtx.fillStyle = sheen;
+      clothCtx.fillRect(0, 0, width, height);
     };
 
     const resize = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
-      width = Math.max(1, Math.floor(canvas.clientWidth * dpr));
-      height = Math.max(1, Math.floor(canvas.clientHeight * dpr));
+      const nextW = Math.max(1, Math.floor(canvas.clientWidth * dpr));
+      const nextH = Math.max(1, Math.floor(canvas.clientHeight * dpr));
+      if (nextW === width && nextH === height) return;
+      width = nextW;
+      height = nextH;
       canvas.width = width;
       canvas.height = height;
       cloth.width = width;
@@ -70,69 +81,69 @@ export function BleedFlag({ className = "" }: BleedFlagProps) {
     };
 
     const draw = () => {
-      t += 0.018;
+      t += 0.022;
       ctx.fillStyle = "#120306";
       ctx.fillRect(0, 0, width, height);
 
-      // Vertical slices with traveling sine waves — classic flag billow
-      const slice = Math.max(2, Math.floor(dpr * 3));
-      for (let x = 0; x < width; x += slice) {
-        const nx = x / width;
+      // Horizontal scanlines with traveling sine offset = visible cloth billow
+      const step = Math.max(1, Math.floor(dpr));
+      const amp = Math.max(18, width * 0.045);
+
+      for (let y = 0; y < height; y += step) {
+        const ny = y / height;
         const wave =
-          Math.sin(nx * 5.2 + t * 2.1) * (14 * dpr) +
-          Math.sin(nx * 9.4 + t * 3.4) * (7 * dpr) +
-          Math.sin(nx * 2.1 - t * 1.3) * (10 * dpr);
-        const stretch =
-          1 +
-          Math.sin(nx * 4.6 + t * 2.4) * 0.028 +
-          Math.sin(nx * 8.1 - t * 1.7) * 0.016;
-        const yOffset = wave * (0.35 + nx * 0.9);
-        const h = height * stretch;
+          Math.sin(ny * 6.5 + t * 2.4) * amp +
+          Math.sin(ny * 13.2 + t * 3.6) * (amp * 0.38) +
+          Math.sin(ny * 3.1 - t * 1.5) * (amp * 0.55);
+        // Stronger motion toward the free (right) edge
+        const xOffset = wave;
 
         ctx.drawImage(
           cloth,
-          x,
           0,
-          slice,
-          height,
-          x,
-          yOffset - (h - height) * 0.35,
-          slice + 1,
-          h,
+          y,
+          width,
+          step,
+          xOffset,
+          y,
+          width,
+          step + 1,
         );
       }
 
-      // Moving highlight sheen
-      const sheenX = ((t * 0.12) % 1.6) - 0.3;
-      const sheen = ctx.createLinearGradient(
-        width * sheenX,
-        0,
-        width * (sheenX + 0.35),
-        height,
-      );
-      sheen.addColorStop(0, "rgba(255,230,210,0)");
-      sheen.addColorStop(0.45, "rgba(255,230,210,0.14)");
-      sheen.addColorStop(0.55, "rgba(255,240,220,0.2)");
-      sheen.addColorStop(0.65, "rgba(255,230,210,0.08)");
-      sheen.addColorStop(1, "rgba(255,230,210,0)");
+      // Secondary vertical billow on the right half for depth
+      const slice = Math.max(2, Math.floor(3 * dpr));
+      ctx.save();
+      ctx.globalAlpha = 0.35;
       ctx.globalCompositeOperation = "soft-light";
-      ctx.fillStyle = sheen;
-      ctx.fillRect(0, 0, width, height);
-      ctx.globalCompositeOperation = "source-over";
+      for (let x = Math.floor(width * 0.35); x < width; x += slice) {
+        const nx = x / width;
+        const yWave =
+          Math.sin(nx * 7.2 + t * 2.8) * (12 * dpr) +
+          Math.sin(nx * 4.1 - t * 1.9) * (8 * dpr);
+        ctx.drawImage(cloth, x, 0, slice, height, x, yWave, slice + 1, height);
+      }
+      ctx.restore();
 
       raf = window.requestAnimationFrame(draw);
     };
 
+    // Layout may not be ready on first paint
     resize();
-    window.addEventListener("resize", resize);
+    const ro = new ResizeObserver(() => resize());
+    ro.observe(canvas);
 
     if (!reduceMotion) {
-      raf = window.requestAnimationFrame(draw);
+      // Ensure we have real dimensions before looping
+      requestAnimationFrame(() => {
+        resize();
+        raf = window.requestAnimationFrame(draw);
+      });
     }
 
     return () => {
       window.cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
+      ro.disconnect();
     };
   }, []);
 
