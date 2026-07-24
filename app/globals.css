@@ -301,7 +301,7 @@ body {
     animation: none !important;
   }
 
-  .flag-cloth-rect {
+  .flag-cloth-svg rect {
     filter: none !important;
   }
 
