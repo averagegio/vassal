@@ -3,16 +3,18 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { clearSession, getSession } from "../lib/auth";
+import { clearSession, getServerSessionSnapshot, getSessionSnapshot, subscribeSession } from "../lib/auth";
 import { FAN_PETITIONS, RE_PETITIONS } from "../lib/features";
 import { PetitionCourt } from "./PetitionCourt";
 import { VassalLogo } from "./VassalLogo";
 
-const emptySubscribe = () => () => {};
-
 export function DashboardShell() {
   const router = useRouter();
-  const session = useSyncExternalStore(emptySubscribe, getSession, () => null);
+  const session = useSyncExternalStore(
+    subscribeSession,
+    getSessionSnapshot,
+    getServerSessionSnapshot,
+  );
   const [tab, setTab] = useState<"overview" | "petitions" | "tenants">("overview");
 
   useEffect(() => {
