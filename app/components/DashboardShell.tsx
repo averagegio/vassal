@@ -188,45 +188,55 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
 
         {tab === "petitions" && (
           <section className="mt-8">
-            <PetitionCourt
-              title="Petition board"
-              subtitle="Grant, defer, or deny."
-              seed={data.petitions}
-              grantLabel="Grant"
-              persist
-            />
+            {data.petitions.length === 0 ? (
+              <Empty label="No petitions yet." />
+            ) : (
+              <PetitionCourt
+                title="Petition board"
+                subtitle="Grant, defer, or deny."
+                seed={data.petitions}
+                grantLabel="Grant"
+                persist
+              />
+            )}
           </section>
         )}
 
         {tab === "tenants" && (
-          <section className="mt-8 overflow-x-auto">
-            <table className="w-full min-w-[520px] border-collapse text-left">
-              <thead>
-                <tr className="border-b border-[color-mix(in_srgb,var(--vassal-gold)_25%,transparent)]">
-                  {["Name", "Rank", "Standing", "Status"].map((h) => (
-                    <th
-                      key={h}
-                      className="px-3 py-3 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.18em] uppercase text-[var(--vassal-gold)]"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {data.tenants.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="border-b border-[color-mix(in_srgb,var(--vassal-cream)_8%,transparent)]"
-                  >
-                    <Td>{row.name}</Td>
-                    <Td>{row.rank}</Td>
-                    <Td>{row.standing}</Td>
-                    <Td>{row.status}</Td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <section className="mt-8">
+            {data.tenants.length === 0 ? (
+              <Empty label="No tenants yet." />
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[520px] border-collapse text-left">
+                  <thead>
+                    <tr className="border-b border-[color-mix(in_srgb,var(--vassal-gold)_25%,transparent)]">
+                      {["Name", "Rank", "Standing", "Status"].map((h) => (
+                        <th
+                          key={h}
+                          className="px-3 py-3 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.18em] uppercase text-[var(--vassal-gold)]"
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.tenants.map((row) => (
+                      <tr
+                        key={row.id}
+                        className="border-b border-[color-mix(in_srgb,var(--vassal-cream)_8%,transparent)]"
+                      >
+                        <Td>{row.name}</Td>
+                        <Td>{row.rank}</Td>
+                        <Td>{row.standing}</Td>
+                        <Td>{row.status}</Td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </section>
         )}
       </main>
@@ -263,5 +273,13 @@ function Td({ children }: { children: ReactNode }) {
     <td className="px-3 py-3 font-[family-name:var(--font-body)] text-sm text-[color-mix(in_srgb,var(--vassal-cream)_85%,transparent)]">
       {children}
     </td>
+  );
+}
+
+function Empty({ label }: { label: string }) {
+  return (
+    <p className="font-[family-name:var(--font-body)] text-base italic text-[color-mix(in_srgb,var(--vassal-cream)_60%,transparent)]">
+      {label}
+    </p>
   );
 }

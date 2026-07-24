@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  REAL_ESTATE_FEATURES,
-  REAL_ESTATE_TIERS,
-  RE_PETITIONS,
-} from "../lib/features";
-import { PetitionCourt } from "./PetitionCourt";
+import { REAL_ESTATE_FEATURES, REAL_ESTATE_TIERS } from "../lib/features";
 import { TenureLadder } from "./TenureLadder";
 
 export function RealEstateSection() {
@@ -45,18 +40,8 @@ export function RealEstateSection() {
           ))}
         </ol>
 
-        <div className="mt-16 grid items-start gap-12 lg:grid-cols-2">
-          <PetitionCourt
-            title="Repair board"
-            subtitle="Seal it."
-            seed={RE_PETITIONS}
-            grantLabel="Grant"
-          />
-          <TenureLadder
-            eyebrow="Seats"
-            title="Holdings"
-            tiers={REAL_ESTATE_TIERS}
-          />
+        <div className="mt-16 max-w-lg">
+          <TenureLadder eyebrow="Seats" title="Holdings" tiers={REAL_ESTATE_TIERS} />
         </div>
 
         <div className="mt-12">

@@ -11,7 +11,6 @@ type SideDrawerProps = {
 };
 
 const LINKS = [
-  { href: "#realm", label: "Realm" },
   { href: "#paths", label: "Holdings" },
   { href: "#fan-holding", label: "Fan Court" },
   { href: "#estate-holding", label: "Estate" },

@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  FAN_FEATURES,
-  FAN_PETITIONS,
-  FAN_TIERS,
-} from "../lib/features";
-import { PetitionCourt } from "./PetitionCourt";
+import { FAN_FEATURES, FAN_TIERS } from "../lib/features";
 import { TenureLadder } from "./TenureLadder";
 
 export function FanHoldingSection() {
@@ -45,18 +40,8 @@ export function FanHoldingSection() {
           ))}
         </ol>
 
-        <div className="mt-16 grid items-start gap-12 lg:grid-cols-2">
-          <PetitionCourt
-            title="Petition board"
-            subtitle="Seal it."
-            seed={FAN_PETITIONS}
-            grantLabel="Grant"
-          />
-          <TenureLadder
-            eyebrow="Tribute"
-            title="Plots"
-            tiers={FAN_TIERS}
-          />
+        <div className="mt-16 max-w-lg">
+          <TenureLadder eyebrow="Tribute" title="Plots" tiers={FAN_TIERS} />
         </div>
 
         <div className="mt-12">

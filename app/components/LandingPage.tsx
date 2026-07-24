@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { SideDrawer } from "./SideDrawer";
-import { InfoCardStack } from "./InfoCardStack";
 import { VassalLogo } from "./VassalLogo";
 import { RealmPaths } from "./RealmPaths";
 import { FanHoldingSection } from "./FanHoldingSection";
@@ -118,13 +117,6 @@ export function LandingPage({ active }: LandingPageProps) {
             </div>
           </div>
         </div>
-      </section>
-
-      <section
-        id="realm"
-        className="relative overflow-hidden border-t border-[color-mix(in_srgb,var(--vassal-red)_40%,transparent)] bg-[linear-gradient(180deg,#0c0607_0%,#14090b_40%,#070405_100%)]"
-      >
-        <InfoCardStack />
       </section>
 
       <RealmPaths activePath={activePath} onSelect={setActivePath} />

@@ -6,7 +6,6 @@ import {
   type DbTenant,
   type DbUser,
 } from "./db";
-import { FAN_PETITIONS, RE_PETITIONS } from "./features";
 
 export async function hashPassword(password: string) {
   return bcrypt.hash(password, 10);
@@ -39,8 +38,8 @@ export async function createUser(input: {
   const passwordHash = await hashPassword(input.password);
   const decree =
     input.holding === "fan"
-      ? "Welcome to the court. Retainers gather at dusk."
-      : "House law stands. Repairs sealed by rank.";
+      ? "Your court is open."
+      : "Your freehold is open.";
 
   const rows = await db`
     INSERT INTO users (name, email, password_hash, holding, decree)
@@ -53,42 +52,7 @@ export async function createUser(input: {
     )
     RETURNING id, name, email, password_hash, holding, decree, created_at
   `;
-  const user = rows[0] as DbUser;
-  await seedHolding(user.id, input.holding);
-  return user;
-}
-
-async function seedHolding(userId: string, holding: "fan" | "estate") {
-  const db = getDb();
-  const petitions = holding === "fan" ? FAN_PETITIONS : RE_PETITIONS;
-  for (const p of petitions) {
-    await db`
-      INSERT INTO petitions (user_id, from_name, rank, ask, status)
-      VALUES (${userId}, ${p.from}, ${p.rank}, ${p.ask}, ${p.status})
-    `;
-  }
-
-  const tenants =
-    holding === "fan"
-      ? [
-          ["Mira of the North", "Freeholder", 91, "Active"],
-          ["Cole the Steady", "Serf", 64, "Streak"],
-          ["Lord Ash", "Retainer", 97, "Audience"],
-          ["Rin Vale", "Serf", 41, "Cooling"],
-        ]
-      : [
-          ["Elena · 2B", "High", 94, "Repair open"],
-          ["Jordan · 4A", "Renewal", 88, "Guest ok"],
-          ["Maya · Pine", "Guest", 70, "Checked out"],
-          ["Sam · 5C", "At risk", 52, "Chill"],
-        ];
-
-  for (const [name, rank, standing, status] of tenants) {
-    await db`
-      INSERT INTO tenants (user_id, name, rank, standing, status)
-      VALUES (${userId}, ${name}, ${rank}, ${standing}, ${status})
-    `;
-  }
+  return rows[0] as DbUser;
 }
 
 export async function listPetitions(userId: string): Promise<DbPetition[]> {
