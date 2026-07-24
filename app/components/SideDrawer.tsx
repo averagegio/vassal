@@ -11,9 +11,10 @@ type SideDrawerProps = {
 
 const LINKS = [
   { href: "#realm", label: "The Realm" },
-  { href: "#ranks", label: "Ranks" },
-  { href: "#rewards", label: "Rewards" },
-  { href: "#oath", label: "Take the Oath" },
+  { href: "#paths", label: "Choose Court" },
+  { href: "#fan-holding", label: "Fan Membership" },
+  { href: "#estate-holding", label: "Real Estate" },
+  { href: "#steward", label: "AI Steward" },
 ];
 
 export function SideDrawer({ open, visible, onOpen, onClose }: SideDrawerProps) {
@@ -83,7 +84,7 @@ export function SideDrawer({ open, visible, onOpen, onClose }: SideDrawerProps) 
           ))}
         </nav>
         <p className="mt-auto font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_50%,transparent)]">
-          Swear fealty. Rise in rank. Guard the realm.
+          Swear fealty. Seal petitions. Keep tenure warm.
         </p>
       </aside>
     </>

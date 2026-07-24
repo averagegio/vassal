@@ -16,9 +16,9 @@ const imFell = IM_Fell_English({
 });
 
 export const metadata: Metadata = {
-  title: "Vassal — Loyalty of the Realm",
+  title: "Vassal — Landlords for Fan Courts & Freeholds",
   description:
-    "A medieval-inspired social media loyalty app. Enter the territory and claim your place in the realm.",
+    "AI Steward membership for creator fan courts and real-estate freeholds. Tenure, petitions, decrees, and loyalty ranks under one banner.",
 };
 
 export default function RootLayout({
