@@ -50,20 +50,40 @@ body {
 
 .bleed-flag-glow {
   background:
-    radial-gradient(ellipse 60% 55% at 50% 42%, rgba(225, 29, 46, 0.35), transparent 72%),
+    radial-gradient(ellipse 60% 55% at 50% 42%, rgba(225, 29, 46, 0.28), transparent 72%),
     linear-gradient(180deg, #2a080c 0%, #120306 55%, #070405 100%);
 }
 
 .flag-cloth-stage {
-  animation: flag-billow-sway 6.5s ease-in-out infinite;
-  transform-origin: 8% 50%;
-  transform-style: preserve-3d;
-  perspective: 1200px;
+  animation: flag-billow-sway 5.8s ease-in-out infinite;
+  transform-origin: 0% 50%;
   will-change: transform;
 }
 
-.flag-cloth-svg {
+.flag-strip-field {
   display: block;
+  filter: url(#flagWind);
+  transform-origin: 0% 50%;
+}
+
+.flag-strip {
+  position: absolute;
+  top: -6%;
+  bottom: -6%;
+  background-image: linear-gradient(
+    155deg,
+    #e11d2e 0%,
+    #c41424 22%,
+    #8a101c 48%,
+    #4a0a12 74%,
+    #1a0408 100%
+  );
+  background-size: 3200% 100%;
+  background-repeat: no-repeat;
+  transform-origin: 50% 0%;
+  animation: flag-strip-billow 2.8s ease-in-out infinite;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .flag-billow-layer {
@@ -74,109 +94,114 @@ body {
 
 .flag-billow-a {
   background:
-    radial-gradient(ellipse 55% 42% at 28% 38%, rgba(255, 220, 200, 0.22), transparent 68%),
-    radial-gradient(ellipse 48% 36% at 72% 62%, rgba(40, 0, 8, 0.34), transparent 70%);
-  animation: flag-billow-roll-a 4.8s ease-in-out infinite;
+    radial-gradient(ellipse 55% 42% at 28% 38%, rgba(255, 220, 200, 0.28), transparent 68%),
+    radial-gradient(ellipse 48% 36% at 72% 62%, rgba(40, 0, 8, 0.42), transparent 70%);
+  animation: flag-billow-roll-a 4.2s ease-in-out infinite;
 }
 
 .flag-billow-b {
   background:
-    radial-gradient(ellipse 60% 40% at 62% 30%, rgba(255, 200, 180, 0.16), transparent 66%),
-    radial-gradient(ellipse 50% 44% at 34% 70%, rgba(20, 0, 4, 0.3), transparent 72%);
-  animation: flag-billow-roll-b 6.2s ease-in-out infinite;
-}
-
-.flag-billow-c {
-  background:
-    radial-gradient(ellipse 70% 50% at 48% 52%, rgba(255, 230, 210, 0.1), transparent 64%),
-    radial-gradient(ellipse 40% 55% at 80% 44%, rgba(60, 4, 12, 0.26), transparent 68%);
-  animation: flag-billow-roll-c 5.4s ease-in-out infinite;
+    radial-gradient(ellipse 60% 40% at 62% 30%, rgba(255, 200, 180, 0.2), transparent 66%),
+    radial-gradient(ellipse 50% 44% at 34% 70%, rgba(20, 0, 4, 0.36), transparent 72%);
+  animation: flag-billow-roll-b 5.6s ease-in-out infinite;
 }
 
 .flag-fold-band {
   pointer-events: none;
-  width: 28%;
+  width: 24%;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(0, 0, 0, 0.18) 28%,
-    rgba(255, 210, 190, 0.12) 48%,
-    rgba(0, 0, 0, 0.22) 68%,
+    rgba(0, 0, 0, 0.28) 30%,
+    rgba(255, 210, 190, 0.16) 50%,
+    rgba(0, 0, 0, 0.32) 70%,
     transparent 100%
   );
   mix-blend-mode: multiply;
-  filter: blur(10px);
+  filter: blur(8px);
   will-change: transform, opacity;
 }
 
 .flag-fold-1 {
-  left: -10%;
-  animation: flag-fold-drift 7s linear infinite;
+  left: -12%;
+  animation: flag-fold-drift 5.5s linear infinite;
 }
 
 .flag-fold-2 {
-  left: -10%;
-  width: 22%;
-  opacity: 0.75;
-  animation: flag-fold-drift 9.5s linear infinite;
-  animation-delay: -3.2s;
-  filter: blur(14px);
-}
-
-.flag-fold-3 {
-  left: -10%;
+  left: -12%;
   width: 18%;
-  opacity: 0.55;
-  animation: flag-fold-drift 5.8s linear infinite;
-  animation-delay: -1.4s;
-  filter: blur(8px);
+  opacity: 0.8;
+  animation: flag-fold-drift 7.8s linear infinite;
+  animation-delay: -2.6s;
+  filter: blur(12px);
 }
 
 .flag-wind-sheen {
   pointer-events: none;
   background: linear-gradient(
     112deg,
-    transparent 12%,
-    rgba(255, 210, 190, 0.05) 32%,
-    rgba(255, 236, 220, 0.2) 48%,
-    rgba(255, 210, 190, 0.08) 58%,
-    transparent 78%
+    transparent 10%,
+    rgba(255, 210, 190, 0.06) 30%,
+    rgba(255, 236, 220, 0.28) 48%,
+    rgba(255, 210, 190, 0.1) 58%,
+    transparent 80%
   );
   background-size: 260% 140%;
-  animation: flag-sheen 7.5s ease-in-out infinite;
+  animation: flag-sheen 5.5s ease-in-out infinite;
   mix-blend-mode: soft-light;
+}
+
+@keyframes flag-strip-billow {
+  0%,
+  100% {
+    transform: translate3d(0, calc(var(--flag-depth) * 1.2%), 0)
+      skewY(calc(var(--flag-depth) * -1.2deg))
+      scaleY(calc(1 + var(--flag-depth) * 0.035));
+  }
+  25% {
+    transform: translate3d(0, calc(-3.8% - var(--flag-depth) * 5.5%), 0)
+      skewY(calc(2.8deg + var(--flag-depth) * 3.4deg))
+      scaleY(calc(0.94 - var(--flag-depth) * 0.04));
+  }
+  50% {
+    transform: translate3d(0, calc(2.6% + var(--flag-depth) * 3.2%), 0)
+      skewY(calc(-2.2deg - var(--flag-depth) * 2.8deg))
+      scaleY(calc(1.05 + var(--flag-depth) * 0.05));
+  }
+  75% {
+    transform: translate3d(0, calc(-2.2% - var(--flag-depth) * 4%), 0)
+      skewY(calc(1.8deg + var(--flag-depth) * 2.2deg))
+      scaleY(calc(0.97 - var(--flag-depth) * 0.03));
+  }
 }
 
 @keyframes flag-billow-sway {
   0%,
   100% {
-    transform: translate3d(0, 0, 0) rotate(-0.8deg) rotateY(-2.4deg) skewX(-0.6deg) scaleY(1.02);
+    transform: translate3d(0, 0, 0) rotate(-1.2deg) skewX(-1.4deg);
   }
-  18% {
-    transform: translate3d(1.4%, -0.8%, 0) rotate(1.1deg) rotateY(3.2deg) skewX(1.4deg) scaleY(0.97);
+  20% {
+    transform: translate3d(1.8%, -1.4%, 0) rotate(1.8deg) skewX(2.2deg);
   }
-  36% {
-    transform: translate3d(-0.9%, 1.1%, 0) rotate(-1.35deg) rotateY(-3.8deg) skewX(-1.1deg) scaleY(1.04);
+  45% {
+    transform: translate3d(-1.4%, 1.6%, 0) rotate(-2deg) skewX(-1.8deg);
   }
-  54% {
-    transform: translate3d(1.8%, 0.4%, 0) rotate(0.9deg) rotateY(2.6deg) skewX(1.6deg) scaleY(0.98);
+  70% {
+    transform: translate3d(2.2%, 0.6%, 0) rotate(1.4deg) skewX(2.6deg);
   }
-  72% {
-    transform: translate3d(-1.2%, -0.6%, 0) rotate(-0.7deg) rotateY(-2deg) skewX(-0.9deg) scaleY(1.03);
-  }
-  86% {
-    transform: translate3d(0.7%, 0.9%, 0) rotate(0.55deg) rotateY(1.8deg) skewX(0.7deg) scaleY(0.99);
+  85% {
+    transform: translate3d(-0.8%, -0.9%, 0) rotate(-0.9deg) skewX(-1deg);
   }
 }
 
 @keyframes flag-billow-roll-a {
   0%,
   100% {
-    transform: translate3d(-4%, 2%, 0) scale(1.08, 1.04) rotate(0deg);
-    opacity: 0.85;
+    transform: translate3d(-6%, 3%, 0) scale(1.1, 1.06);
+    opacity: 0.75;
   }
   50% {
-    transform: translate3d(6%, -3%, 0) scale(1.14, 1.1) rotate(1.5deg);
+    transform: translate3d(8%, -5%, 0) scale(1.18, 1.12);
     opacity: 1;
   }
 }
@@ -184,49 +209,30 @@ body {
 @keyframes flag-billow-roll-b {
   0%,
   100% {
-    transform: translate3d(5%, -2%, 0) scale(1.1, 1.06) rotate(-0.8deg);
-    opacity: 0.7;
+    transform: translate3d(7%, -3%, 0) scale(1.12, 1.08);
+    opacity: 0.65;
   }
   50% {
-    transform: translate3d(-7%, 4%, 0) scale(1.16, 1.12) rotate(1.2deg);
+    transform: translate3d(-9%, 6%, 0) scale(1.2, 1.14);
     opacity: 0.95;
-  }
-}
-
-@keyframes flag-billow-roll-c {
-  0%,
-  100% {
-    transform: translate3d(-2%, -4%, 0) scale(1.12, 1.08);
-    opacity: 0.55;
-  }
-  40% {
-    transform: translate3d(4%, 3%, 0) scale(1.18, 1.05);
-    opacity: 0.9;
-  }
-  70% {
-    transform: translate3d(-5%, 1%, 0) scale(1.1, 1.14);
-    opacity: 0.75;
   }
 }
 
 @keyframes flag-fold-drift {
   0% {
-    transform: translate3d(0, 0, 0) skewY(-2deg);
-    opacity: 0.2;
+    transform: translate3d(0, 0, 0) skewY(-3deg);
+    opacity: 0.15;
   }
-  12% {
-    opacity: 0.7;
+  15% {
+    opacity: 0.8;
   }
   50% {
-    transform: translate3d(220%, 0, 0) skewY(1.5deg);
-    opacity: 0.85;
-  }
-  88% {
-    opacity: 0.45;
+    transform: translate3d(240%, 0, 0) skewY(2deg);
+    opacity: 0.9;
   }
   100% {
-    transform: translate3d(380%, 0, 0) skewY(-1deg);
-    opacity: 0.15;
+    transform: translate3d(420%, 0, 0) skewY(-1.5deg);
+    opacity: 0.12;
   }
 }
 
@@ -234,15 +240,15 @@ body {
   0%,
   100% {
     background-position: 0% 40%;
-    opacity: 0.45;
+    opacity: 0.4;
   }
-  35% {
-    background-position: 55% 55%;
-    opacity: 0.85;
+  40% {
+    background-position: 60% 55%;
+    opacity: 0.95;
   }
-  70% {
+  75% {
     background-position: 100% 45%;
-    opacity: 0.6;
+    opacity: 0.55;
   }
 }
 
@@ -435,6 +441,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .flag-cloth-stage,
+  .flag-strip,
   .flag-billow-layer,
   .flag-fold-band,
   .flag-wind-sheen,
@@ -445,8 +452,7 @@ body {
     animation: none !important;
   }
 
-  .flag-cloth-rect,
-  .flag-cloth-shade {
+  .flag-strip-field {
     filter: none !important;
   }
 
