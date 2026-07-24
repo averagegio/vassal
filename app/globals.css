@@ -50,81 +50,56 @@ body {
 
 .bleed-flag-base {
   background:
-    radial-gradient(ellipse 62% 55% at 50% 42%, rgba(225, 29, 46, 0.32), transparent 72%),
+    radial-gradient(ellipse 62% 55% at 50% 42%, rgba(225, 29, 46, 0.28), transparent 72%),
     linear-gradient(180deg, #2a080c 0%, #120306 55%, #070405 100%);
 }
 
 .flag-cloth-stage {
-  animation: flag-cloth-breathe 9s ease-in-out infinite;
+  animation: flag-cloth-breathe 8s ease-in-out infinite;
   transform-origin: 50% 45%;
   will-change: transform;
 }
 
-.flag-cloth-svg {
-  display: block;
+.flag-cloth-sheet {
+  background:
+    radial-gradient(ellipse 70% 60% at 48% 40%, rgba(225, 45, 55, 0.55), transparent 68%),
+    linear-gradient(155deg, #e11d2e 0%, #c41424 28%, #8a101c 55%, #4a0a12 78%, #1a0408 100%);
 }
 
 .flag-billow-track {
   animation-name: flag-billow-loop;
-  animation-duration: 9s;
+  animation-duration: 8s;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
   will-change: transform;
   pointer-events: none;
 }
 
-.flag-billow-ridge {
-  position: absolute;
-  top: -10%;
-  bottom: -10%;
-  width: 44%;
-  border-radius: 46% 54% 48% 52% / 42% 40% 60% 58%;
-  filter: blur(36px);
-  opacity: 1;
-  pointer-events: none;
-}
-
-.flag-billow-ridge-a {
-  left: 2%;
-  background:
-    radial-gradient(ellipse 58% 72% at 40% 36%, rgba(255, 228, 210, 0.55), transparent 70%),
-    radial-gradient(ellipse 52% 78% at 64% 64%, rgba(8, 0, 4, 0.55), transparent 72%);
-  mix-blend-mode: soft-light;
-  animation-name: flag-ridge-lift;
-  animation-duration: 9s;
+/* One period of soft fold peaks, duplicated across 200% width via the track */
+.flag-billow-wash {
+  background: linear-gradient(
+    90deg,
+    rgba(80, 0, 12, 0) 0%,
+    rgba(40, 0, 8, 0.45) 8%,
+    rgba(255, 220, 200, 0.28) 16%,
+    rgba(20, 0, 6, 0.5) 24%,
+    rgba(255, 230, 210, 0.22) 32%,
+    rgba(40, 0, 8, 0.42) 40%,
+    rgba(255, 215, 195, 0.26) 48%,
+    rgba(20, 0, 6, 0.5) 56%,
+    rgba(255, 230, 210, 0.22) 64%,
+    rgba(40, 0, 8, 0.45) 72%,
+    rgba(255, 220, 200, 0.28) 80%,
+    rgba(20, 0, 6, 0.5) 88%,
+    rgba(80, 0, 12, 0) 96%,
+    rgba(80, 0, 12, 0) 100%
+  );
+  filter: blur(46px);
+  opacity: 0.95;
+  animation-name: flag-wash-lift;
+  animation-duration: 8s;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
-}
-
-.flag-billow-ridge-b {
-  left: 32%;
-  width: 40%;
-  background:
-    radial-gradient(ellipse 54% 70% at 46% 42%, rgba(255, 210, 190, 0.4), transparent 68%),
-    radial-gradient(ellipse 58% 74% at 58% 60%, rgba(25, 0, 8, 0.5), transparent 72%);
-  mix-blend-mode: multiply;
-  opacity: 0.7;
-  animation-name: flag-ridge-lift;
-  animation-duration: 9s;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  animation-delay: -3s;
-  filter: blur(42px);
-}
-
-.flag-billow-ridge-c {
-  left: 58%;
-  width: 42%;
-  background:
-    radial-gradient(ellipse 60% 68% at 38% 38%, rgba(255, 236, 220, 0.48), transparent 66%),
-    radial-gradient(ellipse 50% 80% at 70% 66%, rgba(10, 0, 4, 0.52), transparent 70%);
-  mix-blend-mode: soft-light;
-  animation-name: flag-ridge-lift;
-  animation-duration: 9s;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  animation-delay: -6s;
-  filter: blur(38px);
 }
 
 .flag-wind-sheen {
@@ -132,14 +107,14 @@ body {
   background: linear-gradient(
     95deg,
     transparent 8%,
-    rgba(255, 214, 196, 0.06) 32%,
-    rgba(255, 232, 214, 0.2) 50%,
-    rgba(255, 214, 196, 0.06) 68%,
+    rgba(255, 214, 196, 0.07) 34%,
+    rgba(255, 236, 220, 0.22) 50%,
+    rgba(255, 214, 196, 0.07) 66%,
     transparent 92%
   );
   background-size: 200% 100%;
   animation-name: flag-sheen-loop;
-  animation-duration: 9s;
+  animation-duration: 8s;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
   mix-blend-mode: soft-light;
@@ -154,34 +129,32 @@ body {
   }
 }
 
-@keyframes flag-ridge-lift {
+@keyframes flag-wash-lift {
   0%,
   100% {
-    transform: translate3d(0, 2%, 0) scaleY(0.94) skewX(-2deg);
+    transform: scaleY(0.94) skewX(-1.5deg);
   }
   50% {
-    transform: translate3d(0, -3.5%, 0) scaleY(1.08) skewX(2.4deg);
+    transform: scaleY(1.07) skewX(1.8deg);
   }
 }
 
 @keyframes flag-cloth-breathe {
   0%,
   100% {
-    transform: translate3d(0, 0, 0) scaleY(1) rotate(-0.2deg);
+    transform: translate3d(0, 0, 0) scaleY(1);
   }
   50% {
-    transform: translate3d(0.3%, -0.4%, 0) scaleY(1.015) rotate(0.25deg);
+    transform: translate3d(0.25%, -0.45%, 0) scaleY(1.02);
   }
 }
 
 @keyframes flag-sheen-loop {
   from {
     background-position: 100% 50%;
-    opacity: 0.55;
   }
   to {
     background-position: -100% 50%;
-    opacity: 0.8;
   }
 }
 
