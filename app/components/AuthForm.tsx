@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { saveSession, type VassalSession } from "../lib/auth";
 import { VassalLogo } from "./VassalLogo";
 
 type AuthMode = "login" | "signup";
@@ -23,7 +22,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   const isSignup = mode === "signup";
 
-  const onSubmit = (e: FormEvent) => {
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -41,24 +40,28 @@ export function AuthForm({ mode }: AuthFormProps) {
     }
 
     setPending(true);
-    const existing = typeof window !== "undefined" ? window.localStorage.getItem("vassal.session") : null;
-    let priorHolding: "fan" | "estate" = holding;
-    if (!isSignup && existing) {
-      try {
-        const prior = JSON.parse(existing) as VassalSession;
-        if (prior.email === email.trim().toLowerCase()) priorHolding = prior.holding;
-      } catch {
-        /* ignore */
+    try {
+      const res = await fetch(isSignup ? "/api/auth/signup" : "/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          isSignup
+            ? { name, email, password, holding }
+            : { email, password },
+        ),
+      });
+      const data = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        setError(data.error || "Something went wrong.");
+        setPending(false);
+        return;
       }
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setError("Could not reach the realm.");
+      setPending(false);
     }
-    const session: VassalSession = {
-      name: name.trim() || email.split("@")[0] || "Landlord",
-      email: email.trim().toLowerCase(),
-      holding: isSignup ? holding : priorHolding,
-      createdAt: new Date().toISOString(),
-    };
-    saveSession(session);
-    router.push("/dashboard");
   };
 
   return (
@@ -76,10 +79,10 @@ export function AuthForm({ mode }: AuthFormProps) {
 
         <div className="auth-panel px-6 py-8 sm:px-8">
           <h1 className="font-[family-name:var(--font-display)] text-2xl tracking-[0.14em] text-[var(--vassal-cream)]">
-            {isSignup ? "Swear fealty" : "Return"}
+            {isSignup ? "Join" : "Enter"}
           </h1>
           <p className="mt-2 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)]">
-            {isSignup ? "Open your holding." : "Enter your court."}
+            {isSignup ? "Open your holding." : "Welcome back."}
           </p>
 
           <form onSubmit={onSubmit} className="mt-8 flex flex-col gap-4">
@@ -112,7 +115,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             {isSignup && (
               <fieldset className="mt-1">
                 <legend className="font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.22em] uppercase text-[var(--vassal-gold)]">
-                  Holding type
+                  Holding
                 </legend>
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <HoldingPick
@@ -143,21 +146,21 @@ export function AuthForm({ mode }: AuthFormProps) {
               disabled={pending}
               className="mt-2 border border-[color-mix(in_srgb,var(--vassal-gold)_50%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_40%,transparent)] px-5 py-3 font-[family-name:var(--font-display)] text-xs tracking-[0.22em] uppercase text-[var(--vassal-cream)] transition hover:bg-[color-mix(in_srgb,var(--vassal-red)_55%,transparent)] disabled:opacity-60"
             >
-              {pending ? "Opening…" : isSignup ? "Create tenure" : "Enter court"}
+              {pending ? "Please wait…" : isSignup ? "Join" : "Enter"}
             </button>
           </form>
 
           <p className="mt-6 text-center font-[family-name:var(--font-body)] text-sm text-[color-mix(in_srgb,var(--vassal-cream)_60%,transparent)]">
             {isSignup ? (
               <>
-                Already sworn?{" "}
+                Already a member?{" "}
                 <Link href="/login" className="text-[var(--vassal-gold)] underline-offset-4 hover:underline">
                   Log in
                 </Link>
               </>
             ) : (
               <>
-                New landlord?{" "}
+                New here?{" "}
                 <Link href="/signup" className="text-[var(--vassal-gold)] underline-offset-4 hover:underline">
                   Sign up
                 </Link>

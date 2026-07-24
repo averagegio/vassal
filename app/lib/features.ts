@@ -14,7 +14,7 @@ export type FeatureItem = {
   body: string;
 };
 
-export type PetitionDemo = {
+export type Petition = {
   id: string;
   from: string;
   rank: string;
@@ -57,7 +57,7 @@ export const FAN_FEATURES: FeatureItem[] = [
 
 export const REAL_ESTATE_FEATURES: FeatureItem[] = [
   {
-    id: "steward-sms",
+    id: "steward-door",
     title: "Steward",
     body: "Rent nudges and FAQ—without the inbox.",
   },
@@ -143,7 +143,7 @@ export const REAL_ESTATE_TIERS: TenureTier[] = [
     name: "Small Freehold",
     rent: "$49/mo",
     blurb: "1–10 doors.",
-    perks: ["SMS Steward", "Repairs", "Standing", "Decrees"],
+    perks: ["Front desk", "Repairs", "Standing", "Decrees"],
   },
   {
     id: "manor",
@@ -154,7 +154,7 @@ export const REAL_ESTATE_TIERS: TenureTier[] = [
   },
 ];
 
-export const FAN_PETITIONS: PetitionDemo[] = [
+export const FAN_PETITIONS: Petition[] = [
   {
     id: "p1",
     from: "Mira of the North",
@@ -178,7 +178,7 @@ export const FAN_PETITIONS: PetitionDemo[] = [
   },
 ];
 
-export const RE_PETITIONS: PetitionDemo[] = [
+export const RE_PETITIONS: Petition[] = [
   {
     id: "r1",
     from: "Unit 2B — Elena",

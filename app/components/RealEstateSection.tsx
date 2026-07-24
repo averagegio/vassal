@@ -25,7 +25,7 @@ export function RealEstateSection() {
             Steward for doors
           </h2>
           <p className="mt-3 font-[family-name:var(--font-body)] text-base italic text-[color-mix(in_srgb,var(--vassal-cream)_78%,transparent)]">
-            Law. Repairs. Renewals. No full PMS.
+            Law. Repairs. Renewals.
           </p>
         </header>
 
@@ -48,9 +48,9 @@ export function RealEstateSection() {
         <div className="mt-16 grid items-start gap-12 lg:grid-cols-2">
           <PetitionCourt
             title="Repair board"
-            subtitle="Dispatch it."
+            subtitle="Seal it."
             seed={RE_PETITIONS}
-            grantLabel="Dispatch"
+            grantLabel="Grant"
           />
           <TenureLadder
             eyebrow="Seats"

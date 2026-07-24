@@ -1,17 +1,18 @@
 "use client";
 
 import { useCallback, useState, type ReactNode } from "react";
-import type { PetitionDemo } from "../lib/features";
+import type { Petition } from "../lib/features";
 
 type PetitionCourtProps = {
   title: string;
   subtitle: string;
-  seed: PetitionDemo[];
+  seed: Petition[];
   grantLabel?: string;
+  persist?: boolean;
 };
 
-const STATUS_LABEL: Record<PetitionDemo["status"], string> = {
-  open: "Awaiting seal",
+const STATUS_LABEL: Record<Petition["status"], string> = {
+  open: "Open",
   granted: "Granted",
   denied: "Denied",
   deferred: "Deferred",
@@ -22,14 +23,31 @@ export function PetitionCourt({
   subtitle,
   seed,
   grantLabel = "Grant",
+  persist = false,
 }: PetitionCourtProps) {
   const [items, setItems] = useState(seed);
 
-  const seal = useCallback((id: string, status: PetitionDemo["status"]) => {
-    setItems((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, status } : p)),
-    );
-  }, []);
+  const seal = useCallback(
+    async (id: string, status: Petition["status"]) => {
+      setItems((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, status } : p)),
+      );
+      if (!persist) return;
+      try {
+        const res = await fetch("/api/petitions", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, status }),
+        });
+        if (!res.ok) {
+          setItems(seed);
+        }
+      } catch {
+        setItems(seed);
+      }
+    },
+    [persist, seed],
+  );
 
   return (
     <div className="petition-court w-full max-w-lg">

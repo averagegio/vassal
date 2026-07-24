@@ -1,28 +1,19 @@
-import { redirect } from "next/navigation";
-import { DashboardShell, type DashboardData } from "../components/DashboardShell";
-import { getSession } from "../lib/session";
+import { NextResponse } from "next/server";
+import { getSession } from "../../lib/session";
 import {
   getDashboardStats,
   getUserDecree,
   listPetitions,
   listTenants,
-} from "../lib/users";
+} from "../../lib/users";
 
-export const metadata = {
-  title: "Dashboard — Vassal",
-  description: "Your holding: petitions, tenants, and Steward.",
-};
-
-export const dynamic = "force-dynamic";
-
-export default async function DashboardPage() {
-  const session = await getSession();
-  if (!session) redirect("/login");
-
-  let initialData: DashboardData | null = null;
-  let loadError: string | undefined;
-
+export async function GET() {
   try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const [stats, petitions, tenants, decree] = await Promise.all([
       getDashboardStats(session.userId),
       listPetitions(session.userId),
@@ -30,7 +21,7 @@ export default async function DashboardPage() {
       getUserDecree(session.userId),
     ]);
 
-    initialData = {
+    return NextResponse.json({
       user: {
         id: session.userId,
         name: session.name,
@@ -53,11 +44,9 @@ export default async function DashboardPage() {
         standing: t.standing,
         status: t.status,
       })),
-    };
+    });
   } catch (err) {
-    console.error("dashboard page", err);
-    loadError = "Could not load your holding.";
+    console.error("dashboard", err);
+    return NextResponse.json({ error: "Could not load holding." }, { status: 500 });
   }
-
-  return <DashboardShell initialData={initialData} loadError={loadError} />;
 }
