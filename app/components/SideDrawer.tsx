@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { VassalLogo } from "./VassalLogo";
 
 type SideDrawerProps = {
@@ -10,11 +11,12 @@ type SideDrawerProps = {
 };
 
 const LINKS = [
-  { href: "#realm", label: "The Realm" },
-  { href: "#paths", label: "Choose Court" },
-  { href: "#fan-holding", label: "Fan Membership" },
-  { href: "#estate-holding", label: "Real Estate" },
-  { href: "#steward", label: "AI Steward" },
+  { href: "#paths", label: "Holdings" },
+  { href: "#fan-holding", label: "Fan Court" },
+  { href: "#estate-holding", label: "Estate" },
+  { href: "#steward", label: "Steward" },
+  { href: "/login", label: "Log in" },
+  { href: "/signup", label: "Sign up" },
 ];
 
 export function SideDrawer({ open, visible, onOpen, onClose }: SideDrawerProps) {
@@ -72,19 +74,30 @@ export function SideDrawer({ open, visible, onOpen, onClose }: SideDrawerProps) 
         </div>
         <div className="mt-3 h-px w-16 bg-[var(--vassal-red)]" />
         <nav className="mt-10 flex flex-col gap-5">
-          {LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              onClick={onClose}
-              className="font-[family-name:var(--font-display)] text-sm tracking-[0.18em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_85%,transparent)] transition hover:text-[var(--vassal-blood)]"
-            >
-              {link.label}
-            </a>
-          ))}
+          {LINKS.map((link) =>
+            link.href.startsWith("/") ? (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={onClose}
+                className="font-[family-name:var(--font-display)] text-sm tracking-[0.18em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_85%,transparent)] transition hover:text-[var(--vassal-blood)]"
+              >
+                {link.label}
+              </Link>
+            ) : (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={onClose}
+                className="font-[family-name:var(--font-display)] text-sm tracking-[0.18em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_85%,transparent)] transition hover:text-[var(--vassal-blood)]"
+              >
+                {link.label}
+              </a>
+            ),
+          )}
         </nav>
         <p className="mt-auto font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_50%,transparent)]">
-          Swear fealty. Seal petitions. Keep tenure warm.
+          Swear. Seal. Rise.
         </p>
       </aside>
     </>

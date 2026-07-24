@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { SideDrawer } from "./SideDrawer";
-import { InfoCardStack } from "./InfoCardStack";
 import { VassalLogo } from "./VassalLogo";
 import { RealmPaths } from "./RealmPaths";
 import { FanHoldingSection } from "./FanHoldingSection";
@@ -67,25 +66,7 @@ export function LandingPage({ active }: LandingPageProps) {
         <Torch side="left" lit={lampsLit} />
         <Torch side="right" lit={lampsLit} />
 
-        {/* Hero copy behind the gate — revealed as doors part */}
-        <div className="relative z-10 flex min-h-dvh flex-col items-center justify-end px-6 pb-16 pt-28 text-center sm:pb-20">
-          <VassalLogo size={72} className="mb-4 drop-shadow-[0_8px_24px_rgba(0,0,0,0.65)]" />
-          <h1 className="font-[family-name:var(--font-display)] text-[clamp(1.75rem,5.5vw,2.85rem)] font-semibold tracking-[0.38em] text-[var(--vassal-cream)] drop-shadow-[0_6px_28px_rgba(0,0,0,0.85)]">
-            VASSAL
-          </h1>
-          <p className="mt-4 max-w-lg font-[family-name:var(--font-body)] text-base italic leading-relaxed text-[color-mix(in_srgb,var(--vassal-cream)_82%,transparent)] sm:text-lg">
-            AI landlords for fan courts and real freeholds—tenure, petitions,
-            and a Steward between every audience.
-          </p>
-          <a
-            href="#paths"
-            className="mt-8 inline-flex items-center gap-2 border border-[color-mix(in_srgb,var(--vassal-gold)_50%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_35%,transparent)] px-7 py-3 font-[family-name:var(--font-display)] text-xs tracking-[0.22em] uppercase text-[var(--vassal-cream)] transition hover:bg-[color-mix(in_srgb,var(--vassal-red)_55%,transparent)]"
-          >
-            Claim your fealty
-          </a>
-        </div>
-
-        {/* Gate assembly — portcullis rises vertically */}
+        {/* Gate assembly — portcullis rises; frame stays behind hero copy */}
         <div className="pointer-events-none absolute inset-0 z-20 flex items-stretch justify-center">
           <div className="relative h-full w-full max-w-5xl">
             <div className="absolute inset-x-[5%] top-[5%] bottom-0 border-[12px] border-b-0 border-[#4a4540] opacity-95 [border-radius:999px_999px_0_0/42%_42%_0_0] shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] sm:inset-x-[9%] sm:border-[14px]" />
@@ -105,13 +86,37 @@ export function LandingPage({ active }: LandingPageProps) {
             </div>
           </div>
         </div>
-      </section>
 
-      <section
-        id="realm"
-        className="relative overflow-hidden border-t border-[color-mix(in_srgb,var(--vassal-red)_40%,transparent)] bg-[linear-gradient(180deg,#0c0607_0%,#14090b_40%,#070405_100%)]"
-      >
-        <InfoCardStack />
+        {/* Hero sits above the gate so copy is never clipped in the margin */}
+        <div
+          className={`hero-copy relative z-30 flex min-h-dvh flex-col items-center justify-center px-8 text-center transition-opacity duration-700 sm:px-12 ${
+            gatesOpen ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <div className="flex w-full max-w-[min(92vw,22rem)] flex-col items-center sm:max-w-md">
+            <VassalLogo size={72} className="mb-4 drop-shadow-[0_8px_24px_rgba(0,0,0,0.65)]" />
+            <h1 className="font-[family-name:var(--font-display)] text-[clamp(1.75rem,5.5vw,2.85rem)] font-semibold tracking-[0.38em] text-[var(--vassal-cream)] drop-shadow-[0_6px_28px_rgba(0,0,0,0.85)]">
+              VASSAL
+            </h1>
+            <p className="mt-4 font-[family-name:var(--font-body)] text-base italic leading-snug text-[color-mix(in_srgb,var(--vassal-cream)_88%,transparent)] sm:text-lg">
+              AI landlords for fans and freeholds.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <a
+                href="/signup"
+                className="inline-flex border border-[color-mix(in_srgb,var(--vassal-gold)_50%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_40%,transparent)] px-6 py-3 font-[family-name:var(--font-display)] text-xs tracking-[0.22em] uppercase text-[var(--vassal-cream)] transition hover:bg-[color-mix(in_srgb,var(--vassal-red)_55%,transparent)]"
+              >
+                Join
+              </a>
+              <a
+                href="/login"
+                className="inline-flex border border-[color-mix(in_srgb,var(--vassal-gold)_35%,transparent)] bg-transparent px-6 py-3 font-[family-name:var(--font-display)] text-xs tracking-[0.22em] uppercase text-[var(--vassal-cream)] transition hover:border-[var(--vassal-blood)]"
+              >
+                Log in
+              </a>
+            </div>
+          </div>
+        </div>
       </section>
 
       <RealmPaths activePath={activePath} onSelect={setActivePath} />
@@ -124,7 +129,7 @@ export function LandingPage({ active }: LandingPageProps) {
           Vassal
         </p>
         <p className="mt-2 text-sm text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
-          Loyalty for fan courts and freeholds—forged for the faithful.
+          Fans. Freeholds. One Steward.
         </p>
       </footer>
     </div>

@@ -1,17 +1,36 @@
 # vassal
 
-Your personal AI landlord for fan courts and real freeholds.
+AI landlords for fans and freeholds.
 
-Vassal runs **tenure membership**—petitions, decrees, ranks, and an AI Steward—for creator fan holdings and for small landlords / short-stay hosts.
+## database (Vercel Neon)
 
-## holdings
+This app expects the **Vercel Neon Postgres integration**. That injects:
 
-- **Fan Court** — tribute tiers, petition board, audience hours, season campaigns
-- **Estate Holding** — house law, repair petitions, tenant standing, renewal seasons
-- **AI Steward** — shared voice that drafts decrees and keeps the court interactive
+- `DATABASE_URL` (pooled)
+- `DATABASE_URL_UNPOOLED`
+- legacy `POSTGRES_*` / `PG*` aliases
 
-## run locally
+No manual Neon connection string is required on Vercel. Schema in `db/schema.sql` is applied on first auth request (including preview branches).
+
+### local
+
+```bash
+npx vercel link
+npx vercel env pull .env.local
+npm run dev
+```
+
+Optional: set `SESSION_SECRET` in Vercel. If unset, sessions use a secret derived from `DATABASE_URL`.
+
+## run
 
 ```bash
 npm run dev
 ```
+
+## routes
+
+- `/` landing
+- `/signup` join
+- `/login` enter
+- `/dashboard` holding
