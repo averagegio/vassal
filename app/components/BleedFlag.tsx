@@ -41,24 +41,24 @@ export function BleedFlag({ className = "" }: BleedFlagProps) {
       clothCtx.fillStyle = g;
       clothCtx.fillRect(0, 0, width, height);
 
-      // Horizontal ripple bands — these warp visibly under X displacement
-      for (let i = 0; i < 10; i++) {
-        const y = ((i + 0.35) / 10) * height;
-        const band = clothCtx.createLinearGradient(0, y - height * 0.06, 0, y + height * 0.06);
+      // Soft horizontal fold shading — warps into billows under X displacement
+      for (let i = 0; i < 6; i++) {
+        const y = ((i + 0.4) / 6) * height;
+        const band = clothCtx.createLinearGradient(0, y - height * 0.1, 0, y + height * 0.1);
         band.addColorStop(0, "rgba(0,0,0,0)");
-        band.addColorStop(0.4, "rgba(0,0,0,0.16)");
-        band.addColorStop(0.5, "rgba(255,220,200,0.12)");
-        band.addColorStop(0.6, "rgba(0,0,0,0.2)");
+        band.addColorStop(0.42, "rgba(0,0,0,0.1)");
+        band.addColorStop(0.5, "rgba(255,220,200,0.08)");
+        band.addColorStop(0.58, "rgba(0,0,0,0.12)");
         band.addColorStop(1, "rgba(0,0,0,0)");
         clothCtx.fillStyle = band;
-        clothCtx.fillRect(0, y - height * 0.06, width, height * 0.12);
+        clothCtx.fillRect(0, y - height * 0.1, width, height * 0.2);
       }
 
       // Soft diagonal light for depth
       const sheen = clothCtx.createLinearGradient(0, 0, width, height * 0.7);
-      sheen.addColorStop(0, "rgba(255,230,210,0.1)");
+      sheen.addColorStop(0, "rgba(255,230,210,0.12)");
       sheen.addColorStop(0.45, "rgba(255,230,210,0)");
-      sheen.addColorStop(1, "rgba(0,0,0,0.18)");
+      sheen.addColorStop(1, "rgba(0,0,0,0.22)");
       clothCtx.fillStyle = sheen;
       clothCtx.fillRect(0, 0, width, height);
     };
@@ -87,43 +87,16 @@ export function BleedFlag({ className = "" }: BleedFlagProps) {
 
       // Horizontal scanlines with traveling sine offset = visible cloth billow
       const step = Math.max(1, Math.floor(dpr));
-      const amp = Math.max(18, width * 0.045);
+      const amp = Math.max(28, width * 0.07);
 
       for (let y = 0; y < height; y += step) {
         const ny = y / height;
         const wave =
-          Math.sin(ny * 6.5 + t * 2.4) * amp +
-          Math.sin(ny * 13.2 + t * 3.6) * (amp * 0.38) +
-          Math.sin(ny * 3.1 - t * 1.5) * (amp * 0.55);
-        // Stronger motion toward the free (right) edge
-        const xOffset = wave;
-
-        ctx.drawImage(
-          cloth,
-          0,
-          y,
-          width,
-          step,
-          xOffset,
-          y,
-          width,
-          step + 1,
-        );
+          Math.sin(ny * 5.4 + t * 2.2) * amp +
+          Math.sin(ny * 11.5 + t * 3.3) * (amp * 0.42) +
+          Math.sin(ny * 2.6 - t * 1.4) * (amp * 0.6);
+        ctx.drawImage(cloth, 0, y, width, step, wave, y, width, step + 1);
       }
-
-      // Secondary vertical billow on the right half for depth
-      const slice = Math.max(2, Math.floor(3 * dpr));
-      ctx.save();
-      ctx.globalAlpha = 0.35;
-      ctx.globalCompositeOperation = "soft-light";
-      for (let x = Math.floor(width * 0.35); x < width; x += slice) {
-        const nx = x / width;
-        const yWave =
-          Math.sin(nx * 7.2 + t * 2.8) * (12 * dpr) +
-          Math.sin(nx * 4.1 - t * 1.9) * (8 * dpr);
-        ctx.drawImage(cloth, x, 0, slice, height, x, yWave, slice + 1, height);
-      }
-      ctx.restore();
 
       raf = window.requestAnimationFrame(draw);
     };
