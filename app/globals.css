@@ -464,6 +464,14 @@ body {
   );
 }
 
+.profile-banner {
+  background: linear-gradient(
+    180deg,
+    rgba(36, 12, 16, 0.5),
+    rgba(10, 5, 6, 0.96)
+  );
+}
+
 @keyframes steward-breathe {
   0%,
   100% {

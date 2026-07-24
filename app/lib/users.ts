@@ -7,6 +7,11 @@ import {
   type DbUser,
 } from "./db";
 
+const SELECT_USER = `
+  id, name, email, password_hash, holding, decree,
+  x_id, x_username, avatar_url, header_url, created_at
+`;
+
 export async function hashPassword(password: string) {
   return bcrypt.hash(password, 10);
 }
@@ -18,12 +23,30 @@ export async function verifyPassword(password: string, hash: string) {
 export async function findUserByEmail(email: string): Promise<DbUser | null> {
   await ensureSchema();
   const db = getDb();
-  const rows = await db`
-    SELECT id, name, email, password_hash, holding, decree, created_at
-    FROM users
-    WHERE email = ${email.toLowerCase()}
-    LIMIT 1
-  `;
+  const rows = await db.query(
+    `SELECT ${SELECT_USER} FROM users WHERE email = $1 LIMIT 1`,
+    [email.toLowerCase()],
+  );
+  return (rows[0] as DbUser | undefined) ?? null;
+}
+
+export async function findUserById(id: string): Promise<DbUser | null> {
+  await ensureSchema();
+  const db = getDb();
+  const rows = await db.query(
+    `SELECT ${SELECT_USER} FROM users WHERE id = $1 LIMIT 1`,
+    [id],
+  );
+  return (rows[0] as DbUser | undefined) ?? null;
+}
+
+export async function findUserByXId(xId: string): Promise<DbUser | null> {
+  await ensureSchema();
+  const db = getDb();
+  const rows = await db.query(
+    `SELECT ${SELECT_USER} FROM users WHERE x_id = $1 LIMIT 1`,
+    [xId],
+  );
   return (rows[0] as DbUser | undefined) ?? null;
 }
 
@@ -41,18 +64,88 @@ export async function createUser(input: {
       ? "Your court is open."
       : "Your freehold is open.";
 
-  const rows = await db`
-    INSERT INTO users (name, email, password_hash, holding, decree)
-    VALUES (
-      ${input.name.trim()},
-      ${input.email.trim().toLowerCase()},
-      ${passwordHash},
-      ${input.holding},
-      ${decree}
-    )
-    RETURNING id, name, email, password_hash, holding, decree, created_at
-  `;
+  const rows = await db.query(
+    `INSERT INTO users (name, email, password_hash, holding, decree)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING ${SELECT_USER}`,
+    [
+      input.name.trim(),
+      input.email.trim().toLowerCase(),
+      passwordHash,
+      input.holding,
+      decree,
+    ],
+  );
   return rows[0] as DbUser;
+}
+
+export async function upsertUserFromX(input: {
+  xId: string;
+  username: string;
+  name: string;
+  avatarUrl?: string | null;
+  holding: "fan" | "estate";
+}): Promise<DbUser> {
+  await ensureSchema();
+  const existing = await findUserByXId(input.xId);
+  const db = getDb();
+
+  if (existing) {
+    const rows = await db.query(
+      `UPDATE users
+       SET name = $1,
+           x_username = $2,
+           avatar_url = COALESCE($3, avatar_url)
+       WHERE x_id = $4
+       RETURNING ${SELECT_USER}`,
+      [
+        input.name || existing.name,
+        input.username,
+        input.avatarUrl ?? null,
+        input.xId,
+      ],
+    );
+    return rows[0] as DbUser;
+  }
+
+  const email = `x_${input.xId}@vassal.x`;
+  const decree =
+    input.holding === "fan"
+      ? "Your court is open."
+      : "Your freehold is open.";
+
+  const rows = await db.query(
+    `INSERT INTO users (
+       name, email, password_hash, holding, decree,
+       x_id, x_username, avatar_url
+     ) VALUES ($1, $2, NULL, $3, $4, $5, $6, $7)
+     RETURNING ${SELECT_USER}`,
+    [
+      input.name || input.username,
+      email,
+      input.holding,
+      decree,
+      input.xId,
+      input.username,
+      input.avatarUrl ?? null,
+    ],
+  );
+  return rows[0] as DbUser;
+}
+
+export async function updateProfileImage(
+  userId: string,
+  kind: "avatar" | "header",
+  dataUrl: string | null,
+) {
+  await ensureSchema();
+  const db = getDb();
+  const column = kind === "avatar" ? "avatar_url" : "header_url";
+  const rows = await db.query(
+    `UPDATE users SET ${column} = $1 WHERE id = $2 RETURNING ${SELECT_USER}`,
+    [dataUrl, userId],
+  );
+  return (rows[0] as DbUser | undefined) ?? null;
 }
 
 export async function listPetitions(userId: string): Promise<DbPetition[]> {

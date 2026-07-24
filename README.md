@@ -22,6 +22,22 @@ npm run dev
 
 Optional: set `SESSION_SECRET` in Vercel. If unset, sessions use a secret derived from `DATABASE_URL`.
 
+## X sign-in
+
+Add to Vercel env:
+
+```env
+X_CLIENT_ID=...
+X_CLIENT_SECRET=...
+APP_URL=https://your-domain.com
+```
+
+In the X Developer Portal, set callback URL to:
+
+`https://your-domain.com/api/auth/x/callback`
+
+Scopes: `users.read`, `tweet.read`, `offline.access`.
+
 ## run
 
 ```bash

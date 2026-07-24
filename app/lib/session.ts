@@ -44,13 +44,24 @@ function verify(token: string): SessionPayload | null {
 
 export async function setSession(payload: SessionPayload) {
   const jar = await cookies();
-  jar.set(COOKIE, sign(payload), {
+  jar.set(COOKIE, sign(payload), sessionCookieOptions());
+}
+
+export function writeSessionCookie(
+  response: { cookies: { set: (name: string, value: string, options: Record<string, unknown>) => void } },
+  payload: SessionPayload,
+) {
+  response.cookies.set(COOKIE, sign(payload), sessionCookieOptions());
+}
+
+function sessionCookieOptions() {
+  return {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "lax" as const,
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: MAX_AGE,
-  });
+  };
 }
 
 export async function clearSessionCookie() {
