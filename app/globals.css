@@ -43,64 +43,118 @@ body {
   color: white;
 }
 
-/* ── Intro full-bleed natural wind flag ── */
+/* ── Intro full-bleed horizontal billow loop ── */
 .bleed-flag {
   background: #120306;
 }
 
 .bleed-flag-base {
   background:
-    radial-gradient(ellipse 62% 55% at 50% 42%, rgba(225, 29, 46, 0.32), transparent 72%),
+    radial-gradient(ellipse 62% 55% at 50% 42%, rgba(225, 29, 46, 0.28), transparent 72%),
     linear-gradient(180deg, #2a080c 0%, #120306 55%, #070405 100%);
 }
 
 .flag-cloth-stage {
-  animation: flag-cloth-drift 11s ease-in-out infinite;
-  transform-origin: 50% 40%;
+  animation: flag-cloth-breathe 8s ease-in-out infinite;
+  transform-origin: 50% 45%;
   will-change: transform;
 }
 
-.flag-cloth-svg {
-  display: block;
+.flag-cloth-sheet {
+  background:
+    radial-gradient(ellipse 70% 60% at 48% 40%, rgba(225, 45, 55, 0.55), transparent 68%),
+    linear-gradient(155deg, #e11d2e 0%, #c41424 28%, #8a101c 55%, #4a0a12 78%, #1a0408 100%);
+}
+
+.flag-billow-track {
+  animation-name: flag-billow-loop;
+  animation-duration: 8s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+  pointer-events: none;
+}
+
+/* One period of soft fold peaks, duplicated across 200% width via the track */
+.flag-billow-wash {
+  background: linear-gradient(
+    90deg,
+    rgba(80, 0, 12, 0) 0%,
+    rgba(40, 0, 8, 0.45) 8%,
+    rgba(255, 220, 200, 0.28) 16%,
+    rgba(20, 0, 6, 0.5) 24%,
+    rgba(255, 230, 210, 0.22) 32%,
+    rgba(40, 0, 8, 0.42) 40%,
+    rgba(255, 215, 195, 0.26) 48%,
+    rgba(20, 0, 6, 0.5) 56%,
+    rgba(255, 230, 210, 0.22) 64%,
+    rgba(40, 0, 8, 0.45) 72%,
+    rgba(255, 220, 200, 0.28) 80%,
+    rgba(20, 0, 6, 0.5) 88%,
+    rgba(80, 0, 12, 0) 96%,
+    rgba(80, 0, 12, 0) 100%
+  );
+  filter: blur(46px);
+  opacity: 0.95;
+  animation-name: flag-wash-lift;
+  animation-duration: 8s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
 }
 
 .flag-wind-sheen {
   pointer-events: none;
   background: linear-gradient(
-    108deg,
-    transparent 18%,
-    rgba(255, 214, 196, 0.05) 40%,
-    rgba(255, 232, 214, 0.12) 50%,
-    rgba(255, 214, 196, 0.05) 60%,
-    transparent 82%
+    95deg,
+    transparent 8%,
+    rgba(255, 214, 196, 0.07) 34%,
+    rgba(255, 236, 220, 0.22) 50%,
+    rgba(255, 214, 196, 0.07) 66%,
+    transparent 92%
   );
-  background-size: 220% 100%;
-  animation: flag-sheen-drift 12s ease-in-out infinite;
+  background-size: 200% 100%;
+  animation-name: flag-sheen-loop;
+  animation-duration: 8s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
   mix-blend-mode: soft-light;
 }
 
-@keyframes flag-cloth-drift {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) rotate(-0.35deg) skewX(-0.2deg);
+@keyframes flag-billow-loop {
+  from {
+    transform: translate3d(0, 0, 0);
   }
-  33% {
-    transform: translate3d(0.5%, -0.35%, 0) rotate(0.4deg) skewX(0.35deg);
-  }
-  66% {
-    transform: translate3d(-0.4%, 0.25%, 0) rotate(-0.3deg) skewX(-0.25deg);
+  to {
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
-@keyframes flag-sheen-drift {
+@keyframes flag-wash-lift {
   0%,
   100% {
-    background-position: 0% 50%;
-    opacity: 0.5;
+    transform: scaleY(0.94) skewX(-1.5deg);
   }
   50% {
+    transform: scaleY(1.07) skewX(1.8deg);
+  }
+}
+
+@keyframes flag-cloth-breathe {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scaleY(1);
+  }
+  50% {
+    transform: translate3d(0.25%, -0.45%, 0) scaleY(1.02);
+  }
+}
+
+@keyframes flag-sheen-loop {
+  from {
     background-position: 100% 50%;
-    opacity: 0.85;
+  }
+  to {
+    background-position: -100% 50%;
   }
 }
 
@@ -293,6 +347,8 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .flag-cloth-stage,
+  .flag-billow-track,
+  .flag-billow-ridge,
   .flag-wind-sheen,
   .swipe-arrow,
   .lamp-glow.lit,
