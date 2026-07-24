@@ -131,6 +131,12 @@ export function LandingPage({ active }: LandingPageProps) {
         <p className="mt-2 text-sm text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
           Fans. Freeholds. One Steward.
         </p>
+        <a
+          href="/pitch"
+          className="mt-5 inline-block font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.22em] uppercase text-[color-mix(in_srgb,var(--vassal-gold)_85%,transparent)] transition hover:text-[var(--vassal-blood)]"
+        >
+          Pitch deck →
+        </a>
       </footer>
     </div>
   );
