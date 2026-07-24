@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { SideDrawer } from "./SideDrawer";
-import { InfoMarquee } from "./InfoMarquee";
+import { InfoCardStack } from "./InfoCardStack";
+import { VassalLogo } from "./VassalLogo";
 
 type LandingPageProps = {
   active: boolean;
@@ -16,7 +17,7 @@ export function LandingPage({ active }: LandingPageProps) {
 
   useEffect(() => {
     if (!active) return;
-    // Hold sealed doors briefly so the closed gate reads, then open
+    // Hold sealed portcullis briefly, then raise it
     const gateTimer = window.setTimeout(() => setGatesOpen(true), 700);
     const lampTimer = window.setTimeout(() => setLampsLit(true), 3200);
     return () => {
@@ -63,7 +64,8 @@ export function LandingPage({ active }: LandingPageProps) {
 
         {/* Hero copy behind the gate — revealed as doors part */}
         <div className="relative z-10 flex min-h-dvh flex-col items-center justify-end px-6 pb-16 pt-28 text-center sm:pb-20">
-          <h1 className="font-[family-name:var(--font-display)] text-[clamp(2.75rem,10vw,6rem)] font-bold tracking-[0.16em] text-[var(--vassal-cream)] drop-shadow-[0_6px_28px_rgba(0,0,0,0.85)]">
+          <VassalLogo size={72} className="mb-4 drop-shadow-[0_8px_24px_rgba(0,0,0,0.65)]" />
+          <h1 className="font-[family-name:var(--font-display)] text-[clamp(1.75rem,5.5vw,2.85rem)] font-semibold tracking-[0.38em] text-[var(--vassal-cream)] drop-shadow-[0_6px_28px_rgba(0,0,0,0.85)]">
             VASSAL
           </h1>
           <p className="mt-4 max-w-lg font-[family-name:var(--font-body)] text-base italic leading-relaxed text-[color-mix(in_srgb,var(--vassal-cream)_82%,transparent)] sm:text-lg">
@@ -78,32 +80,22 @@ export function LandingPage({ active }: LandingPageProps) {
           </a>
         </div>
 
-        {/* Gate assembly — doors sit above hero copy until they open */}
+        {/* Gate assembly — portcullis rises vertically */}
         <div className="pointer-events-none absolute inset-0 z-20 flex items-stretch justify-center">
           <div className="relative h-full w-full max-w-5xl">
-            <div className="absolute inset-x-[5%] top-[5%] bottom-0 border-[12px] border-b-0 border-[#3a2820] opacity-95 [border-radius:999px_999px_0_0/42%_42%_0_0] shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] sm:inset-x-[9%] sm:border-[14px]" />
-            <div className="absolute inset-x-[5%] top-[5%] h-[14%] rounded-t-[999px] bg-gradient-to-b from-[#2a1c16] to-transparent opacity-80 sm:inset-x-[9%]" />
+            <div className="absolute inset-x-[5%] top-[5%] bottom-0 border-[12px] border-b-0 border-[#4a4540] opacity-95 [border-radius:999px_999px_0_0/42%_42%_0_0] shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] sm:inset-x-[9%] sm:border-[14px]" />
+            <div className="absolute inset-x-[5%] top-[5%] h-[14%] rounded-t-[999px] bg-gradient-to-b from-[#3a3530] to-transparent opacity-80 sm:inset-x-[9%]" />
 
             <div className="absolute inset-x-[7%] top-[11%] bottom-0 overflow-hidden sm:inset-x-[11%]">
               <div
-                className="gate-door absolute left-0 top-0 h-full w-1/2 border-r border-black/70"
+                className="portcullis absolute inset-x-0 top-0 h-full"
                 style={{
                   transform: gatesOpen
-                    ? "translate3d(-105%, 0, 0)"
+                    ? "translate3d(0, -108%, 0)"
                     : "translate3d(0, 0, 0)",
                 }}
               >
-                <GateHardware />
-              </div>
-              <div
-                className="gate-door absolute right-0 top-0 h-full w-1/2 border-l border-black/70"
-                style={{
-                  transform: gatesOpen
-                    ? "translate3d(105%, 0, 0)"
-                    : "translate3d(0, 0, 0)",
-                }}
-              >
-                <GateHardware mirror />
+                <Portcullis />
               </div>
             </div>
           </div>
@@ -114,7 +106,7 @@ export function LandingPage({ active }: LandingPageProps) {
         id="realm"
         className="relative overflow-hidden border-t border-[color-mix(in_srgb,var(--vassal-red)_40%,transparent)] bg-[linear-gradient(180deg,#0c0607_0%,#14090b_40%,#070405_100%)]"
       >
-        <InfoMarquee />
+        <InfoCardStack />
       </section>
 
       <footer className="border-t border-[color-mix(in_srgb,var(--vassal-red)_30%,transparent)] px-6 py-10 text-center">
@@ -162,35 +154,85 @@ function Torch({
   );
 }
 
-function GateHardware({ mirror = false }: { mirror?: boolean }) {
+function Portcullis() {
   return (
-    <div
-      className={`absolute inset-0 ${mirror ? "scale-x-[-1]" : ""}`}
-      aria-hidden
-    >
-      {/* Vertical planks highlight */}
-      <div className="absolute inset-y-0 left-0 w-full bg-[repeating-linear-gradient(90deg,#1a0e0a_0px,#3d241c_10px,#241510_20px,#4a2c22_30px,#1a0e0a_40px)] opacity-90" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/30" />
+    <div className="absolute inset-0" aria-hidden>
+      {/* Chains on either side */}
+      <div
+        className="absolute left-[6%] top-[-8%] h-[20%] w-2 rounded-full opacity-90"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(180deg, #c0bbb4 0 8px, #4a4844 8px 12px, #8a8580 12px 16px)",
+        }}
+      />
+      <div
+        className="absolute right-[6%] top-[-8%] h-[20%] w-2 rounded-full opacity-90"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(180deg, #c0bbb4 0 8px, #4a4844 8px 12px, #8a8580 12px 16px)",
+        }}
+      />
 
-      {/* Iron straps */}
-      <div className="absolute inset-x-0 top-[18%] h-4 bg-gradient-to-b from-[#6a5648] via-[#2a2018] to-[#6a5648] shadow-[0_2px_4px_rgba(0,0,0,0.6)]" />
-      <div className="absolute inset-x-0 top-[48%] h-4 bg-gradient-to-b from-[#6a5648] via-[#2a2018] to-[#6a5648] shadow-[0_2px_4px_rgba(0,0,0,0.6)]" />
-      <div className="absolute inset-x-0 top-[78%] h-4 bg-gradient-to-b from-[#6a5648] via-[#2a2018] to-[#6a5648] shadow-[0_2px_4px_rgba(0,0,0,0.6)]" />
+      {/* Diamond lattice */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `
+            repeating-linear-gradient(
+              45deg,
+              transparent 0 16px,
+              #7a7670 16px 19px,
+              transparent 19px 34px
+            ),
+            repeating-linear-gradient(
+              -45deg,
+              transparent 0 16px,
+              #7a7670 16px 19px,
+              transparent 19px 34px
+            )
+          `,
+          filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.75))",
+        }}
+      />
 
-      {/* Rivets */}
-      {[18, 48, 78].map((top) =>
-        [12, 35, 58, 82].map((left) => (
-          <span
-            key={`${top}-${left}`}
-            className="absolute h-2 w-2 rounded-full bg-[#8a7868]"
-            style={{ top: `${top + 1}%`, left: `${left}%` }}
-          />
-        )),
-      )}
+      {/* Vertical iron pickets */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(90deg, transparent 0 20px, #9a9690 20px 25px, #4a4844 25px 26px, transparent 26px 42px)",
+        }}
+      />
 
-      {/* Ring pull */}
-      <div className="absolute left-[22%] top-1/2 h-12 w-12 -translate-y-1/2 rounded-full border-[3px] border-[#8a7868] bg-[#1a100e] shadow-[inset_0_0_8px_rgba(0,0,0,0.8)]" />
-      <div className="absolute left-[28%] top-[58%] h-5 w-1.5 rounded-full bg-[#6a5648]" />
+      {/* Horizontal braces */}
+      <div className="absolute inset-x-0 top-[10%] h-[8px] bg-gradient-to-b from-[#c0bbb4] via-[#4a4844] to-[#c0bbb4] shadow-[0_3px_8px_rgba(0,0,0,0.75)]" />
+      <div className="absolute inset-x-0 top-[32%] h-[8px] bg-gradient-to-b from-[#c0bbb4] via-[#4a4844] to-[#c0bbb4] shadow-[0_3px_8px_rgba(0,0,0,0.75)]" />
+      <div className="absolute inset-x-0 top-[54%] h-[9px] bg-gradient-to-b from-[#c0bbb4] via-[#4a4844] to-[#c0bbb4] shadow-[0_3px_8px_rgba(0,0,0,0.75)]" />
+      <div className="absolute inset-x-0 top-[76%] h-[8px] bg-gradient-to-b from-[#c0bbb4] via-[#4a4844] to-[#c0bbb4] shadow-[0_3px_8px_rgba(0,0,0,0.75)]" />
+
+      {/* Bottom spear tips — classic portcullis edge */}
+      <svg
+        className="absolute inset-x-0 bottom-0 h-12 w-full"
+        viewBox="0 0 400 48"
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <linearGradient id="spearMetal" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#c0bbb4" />
+            <stop offset="100%" stopColor="#4a4844" />
+          </linearGradient>
+        </defs>
+        {Array.from({ length: 16 }, (_, i) => {
+          const x = 12 + i * 24;
+          return (
+            <polygon
+              key={i}
+              points={`${x},0 ${x + 10},0 ${x + 5},48`}
+              fill="url(#spearMetal)"
+            />
+          );
+        })}
+      </svg>
     </div>
   );
 }
