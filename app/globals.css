@@ -43,7 +43,7 @@ body {
   color: white;
 }
 
-/* ── Intro full-bleed natural wind flag ── */
+/* ── Intro full-bleed horizontal billow loop ── */
 .bleed-flag {
   background: #120306;
 }
@@ -55,8 +55,8 @@ body {
 }
 
 .flag-cloth-stage {
-  animation: flag-cloth-drift 11s ease-in-out infinite;
-  transform-origin: 50% 40%;
+  animation: flag-cloth-breathe 9s ease-in-out infinite;
+  transform-origin: 50% 45%;
   will-change: transform;
 }
 
@@ -64,43 +64,105 @@ body {
   display: block;
 }
 
+.flag-billow-track {
+  animation: flag-billow-loop 10s linear infinite;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.flag-billow-ridge {
+  position: absolute;
+  top: -8%;
+  bottom: -8%;
+  width: 42%;
+  border-radius: 48% 52% 50% 50% / 40% 42% 58% 60%;
+  filter: blur(28px);
+  mix-blend-mode: soft-light;
+  opacity: 0.9;
+}
+
+.flag-billow-ridge-a {
+  left: 4%;
+  background:
+    radial-gradient(ellipse 55% 70% at 42% 38%, rgba(255, 220, 205, 0.34), transparent 68%),
+    radial-gradient(ellipse 48% 80% at 62% 62%, rgba(20, 0, 6, 0.38), transparent 72%);
+  animation: flag-ridge-lift 10s ease-in-out infinite;
+}
+
+.flag-billow-ridge-b {
+  left: 34%;
+  width: 38%;
+  background:
+    radial-gradient(ellipse 50% 75% at 48% 45%, rgba(255, 210, 195, 0.22), transparent 70%),
+    radial-gradient(ellipse 55% 70% at 55% 58%, rgba(40, 0, 10, 0.32), transparent 74%);
+  animation: flag-ridge-lift 10s ease-in-out infinite;
+  animation-delay: -3.3s;
+  filter: blur(34px);
+}
+
+.flag-billow-ridge-c {
+  left: 62%;
+  width: 40%;
+  background:
+    radial-gradient(ellipse 58% 68% at 40% 40%, rgba(255, 230, 210, 0.28), transparent 66%),
+    radial-gradient(ellipse 50% 78% at 68% 64%, rgba(12, 0, 4, 0.36), transparent 72%);
+  animation: flag-ridge-lift 10s ease-in-out infinite;
+  animation-delay: -6.6s;
+  filter: blur(30px);
+}
+
 .flag-wind-sheen {
   pointer-events: none;
   background: linear-gradient(
-    108deg,
-    transparent 18%,
-    rgba(255, 214, 196, 0.05) 40%,
-    rgba(255, 232, 214, 0.12) 50%,
-    rgba(255, 214, 196, 0.05) 60%,
-    transparent 82%
+    95deg,
+    transparent 10%,
+    rgba(255, 214, 196, 0.04) 35%,
+    rgba(255, 232, 214, 0.14) 50%,
+    rgba(255, 214, 196, 0.04) 65%,
+    transparent 90%
   );
-  background-size: 220% 100%;
-  animation: flag-sheen-drift 12s ease-in-out infinite;
+  background-size: 200% 100%;
+  animation: flag-sheen-loop 10s linear infinite;
   mix-blend-mode: soft-light;
 }
 
-@keyframes flag-cloth-drift {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) rotate(-0.35deg) skewX(-0.2deg);
+@keyframes flag-billow-loop {
+  from {
+    transform: translate3d(0, 0, 0);
   }
-  33% {
-    transform: translate3d(0.5%, -0.35%, 0) rotate(0.4deg) skewX(0.35deg);
-  }
-  66% {
-    transform: translate3d(-0.4%, 0.25%, 0) rotate(-0.3deg) skewX(-0.25deg);
+  to {
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
-@keyframes flag-sheen-drift {
+@keyframes flag-ridge-lift {
   0%,
   100% {
-    background-position: 0% 50%;
-    opacity: 0.5;
+    transform: translate3d(0, 1.2%, 0) scaleY(0.96) skewX(-1.2deg);
   }
   50% {
+    transform: translate3d(0, -2.4%, 0) scaleY(1.06) skewX(1.6deg);
+  }
+}
+
+@keyframes flag-cloth-breathe {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scaleY(1) rotate(-0.2deg);
+  }
+  50% {
+    transform: translate3d(0.3%, -0.4%, 0) scaleY(1.015) rotate(0.25deg);
+  }
+}
+
+@keyframes flag-sheen-loop {
+  from {
     background-position: 100% 50%;
-    opacity: 0.85;
+    opacity: 0.55;
+  }
+  to {
+    background-position: -100% 50%;
+    opacity: 0.8;
   }
 }
 
@@ -293,6 +355,8 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .flag-cloth-stage,
+  .flag-billow-track,
+  .flag-billow-ridge,
   .flag-wind-sheen,
   .swipe-arrow,
   .lamp-glow.lit,
