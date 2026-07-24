@@ -69,8 +69,8 @@ export function InfoCardStack() {
         <h2 className="font-[family-name:var(--font-display)] text-3xl tracking-[0.12em] text-[var(--vassal-cream)] sm:text-4xl">
           How the Realm Works
         </h2>
-        <p className="mt-4 font-[family-name:var(--font-body)] text-base italic text-[color-mix(in_srgb,var(--vassal-cream)_75%,transparent)]">
-          Swipe the banners — oaths, landlords, Steward, and ranks for every holding.
+        <p className="mt-3 font-[family-name:var(--font-body)] text-base italic text-[color-mix(in_srgb,var(--vassal-cream)_75%,transparent)]">
+          Swipe.
         </p>
       </div>
 

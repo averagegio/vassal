@@ -1,17 +1,16 @@
 # vassal
 
-Your personal AI landlord for fan courts and real freeholds.
+AI landlords for fans and freeholds.
 
-Vassal runs **tenure membership**—petitions, decrees, ranks, and an AI Steward—for creator fan holdings and for small landlords / short-stay hosts.
-
-## holdings
-
-- **Fan Court** — tribute tiers, petition board, audience hours, season campaigns
-- **Estate Holding** — house law, repair petitions, tenant standing, renewal seasons
-- **AI Steward** — shared voice that drafts decrees and keeps the court interactive
-
-## run locally
+## run
 
 ```bash
 npm run dev
 ```
+
+## routes
+
+- `/` — landing
+- `/signup` — create tenure
+- `/login` — return to court
+- `/dashboard` — landlord solar (petitions, tenants, Steward)

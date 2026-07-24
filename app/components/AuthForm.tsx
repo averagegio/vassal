@@ -1,0 +1,227 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, type FormEvent } from "react";
+import { saveSession, type VassalSession } from "../lib/auth";
+import { VassalLogo } from "./VassalLogo";
+
+type AuthMode = "login" | "signup";
+
+type AuthFormProps = {
+  mode: AuthMode;
+};
+
+export function AuthForm({ mode }: AuthFormProps) {
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [holding, setHolding] = useState<"fan" | "estate">("fan");
+  const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
+
+  const isSignup = mode === "signup";
+
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!email.trim() || !password.trim()) {
+      setError("Email and password required.");
+      return;
+    }
+    if (isSignup && !name.trim()) {
+      setError("Name required.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password needs 6+ characters.");
+      return;
+    }
+
+    setPending(true);
+    const existing = typeof window !== "undefined" ? window.localStorage.getItem("vassal.session") : null;
+    let priorHolding: "fan" | "estate" = holding;
+    if (!isSignup && existing) {
+      try {
+        const prior = JSON.parse(existing) as VassalSession;
+        if (prior.email === email.trim().toLowerCase()) priorHolding = prior.holding;
+      } catch {
+        /* ignore */
+      }
+    }
+    const session: VassalSession = {
+      name: name.trim() || email.split("@")[0] || "Landlord",
+      email: email.trim().toLowerCase(),
+      holding: isSignup ? holding : priorHolding,
+      createdAt: new Date().toISOString(),
+    };
+    saveSession(session);
+    router.push("/dashboard");
+  };
+
+  return (
+    <div className="auth-shell relative flex min-h-dvh flex-col items-center justify-center px-6 py-16">
+      <div className="pointer-events-none absolute inset-0 cobblestone opacity-40" aria-hidden />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(176,16,32,0.22),transparent_60%)]" aria-hidden />
+
+      <div className="relative w-full max-w-md">
+        <Link href="/" className="mb-8 flex flex-col items-center text-center">
+          <VassalLogo size={56} />
+          <span className="mt-3 font-[family-name:var(--font-display)] text-lg tracking-[0.32em] text-[var(--vassal-cream)]">
+            VASSAL
+          </span>
+        </Link>
+
+        <div className="auth-panel px-6 py-8 sm:px-8">
+          <h1 className="font-[family-name:var(--font-display)] text-2xl tracking-[0.14em] text-[var(--vassal-cream)]">
+            {isSignup ? "Swear fealty" : "Return"}
+          </h1>
+          <p className="mt-2 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)]">
+            {isSignup ? "Open your holding." : "Enter your court."}
+          </p>
+
+          <form onSubmit={onSubmit} className="mt-8 flex flex-col gap-4">
+            {isSignup && (
+              <Field
+                id="name"
+                label="Name"
+                value={name}
+                onChange={setName}
+                autoComplete="name"
+              />
+            )}
+            <Field
+              id="email"
+              label="Email"
+              type="email"
+              value={email}
+              onChange={setEmail}
+              autoComplete="email"
+            />
+            <Field
+              id="password"
+              label="Password"
+              type="password"
+              value={password}
+              onChange={setPassword}
+              autoComplete={isSignup ? "new-password" : "current-password"}
+            />
+
+            {isSignup && (
+              <fieldset className="mt-1">
+                <legend className="font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.22em] uppercase text-[var(--vassal-gold)]">
+                  Holding type
+                </legend>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <HoldingPick
+                    active={holding === "fan"}
+                    onClick={() => setHolding("fan")}
+                    title="Fan Court"
+                  />
+                  <HoldingPick
+                    active={holding === "estate"}
+                    onClick={() => setHolding("estate")}
+                    title="Estate"
+                  />
+                </div>
+              </fieldset>
+            )}
+
+            {error && (
+              <p
+                role="alert"
+                className="font-[family-name:var(--font-display)] text-xs tracking-[0.08em] text-[var(--vassal-blood)]"
+              >
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={pending}
+              className="mt-2 border border-[color-mix(in_srgb,var(--vassal-gold)_50%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_40%,transparent)] px-5 py-3 font-[family-name:var(--font-display)] text-xs tracking-[0.22em] uppercase text-[var(--vassal-cream)] transition hover:bg-[color-mix(in_srgb,var(--vassal-red)_55%,transparent)] disabled:opacity-60"
+            >
+              {pending ? "Opening…" : isSignup ? "Create tenure" : "Enter court"}
+            </button>
+          </form>
+
+          <p className="mt-6 text-center font-[family-name:var(--font-body)] text-sm text-[color-mix(in_srgb,var(--vassal-cream)_60%,transparent)]">
+            {isSignup ? (
+              <>
+                Already sworn?{" "}
+                <Link href="/login" className="text-[var(--vassal-gold)] underline-offset-4 hover:underline">
+                  Log in
+                </Link>
+              </>
+            ) : (
+              <>
+                New landlord?{" "}
+                <Link href="/signup" className="text-[var(--vassal-gold)] underline-offset-4 hover:underline">
+                  Sign up
+                </Link>
+              </>
+            )}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  id,
+  label,
+  value,
+  onChange,
+  type = "text",
+  autoComplete,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  autoComplete?: string;
+}) {
+  return (
+    <label className="flex flex-col gap-2" htmlFor={id}>
+      <span className="font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.22em] uppercase text-[var(--vassal-gold)]">
+        {label}
+      </span>
+      <input
+        id={id}
+        type={type}
+        value={value}
+        autoComplete={autoComplete}
+        onChange={(e) => onChange(e.target.value)}
+        className="auth-input border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-[color-mix(in_srgb,var(--vassal-black)_70%,transparent)] px-3 py-2.5 font-[family-name:var(--font-body)] text-[var(--vassal-cream)] outline-none transition focus:border-[var(--vassal-blood)]"
+      />
+    </label>
+  );
+}
+
+function HoldingPick({
+  active,
+  onClick,
+  title,
+}: {
+  active: boolean;
+  onClick: () => void;
+  title: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`border px-3 py-3 font-[family-name:var(--font-display)] text-xs tracking-[0.14em] uppercase transition ${
+        active
+          ? "border-[var(--vassal-blood)] bg-[color-mix(in_srgb,var(--vassal-red)_30%,transparent)] text-[var(--vassal-cream)]"
+          : "border-[color-mix(in_srgb,var(--vassal-gold)_28%,transparent)] text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)] hover:border-[var(--vassal-gold)]"
+      }`}
+    >
+      {title}
+    </button>
+  );
+}
