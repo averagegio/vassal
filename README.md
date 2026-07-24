@@ -2,24 +2,25 @@
 
 AI landlords for fans and freeholds.
 
-## setup
+## database (Vercel Neon)
 
-Neon Postgres powers membership auth and the holding dashboard.
+This app expects the **Vercel Neon Postgres integration**. That injects:
+
+- `DATABASE_URL` (pooled)
+- `DATABASE_URL_UNPOOLED`
+- legacy `POSTGRES_*` / `PG*` aliases
+
+No manual Neon connection string is required on Vercel. Schema in `db/schema.sql` is applied on first auth request (including preview branches).
+
+### local
 
 ```bash
-cp .env.example .env.local
+npx vercel link
+npx vercel env pull .env.local
+npm run dev
 ```
 
-Set in `.env.local`:
-
-```env
-DATABASE_URL=postgresql://...@...neon.tech/neondb?sslmode=require
-SESSION_SECRET=long-random-string
-```
-
-Get a Neon URL from [console.neon.tech](https://console.neon.tech) or claim a Launchpad DB at [neon.new](https://neon.new). Schema in `db/schema.sql` applies on first auth.
-
-Also set `DATABASE_URL` and `SESSION_SECRET` in Vercel project env for deploys.
+Optional: set `SESSION_SECRET` in Vercel. If unset, sessions use a secret derived from `DATABASE_URL`.
 
 ## run
 

@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
+import { resolveDatabaseUrl } from "./db";
 
 const COOKIE = "vassal_session";
 const MAX_AGE = 60 * 60 * 24 * 30; // 30 days
@@ -11,10 +12,14 @@ export type SessionPayload = {
   holding: "fan" | "estate";
 };
 
+/** Prefer SESSION_SECRET; otherwise derive a stable secret from the Neon URL. */
 function secret() {
-  const s = process.env.SESSION_SECRET;
-  if (!s) throw new Error("SESSION_SECRET is not set");
-  return s;
+  if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
+  const url = resolveDatabaseUrl();
+  if (!url) {
+    throw new Error("SESSION_SECRET or Neon DATABASE_URL is required");
+  }
+  return createHmac("sha256", "vassal.session.v1").update(url).digest("hex");
 }
 
 function sign(payload: SessionPayload) {

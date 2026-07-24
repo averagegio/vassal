@@ -5,10 +5,38 @@ import { join } from "path";
 let sql: NeonQueryFunction<false, false> | null = null;
 let schemaReady: Promise<void> | null = null;
 
+/**
+ * Resolve the pooled connection string from Vercel Neon / Neon Marketplace
+ * env vars (and legacy Vercel Postgres aliases).
+ */
+export function resolveDatabaseUrl(): string | null {
+  const direct =
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.DATABASE_URL_UNPOOLED ||
+    process.env.POSTGRES_URL_NON_POOLING ||
+    null;
+
+  if (direct) return direct;
+
+  const host = process.env.PGHOST || process.env.POSTGRES_HOST;
+  const user = process.env.PGUSER || process.env.POSTGRES_USER;
+  const password = process.env.PGPASSWORD || process.env.POSTGRES_PASSWORD;
+  const database = process.env.PGDATABASE || process.env.POSTGRES_DATABASE;
+  if (host && user && password && database) {
+    return `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}/${database}?sslmode=require`;
+  }
+
+  return null;
+}
+
 export function getDb() {
-  const url = process.env.DATABASE_URL;
+  const url = resolveDatabaseUrl();
   if (!url) {
-    throw new Error("DATABASE_URL is not set");
+    throw new Error(
+      "No Neon database URL found. Expected DATABASE_URL from the Vercel Neon integration.",
+    );
   }
   if (!sql) {
     sql = neon(url);
