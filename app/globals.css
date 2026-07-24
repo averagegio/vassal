@@ -472,6 +472,58 @@ body {
   );
 }
 
+.pitch-shell {
+  background:
+    radial-gradient(
+      ellipse 80% 50% at 50% -10%,
+      color-mix(in srgb, var(--vassal-red) 22%, transparent),
+      transparent 55%
+    ),
+    linear-gradient(180deg, #100608 0%, var(--vassal-black) 40%, #0a0506 100%);
+}
+
+.pitch-ash {
+  background-image:
+    radial-gradient(
+      circle at 20% 30%,
+      color-mix(in srgb, var(--vassal-gold) 8%, transparent),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      color-mix(in srgb, var(--vassal-red) 12%, transparent),
+      transparent 35%
+    );
+  opacity: 0.9;
+}
+
+.pitch-fade {
+  animation: pitch-fade-up 0.7s ease-out both;
+}
+
+.pitch-delay-1 {
+  animation-delay: 0.1s;
+}
+
+.pitch-delay-2 {
+  animation-delay: 0.2s;
+}
+
+.pitch-delay-3 {
+  animation-delay: 0.35s;
+}
+
+@keyframes pitch-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes steward-breathe {
   0%,
   100% {
@@ -492,7 +544,8 @@ body {
   .torch-flame.lit,
   .intro-exit,
   .tenure-rung,
-  .steward-glow {
+  .steward-glow,
+  .pitch-fade {
     animation: none !important;
   }
 

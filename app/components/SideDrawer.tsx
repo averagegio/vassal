@@ -15,6 +15,7 @@ const LINKS = [
   { href: "#fan-holding", label: "Fan Court" },
   { href: "#estate-holding", label: "Estate" },
   { href: "#steward", label: "Steward" },
+  { href: "/pitch", label: "Pitch" },
   { href: "/login", label: "Log in" },
   { href: "/signup", label: "Sign up" },
 ];
