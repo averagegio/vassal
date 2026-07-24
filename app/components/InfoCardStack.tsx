@@ -1,34 +1,9 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { REALM_OVERVIEW_CARDS } from "../lib/features";
 
-const CARDS = [
-  {
-    id: "oath",
-    title: "Take the Oath",
-    body: "Follow creators you champion. Every like, share, and watch builds your standing in their court.",
-  },
-  {
-    id: "ranks",
-    title: "Rise Through Ranks",
-    body: "Climb from Serf to Knight to Lord as your loyalty score grows across campaigns and seasons.",
-  },
-  {
-    id: "rewards",
-    title: "Claim Rewards",
-    body: "Unlock exclusive drops, early access, and creator-granted privileges reserved for true vassals.",
-  },
-  {
-    id: "banners",
-    title: "Fly Your Banner",
-    body: "Show off badges on your profile so the realm sees who earned their place at the high table.",
-  },
-  {
-    id: "campaigns",
-    title: "Season Campaigns",
-    body: "Join time-bound quests. Complete challenges, defend your streak, and earn seasonal titles.",
-  },
-];
+const CARDS = REALM_OVERVIEW_CARDS;
 
 const SWIPE_THRESHOLD = 64;
 
@@ -95,7 +70,7 @@ export function InfoCardStack() {
           How the Realm Works
         </h2>
         <p className="mt-4 font-[family-name:var(--font-body)] text-base italic text-[color-mix(in_srgb,var(--vassal-cream)_75%,transparent)]">
-          Swipe the banners — loyalty, ranks, and rewards for your court.
+          Swipe the banners — oaths, landlords, Steward, and ranks for every holding.
         </p>
       </div>
 

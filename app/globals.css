@@ -345,6 +345,102 @@ body {
   transform: translateY(-12px);
 }
 
+/* ── Dual holdings / paths ── */
+.realm-ash {
+  background:
+    radial-gradient(ellipse 50% 40% at 50% 0%, rgba(176, 16, 32, 0.12), transparent 70%),
+    linear-gradient(180deg, #0a0506 0%, #070405 100%);
+}
+
+.path-door {
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 28%, transparent);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--vassal-crimson) 22%, transparent),
+    color-mix(in srgb, var(--vassal-black) 90%, transparent)
+  );
+  box-shadow: inset 0 1px 0 rgba(243, 230, 216, 0.04);
+}
+
+.path-door:hover,
+.path-door-active {
+  border-color: color-mix(in srgb, var(--vassal-blood) 65%, transparent);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--vassal-red) 28%, transparent),
+    color-mix(in srgb, var(--vassal-ink) 92%, transparent)
+  );
+}
+
+.path-door-active {
+  box-shadow:
+    inset 0 1px 0 rgba(243, 230, 216, 0.06),
+    0 0 0 1px color-mix(in srgb, var(--vassal-gold) 20%, transparent);
+}
+
+.feature-mark {
+  border-top: 1px solid color-mix(in srgb, var(--vassal-gold) 18%, transparent);
+  padding-top: 1.25rem;
+}
+
+.petition-row {
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 28%, transparent);
+  background: linear-gradient(
+    160deg,
+    rgba(40, 12, 16, 0.92),
+    rgba(12, 6, 8, 0.96)
+  );
+  padding: 1.1rem 1.15rem 1.15rem;
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.petition-row:hover {
+  border-color: color-mix(in srgb, var(--vassal-blood) 45%, transparent);
+}
+
+.tenure-rung {
+  animation: tenure-rise 0.7s ease both;
+}
+
+.tenure-rung:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.tenure-rung:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.tenure-rung:nth-child(3) {
+  animation-delay: 0.25s;
+}
+
+@keyframes tenure-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.steward-glow {
+  background:
+    radial-gradient(ellipse 55% 45% at 50% 30%, rgba(176, 16, 32, 0.22), transparent 65%),
+    radial-gradient(ellipse 40% 30% at 50% 80%, rgba(201, 162, 39, 0.06), transparent 60%),
+    linear-gradient(180deg, #0c0607 0%, #070405 100%);
+  animation: steward-breathe 9s ease-in-out infinite;
+}
+
+@keyframes steward-breathe {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .flag-cloth-stage,
   .flag-billow-track,
@@ -353,7 +449,9 @@ body {
   .swipe-arrow,
   .lamp-glow.lit,
   .torch-flame.lit,
-  .intro-exit {
+  .intro-exit,
+  .tenure-rung,
+  .steward-glow {
     animation: none !important;
   }
 

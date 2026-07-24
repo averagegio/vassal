@@ -4,6 +4,10 @@ import { useEffect, useState } from "react";
 import { SideDrawer } from "./SideDrawer";
 import { InfoCardStack } from "./InfoCardStack";
 import { VassalLogo } from "./VassalLogo";
+import { RealmPaths } from "./RealmPaths";
+import { FanHoldingSection } from "./FanHoldingSection";
+import { RealEstateSection } from "./RealEstateSection";
+import { StewardSection } from "./StewardSection";
 
 type LandingPageProps = {
   active: boolean;
@@ -14,6 +18,7 @@ export function LandingPage({ active }: LandingPageProps) {
   const [lampsLit, setLampsLit] = useState(false);
   const [showNav, setShowNav] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [activePath, setActivePath] = useState<"fan" | "estate">("fan");
 
   useEffect(() => {
     if (!active) return;
@@ -69,11 +74,11 @@ export function LandingPage({ active }: LandingPageProps) {
             VASSAL
           </h1>
           <p className="mt-4 max-w-lg font-[family-name:var(--font-body)] text-base italic leading-relaxed text-[color-mix(in_srgb,var(--vassal-cream)_82%,transparent)] sm:text-lg">
-            The social loyalty stronghold where creators crown their most
-            faithful followers.
+            AI landlords for fan courts and real freeholds—tenure, petitions,
+            and a Steward between every audience.
           </p>
           <a
-            href="#realm"
+            href="#paths"
             className="mt-8 inline-flex items-center gap-2 border border-[color-mix(in_srgb,var(--vassal-gold)_50%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_35%,transparent)] px-7 py-3 font-[family-name:var(--font-display)] text-xs tracking-[0.22em] uppercase text-[var(--vassal-cream)] transition hover:bg-[color-mix(in_srgb,var(--vassal-red)_55%,transparent)]"
           >
             Claim your fealty
@@ -109,12 +114,17 @@ export function LandingPage({ active }: LandingPageProps) {
         <InfoCardStack />
       </section>
 
+      <RealmPaths activePath={activePath} onSelect={setActivePath} />
+      <FanHoldingSection />
+      <RealEstateSection />
+      <StewardSection />
+
       <footer className="border-t border-[color-mix(in_srgb,var(--vassal-red)_30%,transparent)] px-6 py-10 text-center">
         <p className="font-[family-name:var(--font-display)] text-sm tracking-[0.3em] uppercase text-[var(--vassal-blood)]">
           Vassal
         </p>
         <p className="mt-2 text-sm text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
-          Social media loyalty, forged for the faithful.
+          Loyalty for fan courts and freeholds—forged for the faithful.
         </p>
       </footer>
     </div>
