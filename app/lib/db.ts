@@ -61,7 +61,13 @@ export async function ensureSchema() {
         )
         .filter((s) => s.length > 0);
       for (const statement of statements) {
-        await db.query(statement);
+        try {
+          await db.query(statement);
+        } catch (err) {
+          // Ignore duplicate unique constraint on re-run of ADD COLUMN UNIQUE
+          const message = err instanceof Error ? err.message : String(err);
+          if (!/already exists|duplicate/i.test(message)) throw err;
+        }
       }
     })();
   }
@@ -72,9 +78,13 @@ export type DbUser = {
   id: string;
   name: string;
   email: string;
-  password_hash: string;
+  password_hash: string | null;
   holding: "fan" | "estate";
   decree: string;
+  x_id: string | null;
+  x_username: string | null;
+  avatar_url: string | null;
+  header_url: string | null;
   created_at: string;
 };
 

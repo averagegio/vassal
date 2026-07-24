@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { DashboardShell, type DashboardData } from "../components/DashboardShell";
 import { getSession } from "../lib/session";
 import {
+  findUserById,
   getDashboardStats,
   getUserDecree,
   listPetitions,
@@ -19,6 +20,9 @@ export default async function DashboardPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
+  const user = await findUserById(session.userId);
+  if (!user) redirect("/login");
+
   let initialData: DashboardData | null = null;
   let loadError: string | undefined;
 
@@ -32,10 +36,13 @@ export default async function DashboardPage() {
 
     initialData = {
       user: {
-        id: session.userId,
-        name: session.name,
-        email: session.email,
-        holding: session.holding,
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        holding: user.holding,
+        xUsername: user.x_username,
+        avatarUrl: user.avatar_url,
+        headerUrl: user.header_url,
       },
       stats,
       decree,

@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     }
 
     const user = await findUserByEmail(email);
-    if (!user || !(await verifyPassword(password, user.password_hash))) {
+    if (!user?.password_hash || !(await verifyPassword(password, user.password_hash))) {
       return NextResponse.json({ error: "Unknown oath." }, { status: 401 });
     }
 
