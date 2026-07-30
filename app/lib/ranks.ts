@@ -51,3 +51,16 @@ export function slugifyCourt(input: string) {
     .replace(/^-+|-+$/g, "")
     .slice(0, 32);
 }
+
+/** Only allow http(s) navigations for user-supplied links. */
+export function safeHttpUrl(input: string): string | null {
+  const raw = input.trim();
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}

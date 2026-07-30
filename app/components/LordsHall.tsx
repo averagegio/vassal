@@ -94,6 +94,16 @@ export function LordsHall({ initial }: LordsHallProps) {
     widget?: HallWidget;
     tagline?: string;
   }) => {
+    // Optimistic update so theme/widget feel instant (and work in preview).
+    setData((prev) => ({
+      ...prev,
+      court: {
+        ...prev.court,
+        theme: patch.theme ?? prev.court.theme,
+        widget: patch.widget ?? prev.court.widget,
+        tagline: patch.tagline ?? prev.court.tagline,
+      },
+    }));
     setBusy(true);
     setMessage(null);
     try {
@@ -102,12 +112,16 @@ export function LordsHall({ initial }: LordsHallProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(patch),
       });
+      if (res.status === 401 || res.status === 404) {
+        setMessage("Preview / local theme applied. Sign in as Lord to save.");
+        return;
+      }
       const json = (await res.json()) as { error?: string };
       if (!res.ok) {
         setMessage(json.error || "Could not update hall.");
+        await refresh();
         return;
       }
-      await refresh();
       setMessage("Hall updated.");
     } finally {
       setBusy(false);
@@ -142,6 +156,10 @@ export function LordsHall({ initial }: LordsHallProps) {
   };
 
   const addSong = async () => {
+    if (!songTitle.trim()) {
+      setMessage("Song title required.");
+      return;
+    }
     setBusy(true);
     setMessage(null);
     try {
@@ -155,21 +173,33 @@ export function LordsHall({ initial }: LordsHallProps) {
           url: songUrl,
         }),
       });
-      const json = (await res.json()) as { error?: string };
-      if (!res.ok) {
+      const json = (await res.json()) as { error?: string; track?: HallData["playlist"][number] };
+      if (res.status === 401) {
+        setMessage("Sign in to add tracks.");
+        return;
+      }
+      if (!res.ok || !json.track) {
         setMessage(json.error || "Could not add song.");
         return;
       }
+      setData((prev) => ({
+        ...prev,
+        playlist: [{ ...json.track!, by: json.track!.by }, ...prev.playlist],
+      }));
       setSongTitle("");
       setSongArtist("");
       setSongUrl("");
-      await refresh();
+      setMessage("Track added to the booth.");
     } finally {
       setBusy(false);
     }
   };
 
   const addPin = async () => {
+    if (!pinImage.trim()) {
+      setMessage("Image URL required.");
+      return;
+    }
     setBusy(true);
     setMessage(null);
     try {
@@ -183,15 +213,23 @@ export function LordsHall({ initial }: LordsHallProps) {
           sourceUrl: pinSource,
         }),
       });
-      const json = (await res.json()) as { error?: string };
-      if (!res.ok) {
+      const json = (await res.json()) as { error?: string; pin?: HallData["moodboard"][number] };
+      if (res.status === 401) {
+        setMessage("Sign in to pin.");
+        return;
+      }
+      if (!res.ok || !json.pin) {
         setMessage(json.error || "Could not pin.");
         return;
       }
+      setData((prev) => ({
+        ...prev,
+        moodboard: [json.pin!, ...prev.moodboard],
+      }));
       setPinTitle("");
       setPinImage("");
       setPinSource("");
-      await refresh();
+      setMessage("Pinned to the board.");
     } finally {
       setBusy(false);
     }

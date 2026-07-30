@@ -58,6 +58,16 @@ export async function POST(request: Request) {
       if (!slug) {
         return NextResponse.json({ error: "Court slug required." }, { status: 400 });
       }
+      const user = await findUserById(session.userId);
+      if (!user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      if (user.holding !== "fan") {
+        return NextResponse.json(
+          { error: "Fan Court holding required to swear fealty." },
+          { status: 400 },
+        );
+      }
       try {
         const { court, member } = await joinCourt({
           userId: session.userId,

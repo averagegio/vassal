@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { joinCourt } from "../../../../lib/courts";
 import { writeSessionCookie } from "../../../../lib/session";
 import { upsertUserFromX } from "../../../../lib/users";
 import {
@@ -18,6 +19,7 @@ function clearXCookies(res: NextResponse) {
     "vassal_x_holding",
     "vassal_x_mode",
     "vassal_x_redirect",
+    "vassal_x_court",
   ];
   for (const name of names) {
     res.cookies.set(name, "", { path: "/", maxAge: 0 });
@@ -55,8 +57,11 @@ export async function GET(request: Request) {
     const jar = await cookies();
     const savedState = jar.get("vassal_x_state")?.value;
     const verifier = jar.get("vassal_x_verifier")?.value;
+    const courtSlug = jar.get("vassal_x_court")?.value || "";
     const holding =
-      jar.get("vassal_x_holding")?.value === "estate" ? "estate" : "fan";
+      courtSlug || jar.get("vassal_x_holding")?.value !== "estate"
+        ? "fan"
+        : "estate";
     const redirectUri =
       jar.get("vassal_x_redirect")?.value || getXCallbackUrl(request);
 
@@ -83,7 +88,22 @@ export async function GET(request: Request) {
       holding,
     });
 
-    const res = NextResponse.redirect(new URL("/dashboard", appUrl));
+    let nextPath = "/dashboard";
+    if (courtSlug) {
+      try {
+        const { court } = await joinCourt({
+          userId: user.id,
+          slug: courtSlug,
+        });
+        nextPath = `/hall/${encodeURIComponent(court.slug)}`;
+      } catch {
+        nextPath = `/dashboard?courtError=${encodeURIComponent(
+          "Signed in, but could not swear fealty to that court.",
+        )}`;
+      }
+    }
+
+    const res = NextResponse.redirect(new URL(nextPath, appUrl));
     writeSessionCookie(res, {
       userId: user.id,
       email: user.email,
@@ -98,7 +118,6 @@ export async function GET(request: Request) {
       err instanceof Error && err.message
         ? err.message
         : "Could not finish X sign-in.";
-    // Keep messages short for the login banner.
     const message =
       detail.length > 120 ? "Could not finish X sign-in." : detail;
     return fail(message);

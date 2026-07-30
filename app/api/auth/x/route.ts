@@ -33,6 +33,11 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const holding = url.searchParams.get("holding") === "estate" ? "estate" : "fan";
   const mode = url.searchParams.get("mode") === "login" ? "login" : "signup";
+  const court = (url.searchParams.get("court") || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^@/, "")
+    .slice(0, 32);
 
   const { verifier, challenge, state } = createPkce();
   const redirectUri = getXCallbackUrl(request);
@@ -51,9 +56,12 @@ export async function GET(request: Request) {
   const res = NextResponse.redirect(authorizeUrl);
   res.cookies.set("vassal_x_verifier", verifier, cookieOpts);
   res.cookies.set("vassal_x_state", state, cookieOpts);
-  res.cookies.set("vassal_x_holding", holding, cookieOpts);
+  res.cookies.set("vassal_x_holding", court ? "fan" : holding, cookieOpts);
   res.cookies.set("vassal_x_mode", mode, cookieOpts);
   // Exact redirect_uri used at authorize time — must match on token exchange.
   res.cookies.set("vassal_x_redirect", redirectUri, cookieOpts);
+  if (court) {
+    res.cookies.set("vassal_x_court", court, cookieOpts);
+  }
   return res;
 }

@@ -3,6 +3,7 @@ import {
   type CourtRank,
   type HallTheme,
   type HallWidget,
+  safeHttpUrl,
   slugifyCourt,
 } from "./ranks";
 
@@ -159,21 +160,18 @@ export async function joinCourt(input: {
   if (!court) throw new Error("Court not found.");
 
   if (court.lord_user_id === input.userId) {
-    const member = await getMembershipForUser(input.userId);
-    if (member) {
-      return {
-        court,
-        member: {
-          id: member.id,
-          court_id: member.court_id,
-          user_id: member.user_id,
-          rank: member.rank,
-          standing: member.standing,
-          role: member.role,
-          joined_at: member.joined_at,
-        },
-      };
-    }
+    const db = getDb();
+    const rows = await db`
+      INSERT INTO court_members (court_id, user_id, rank, standing, role)
+      VALUES (${court.id}, ${input.userId}, 'duke', 100, 'lord')
+      ON CONFLICT (user_id) DO UPDATE
+        SET court_id = EXCLUDED.court_id,
+            rank = 'duke',
+            role = 'lord',
+            standing = GREATEST(court_members.standing, 100)
+      RETURNING id, court_id, user_id, rank, standing, role, joined_at
+    `;
+    return { court, member: rows[0] as DbCourtMember };
   }
 
   const existing = await getMembershipForUser(input.userId);
@@ -282,6 +280,12 @@ export async function addPlaylistTrack(input: {
   await ensureSchema();
   const title = input.title.trim().slice(0, 120);
   if (!title) throw new Error("Song title required.");
+  const url = input.url?.trim()
+    ? safeHttpUrl(input.url)
+    : "";
+  if (input.url?.trim() && !url) {
+    throw new Error("Track link must be http(s).");
+  }
   const db = getDb();
   const rows = await db`
     INSERT INTO hall_playlist_tracks (court_id, user_id, title, artist, url)
@@ -290,7 +294,7 @@ export async function addPlaylistTrack(input: {
       ${input.userId},
       ${title},
       ${(input.artist ?? "").trim().slice(0, 80)},
-      ${(input.url ?? "").trim().slice(0, 500)}
+      ${url || ""}
     )
     RETURNING id, court_id, user_id, title, artist, url, created_at
   `;
@@ -319,9 +323,15 @@ export async function addMoodPin(input: {
   sourceUrl?: string;
 }): Promise<DbMoodPin> {
   await ensureSchema();
-  const imageUrl = input.imageUrl.trim().slice(0, 500);
-  if (!imageUrl || !/^https?:\/\//i.test(imageUrl)) {
+  const imageUrl = safeHttpUrl(input.imageUrl);
+  if (!imageUrl) {
     throw new Error("Image URL required (https link from Pinterest or elsewhere).");
+  }
+  const sourceUrl = input.sourceUrl?.trim()
+    ? safeHttpUrl(input.sourceUrl)
+    : "";
+  if (input.sourceUrl?.trim() && !sourceUrl) {
+    throw new Error("Source link must be http(s).");
   }
   const db = getDb();
   const rows = await db`
@@ -331,7 +341,7 @@ export async function addMoodPin(input: {
       ${input.userId},
       ${(input.title ?? "").trim().slice(0, 80)},
       ${imageUrl},
-      ${(input.sourceUrl ?? "").trim().slice(0, 500)}
+      ${sourceUrl || ""}
     )
     RETURNING id, court_id, user_id, title, image_url, source_url, created_at
   `;

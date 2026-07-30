@@ -86,10 +86,16 @@ function AuthFormInner({ mode }: AuthFormProps) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "join", slug: courtSlug }),
         });
-        if (join.ok) {
-          next = `/hall/${encodeURIComponent(courtSlug)}`;
+        const joinJson = (await join.json().catch(() => null)) as {
+          error?: string;
+          court?: { slug: string };
+        } | null;
+        if (join.ok && joinJson?.court?.slug) {
+          next = `/hall/${encodeURIComponent(joinJson.court.slug)}`;
         } else {
-          next = "/dashboard";
+          next = `/dashboard?courtError=${encodeURIComponent(
+            joinJson?.error || "Could not swear fealty.",
+          )}`;
         }
       }
       router.push(next);
@@ -102,7 +108,7 @@ function AuthFormInner({ mode }: AuthFormProps) {
 
   const xHref = `/api/auth/x?mode=${isSignup ? "signup" : "login"}&holding=${
     courtSlug ? "fan" : holding
-  }`;
+  }${courtSlug ? `&court=${encodeURIComponent(courtSlug)}` : ""}`;
 
   return (
     <AuthShell>
