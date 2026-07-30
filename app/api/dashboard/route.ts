@@ -3,6 +3,7 @@ import { getSession } from "../../lib/session";
 import {
   getDashboardStats,
   getUserDecree,
+  listDecrees,
   listPetitions,
   listTenants,
 } from "../../lib/users";
@@ -14,11 +15,12 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const [stats, petitions, tenants, decree] = await Promise.all([
+    const [stats, petitions, tenants, decree, decrees] = await Promise.all([
       getDashboardStats(session.userId),
       listPetitions(session.userId),
       listTenants(session.userId),
       getUserDecree(session.userId),
+      listDecrees(session.userId),
     ]);
 
     return NextResponse.json({
@@ -30,6 +32,11 @@ export async function GET() {
       },
       stats,
       decree,
+      decrees: decrees.map((d) => ({
+        id: d.id,
+        body: d.body,
+        createdAt: d.created_at,
+      })),
       petitions: petitions.map((p) => ({
         id: p.id,
         from: p.from_name,

@@ -43,6 +43,15 @@ CREATE TABLE IF NOT EXISTS tenants (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS decrees (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  body TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE INDEX IF NOT EXISTS petitions_user_id_idx ON petitions(user_id);
 CREATE INDEX IF NOT EXISTS tenants_user_id_idx ON tenants(user_id);
+CREATE INDEX IF NOT EXISTS decrees_user_id_idx ON decrees(user_id);
+CREATE INDEX IF NOT EXISTS decrees_created_at_idx ON decrees(user_id, created_at DESC);
 CREATE UNIQUE INDEX IF NOT EXISTS users_x_id_idx ON users(x_id) WHERE x_id IS NOT NULL;

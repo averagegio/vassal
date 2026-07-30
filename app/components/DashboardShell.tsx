@@ -7,6 +7,12 @@ import type { Petition } from "../lib/features";
 import { PetitionCourt } from "./PetitionCourt";
 import { VassalLogo } from "./VassalLogo";
 
+export type DecreePost = {
+  id: string;
+  body: string;
+  createdAt: string;
+};
+
 export type DashboardData = {
   user: {
     id: string;
@@ -23,6 +29,7 @@ export type DashboardData = {
     standingAvg: number;
   };
   decree: string;
+  decrees: DecreePost[];
   petitions: Petition[];
   tenants: Array<{
     id: string;
@@ -51,8 +58,12 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
   const [data, setData] = useState<DashboardData | null>(initialData);
   const [tab, setTab] = useState<TabId>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [decreeDraft, setDecreeDraft] = useState(initialData?.decree ?? "");
+  const [decreeDraft, setDecreeDraft] = useState("");
   const [savingDecree, setSavingDecree] = useState(false);
+  const [decreeMessage, setDecreeMessage] = useState<{
+    type: "ok" | "err";
+    text: string;
+  } | null>(null);
   const [uploading, setUploading] = useState<"avatar" | "header" | null>(null);
   const avatarInput = useRef<HTMLInputElement>(null);
   const headerInput = useRef<HTMLInputElement>(null);
@@ -64,16 +75,41 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
   };
 
   const saveDecree = async () => {
+    if (!data) return;
+    const text = decreeDraft.trim();
+    if (!text) {
+      setDecreeMessage({ type: "err", text: "Write a decree before posting." });
+      return;
+    }
     setSavingDecree(true);
+    setDecreeMessage(null);
     try {
       const res = await fetch("/api/decree", {
-        method: "PATCH",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ decree: decreeDraft }),
+        body: JSON.stringify({ decree: text }),
       });
-      if (res.ok && data) {
-        setData({ ...data, decree: decreeDraft.trim() });
+      const json = (await res.json().catch(() => null)) as {
+        error?: string;
+        decree?: string;
+        post?: DecreePost;
+      } | null;
+      if (!res.ok || !json?.post) {
+        setDecreeMessage({
+          type: "err",
+          text: json?.error || "Could not post decree.",
+        });
+        return;
       }
+      setData({
+        ...data,
+        decree: json.decree ?? text,
+        decrees: [json.post, ...(data.decrees ?? [])],
+      });
+      setDecreeDraft("");
+      setDecreeMessage({ type: "ok", text: "Posted to the decree feed." });
+    } catch {
+      setDecreeMessage({ type: "err", text: "Could not reach the realm." });
     } finally {
       setSavingDecree(false);
     }
@@ -341,20 +377,41 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
                   <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
                     Today&apos;s decree
                   </h2>
+                  <p className="mt-2 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
+                    Seal words for the court feed.
+                  </p>
                   <textarea
                     value={decreeDraft}
-                    onChange={(e) => setDecreeDraft(e.target.value)}
+                    onChange={(e) => {
+                      setDecreeDraft(e.target.value);
+                      if (decreeMessage) setDecreeMessage(null);
+                    }}
                     rows={3}
-                    className="mt-3 w-full resize-none border border-[color-mix(in_srgb,var(--vassal-gold)_25%,transparent)] bg-transparent px-3 py-2 font-[family-name:var(--font-body)] text-base italic leading-relaxed text-[var(--vassal-cream)] outline-none focus:border-[var(--vassal-blood)]"
+                    placeholder="Speak to your holding…"
+                    className="auth-input mt-3 w-full resize-none border border-[color-mix(in_srgb,var(--vassal-gold)_25%,transparent)] bg-transparent px-3 py-2 font-[family-name:var(--font-body)] text-base italic leading-relaxed text-[var(--vassal-cream)] outline-none focus:border-[var(--vassal-blood)]"
                   />
-                  <button
-                    type="button"
-                    onClick={() => void saveDecree()}
-                    disabled={savingDecree}
-                    className="mt-4 border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] px-4 py-2 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.18em] uppercase transition hover:border-[var(--vassal-blood)] disabled:opacity-60"
-                  >
-                    {savingDecree ? "Saving…" : "Save decree"}
-                  </button>
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => void saveDecree()}
+                      disabled={savingDecree}
+                      className="border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_28%,transparent)] px-4 py-2 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.18em] uppercase transition hover:border-[var(--vassal-blood)] disabled:opacity-60"
+                    >
+                      {savingDecree ? "Posting…" : "Post decree"}
+                    </button>
+                    {decreeMessage ? (
+                      <p
+                        role="status"
+                        className={`font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.12em] ${
+                          decreeMessage.type === "ok"
+                            ? "text-[var(--vassal-gold)]"
+                            : "text-[var(--vassal-blood)]"
+                        }`}
+                      >
+                        {decreeMessage.text}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
                 <div className="dash-panel p-5">
                   <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
@@ -370,8 +427,47 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
                     />
                     <Pulse text={`${data.stats.tenants} tenants under your banner`} />
                     <Pulse text={`Court standing averages ${data.stats.standingAvg}`} />
+                    <Pulse
+                      text={
+                        (data.decrees?.length ?? 0) > 0
+                          ? `${data.decrees.length} decrees on the feed`
+                          : "No decrees posted yet"
+                      }
+                    />
                   </ul>
                 </div>
+              </section>
+
+              <section className="dash-panel mt-8 p-5">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
+                    Decree feed
+                  </h2>
+                  <p className="font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_60%,transparent)]">
+                    Latest seals for your court.
+                  </p>
+                </div>
+                {(data.decrees?.length ?? 0) === 0 ? (
+                  <p className="mt-5 font-[family-name:var(--font-body)] text-base italic text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
+                    No decrees yet. Post above to open the feed.
+                  </p>
+                ) : (
+                  <ol className="mt-5 flex flex-col gap-4">
+                    {data.decrees.map((post) => (
+                      <li key={post.id} className="decree-post">
+                        <time
+                          dateTime={post.createdAt}
+                          className="font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.2em] uppercase text-[var(--vassal-gold)]"
+                        >
+                          {formatDecreeTime(post.createdAt)}
+                        </time>
+                        <p className="mt-2 font-[family-name:var(--font-body)] text-base italic leading-relaxed text-[color-mix(in_srgb,var(--vassal-cream)_88%,transparent)]">
+                          {post.body}
+                        </p>
+                      </li>
+                    ))}
+                  </ol>
+                )}
               </section>
             </>
           )}
@@ -519,4 +615,15 @@ function Empty({ label }: { label: string }) {
       {label}
     </p>
   );
+}
+
+function formatDecreeTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Sealed";
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
 }

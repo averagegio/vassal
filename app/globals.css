@@ -477,6 +477,16 @@ body {
   }
 }
 
+.decree-post {
+  border-top: 1px solid color-mix(in srgb, var(--vassal-gold) 18%, transparent);
+  padding-top: 1rem;
+}
+
+.decree-post:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
 .profile-banner {
   background: linear-gradient(
     180deg,

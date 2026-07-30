@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import {
   ensureSchema,
   getDb,
+  type DbDecree,
   type DbPetition,
   type DbTenant,
   type DbUser,
@@ -218,10 +219,52 @@ export async function getUserDecree(userId: string) {
   return String(rows[0]?.decree ?? "");
 }
 
-export async function updateDecree(userId: string, decree: string) {
+export async function listDecrees(userId: string): Promise<DbDecree[]> {
   await ensureSchema();
   const db = getDb();
-  await db`
-    UPDATE users SET decree = ${decree.trim()} WHERE id = ${userId}
+  const rows = await db`
+    SELECT id, user_id, body, created_at
+    FROM decrees
+    WHERE user_id = ${userId}
+    ORDER BY created_at DESC
   `;
+  const decrees = rows as DbDecree[];
+
+  // Backfill: if the user only has the legacy single decree field, seed the feed once.
+  if (decrees.length === 0) {
+    const legacy = await getUserDecree(userId);
+    if (legacy.trim()) {
+      const inserted = await db`
+        INSERT INTO decrees (user_id, body)
+        VALUES (${userId}, ${legacy.trim()})
+        RETURNING id, user_id, body, created_at
+      `;
+      return inserted as DbDecree[];
+    }
+  }
+
+  return decrees;
+}
+
+/** Post a decree to the feed and keep users.decree as the latest. */
+export async function publishDecree(
+  userId: string,
+  body: string,
+): Promise<DbDecree> {
+  await ensureSchema();
+  const db = getDb();
+  const text = body.trim();
+  const rows = await db`
+    INSERT INTO decrees (user_id, body)
+    VALUES (${userId}, ${text})
+    RETURNING id, user_id, body, created_at
+  `;
+  await db`
+    UPDATE users SET decree = ${text} WHERE id = ${userId}
+  `;
+  return rows[0] as DbDecree;
+}
+
+export async function updateDecree(userId: string, decree: string) {
+  return publishDecree(userId, decree);
 }

@@ -107,3 +107,10 @@ export type DbTenant = {
   status: string;
   created_at: string;
 };
+
+export type DbDecree = {
+  id: string;
+  user_id: string;
+  body: string;
+  created_at: string;
+};
