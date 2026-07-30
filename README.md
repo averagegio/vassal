@@ -52,3 +52,7 @@ npm run dev
 - `/signup` join
 - `/login` enter
 - `/dashboard` holding
+
+## product docs
+
+- [`docs/prd-fealty-court.md`](docs/prd-fealty-court.md) — Fealty Court PRD (seasons, ranks, spoils, ToS)
