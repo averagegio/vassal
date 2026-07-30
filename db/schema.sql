@@ -50,8 +50,57 @@ CREATE TABLE IF NOT EXISTS decrees (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS courts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  lord_user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  slug TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  theme TEXT NOT NULL DEFAULT 'crimson'
+    CHECK (theme IN ('crimson', 'midnight', 'goldleaf', 'neon', 'atelier')),
+  widget TEXT NOT NULL DEFAULT 'none'
+    CHECK (widget IN ('none', 'playlist', 'moodboard')),
+  tagline TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS court_members (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  court_id UUID NOT NULL REFERENCES courts(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  rank TEXT NOT NULL DEFAULT 'serf'
+    CHECK (rank IN ('serf', 'baron', 'count', 'viscount', 'duke')),
+  standing INTEGER NOT NULL DEFAULT 0,
+  role TEXT NOT NULL DEFAULT 'vassal'
+    CHECK (role IN ('lord', 'vassal')),
+  joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS hall_playlist_tracks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  court_id UUID NOT NULL REFERENCES courts(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  artist TEXT NOT NULL DEFAULT '',
+  url TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS hall_mood_pins (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  court_id UUID NOT NULL REFERENCES courts(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL DEFAULT '',
+  image_url TEXT NOT NULL,
+  source_url TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE INDEX IF NOT EXISTS petitions_user_id_idx ON petitions(user_id);
 CREATE INDEX IF NOT EXISTS tenants_user_id_idx ON tenants(user_id);
 CREATE INDEX IF NOT EXISTS decrees_user_id_idx ON decrees(user_id);
 CREATE INDEX IF NOT EXISTS decrees_created_at_idx ON decrees(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS courts_slug_idx ON courts(slug);
+CREATE INDEX IF NOT EXISTS court_members_court_id_idx ON court_members(court_id);
+CREATE INDEX IF NOT EXISTS hall_playlist_court_id_idx ON hall_playlist_tracks(court_id);
+CREATE INDEX IF NOT EXISTS hall_mood_court_id_idx ON hall_mood_pins(court_id);
 CREATE UNIQUE INDEX IF NOT EXISTS users_x_id_idx ON users(x_id) WHERE x_id IS NOT NULL;

@@ -49,6 +49,7 @@ npm run dev
 ## routes
 
 - `/` landing
-- `/signup` join
+- `/signup` join (`?court=slug` swears into a hall after auth)
 - `/login` enter
-- `/dashboard` holding
+- `/dashboard` holding + Court tab
+- `/hall/[slug]` Lord's Hall (leaderboard, themes, playlist / mood board)

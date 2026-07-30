@@ -32,10 +32,13 @@ function AuthShell({ children }: { children?: ReactNode }) {
 function AuthFormInner({ mode }: AuthFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const courtSlug = searchParams.get("court") || "";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [holding, setHolding] = useState<"fan" | "estate">("fan");
+  const [holding, setHolding] = useState<"fan" | "estate">(
+    searchParams.get("holding") === "estate" && !courtSlug ? "estate" : "fan",
+  );
   const [error, setError] = useState(searchParams.get("error") || "");
   const [pending, setPending] = useState(false);
 
@@ -75,7 +78,21 @@ function AuthFormInner({ mode }: AuthFormProps) {
         setPending(false);
         return;
       }
-      router.push("/dashboard");
+
+      let next = "/dashboard";
+      if (courtSlug) {
+        const join = await fetch("/api/court", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "join", slug: courtSlug }),
+        });
+        if (join.ok) {
+          next = `/hall/${encodeURIComponent(courtSlug)}`;
+        } else {
+          next = "/dashboard";
+        }
+      }
+      router.push(next);
       router.refresh();
     } catch {
       setError("Could not reach the realm.");
@@ -83,7 +100,9 @@ function AuthFormInner({ mode }: AuthFormProps) {
     }
   };
 
-  const xHref = `/api/auth/x?mode=${isSignup ? "signup" : "login"}&holding=${holding}`;
+  const xHref = `/api/auth/x?mode=${isSignup ? "signup" : "login"}&holding=${
+    courtSlug ? "fan" : holding
+  }`;
 
   return (
     <AuthShell>
@@ -99,10 +118,14 @@ function AuthFormInner({ mode }: AuthFormProps) {
           {isSignup ? "Join" : "Enter"}
         </h1>
         <p className="mt-2 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)]">
-          {isSignup ? "Open your holding." : "Welcome back."}
+          {courtSlug
+            ? `Swear into @${courtSlug.replace(/^@/, "")}'s court.`
+            : isSignup
+              ? "Open your holding."
+              : "Welcome back."}
         </p>
 
-        {isSignup && (
+        {isSignup && !courtSlug && (
           <fieldset className="mt-6">
             <legend className="font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.22em] uppercase text-[var(--vassal-gold)]">
               Holding

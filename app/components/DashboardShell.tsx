@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState, type ReactNode } from "react";
 import type { Petition } from "../lib/features";
+import type { CourtRank } from "../lib/ranks";
+import { CourtPanel, type CourtMembershipSummary } from "./CourtPanel";
 import { PetitionCourt } from "./PetitionCourt";
 import { VassalLogo } from "./VassalLogo";
 
@@ -38,6 +40,7 @@ export type DashboardData = {
     standing: number;
     status: string;
   }>;
+  court: CourtMembershipSummary | null;
 };
 
 type DashboardShellProps = {
@@ -45,10 +48,11 @@ type DashboardShellProps = {
   loadError?: string;
 };
 
-type TabId = "overview" | "petitions" | "tenants";
+type TabId = "overview" | "court" | "petitions" | "tenants";
 
 const TABS: Array<{ id: TabId; label: string }> = [
   { id: "overview", label: "Overview" },
+  { id: "court", label: "Court" },
   { id: "petitions", label: "Petitions" },
   { id: "tenants", label: "Tenants" },
 ];
@@ -56,7 +60,9 @@ const TABS: Array<{ id: TabId; label: string }> = [
 export function DashboardShell({ initialData, loadError }: DashboardShellProps) {
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(initialData);
-  const [tab, setTab] = useState<TabId>("overview");
+  const [tab, setTab] = useState<TabId>(
+    initialData?.user.holding === "fan" && !initialData.court ? "court" : "overview",
+  );
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [decreeDraft, setDecreeDraft] = useState("");
   const [savingDecree, setSavingDecree] = useState(false);
@@ -369,6 +375,44 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
 
           {tab === "overview" && (
             <>
+              {data.court ? (
+                <section className="mb-6">
+                  <Link
+                    href={`/hall/${data.court.slug}`}
+                    className="dash-panel flex items-center justify-between gap-3 px-4 py-4 transition hover:border-[color-mix(in_srgb,var(--vassal-blood)_45%,transparent)]"
+                  >
+                    <div>
+                      <p className="font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.2em] uppercase text-[var(--vassal-gold)]">
+                        Lord&apos;s Hall
+                      </p>
+                      <p className="mt-1 font-[family-name:var(--font-display)] text-lg tracking-[0.06em]">
+                        {data.court.name}
+                      </p>
+                      <p className="mt-1 text-xs tracking-[0.12em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
+                        {(data.court.rank as string) || "serf"} · enter retinue
+                      </p>
+                    </div>
+                    <span className="font-[family-name:var(--font-display)] text-xs tracking-[0.18em] uppercase text-[var(--vassal-blood)]">
+                      Open →
+                    </span>
+                  </Link>
+                </section>
+              ) : data.user.holding === "fan" ? (
+                <section className="mb-6">
+                  <button
+                    type="button"
+                    onClick={() => setTab("court")}
+                    className="dash-panel w-full px-4 py-4 text-left"
+                  >
+                    <p className="font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.2em] uppercase text-[var(--vassal-gold)]">
+                      Fealty
+                    </p>
+                    <p className="mt-1 font-[family-name:var(--font-display)] text-lg tracking-[0.06em]">
+                      Join or open a court
+                    </p>
+                  </button>
+                </section>
+              ) : null}
               <section className="mt-8 grid gap-4 sm:grid-cols-3">
                 <Stat label="Tenants" value={String(data.stats.tenants)} />
                 <Stat label="Open petitions" value={String(data.stats.openPetitions)} />
@@ -473,6 +517,26 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
                 )}
               </section>
             </>
+          )}
+
+          {tab === "court" && (
+            <section className="mt-8">
+              <CourtPanel
+                holding={data.user.holding}
+                membership={data.court}
+                onMembership={(court) =>
+                  setData({
+                    ...data,
+                    court: court
+                      ? {
+                          ...court,
+                          rank: (court.rank as CourtRank) || "serf",
+                        }
+                      : null,
+                  })
+                }
+              />
+            </section>
           )}
 
           {tab === "petitions" && (

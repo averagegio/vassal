@@ -487,6 +487,84 @@ body {
   padding-top: 0;
 }
 
+/* ── Lord's Hall ── */
+.hall-shell {
+  background:
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(176, 16, 32, 0.18), transparent 60%),
+    var(--vassal-black);
+}
+
+.hall-theme-midnight {
+  background:
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(40, 70, 140, 0.22), transparent 60%),
+    #05060a;
+}
+
+.hall-theme-goldleaf {
+  background:
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(201, 162, 39, 0.18), transparent 60%),
+    #0a0804;
+}
+
+.hall-theme-neon {
+  background:
+    radial-gradient(ellipse 70% 45% at 50% 0%, rgba(225, 29, 46, 0.28), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 80% 20%, rgba(80, 20, 120, 0.25), transparent 50%),
+    #070405;
+}
+
+.hall-theme-atelier {
+  background:
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(243, 230, 216, 0.08), transparent 60%),
+    #0c0908;
+}
+
+.hall-hero {
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 28%, transparent);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--vassal-crimson) 24%, transparent),
+    color-mix(in srgb, var(--vassal-black) 92%, transparent)
+  );
+}
+
+.hall-rank-row {
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--vassal-cream) 8%, transparent);
+}
+
+.hall-rank-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.hall-rank-lord {
+  background: color-mix(in srgb, var(--vassal-red) 12%, transparent);
+  margin: 0 -0.5rem;
+  padding: 0.65rem 0.5rem;
+  border-bottom-color: transparent;
+}
+
+.hall-track {
+  border-top: 1px solid color-mix(in srgb, var(--vassal-gold) 16%, transparent);
+  padding-top: 0.75rem;
+}
+
+.hall-track:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.hall-pin {
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 22%, transparent);
+  background: rgba(12, 6, 8, 0.9);
+  transition: border-color 0.2s ease;
+}
+
+.hall-pin:hover {
+  border-color: color-mix(in srgb, var(--vassal-blood) 50%, transparent);
+}
+
 .profile-banner {
   background: linear-gradient(
     180deg,

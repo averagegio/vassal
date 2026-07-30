@@ -9,6 +9,8 @@ import {
   listPetitions,
   listTenants,
 } from "../lib/users";
+import { getMembershipForUser } from "../lib/courts";
+import type { CourtRank } from "../lib/ranks";
 
 export const metadata = {
   title: "Dashboard — Vassal",
@@ -28,13 +30,15 @@ export default async function DashboardPage() {
   let loadError: string | undefined;
 
   try {
-    const [stats, petitions, tenants, decree, decrees] = await Promise.all([
-      getDashboardStats(session.userId),
-      listPetitions(session.userId),
-      listTenants(session.userId),
-      getUserDecree(session.userId),
-      listDecrees(session.userId),
-    ]);
+    const [stats, petitions, tenants, decree, decrees, membership] =
+      await Promise.all([
+        getDashboardStats(session.userId),
+        listPetitions(session.userId),
+        listTenants(session.userId),
+        getUserDecree(session.userId),
+        listDecrees(session.userId),
+        getMembershipForUser(session.userId),
+      ]);
 
     initialData = {
       user: {
@@ -67,6 +71,15 @@ export default async function DashboardPage() {
         standing: t.standing,
         status: t.status,
       })),
+      court: membership
+        ? {
+            slug: membership.court_slug,
+            name: membership.court_name,
+            rank: membership.rank as CourtRank,
+            standing: membership.standing,
+            role: membership.role,
+          }
+        : null,
     };
   } catch (err) {
     console.error("dashboard page", err);
