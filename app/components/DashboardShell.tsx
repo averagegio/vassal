@@ -38,10 +38,19 @@ type DashboardShellProps = {
   loadError?: string;
 };
 
+type TabId = "overview" | "petitions" | "tenants";
+
+const TABS: Array<{ id: TabId; label: string }> = [
+  { id: "overview", label: "Overview" },
+  { id: "petitions", label: "Petitions" },
+  { id: "tenants", label: "Tenants" },
+];
+
 export function DashboardShell({ initialData, loadError }: DashboardShellProps) {
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(initialData);
-  const [tab, setTab] = useState<"overview" | "petitions" | "tenants">("overview");
+  const [tab, setTab] = useState<TabId>("overview");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [decreeDraft, setDecreeDraft] = useState(initialData?.decree ?? "");
   const [savingDecree, setSavingDecree] = useState(false);
   const [uploading, setUploading] = useState<"avatar" | "header" | null>(null);
@@ -120,251 +129,334 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
 
   const isFan = data.user.holding !== "estate";
 
+  const selectTab = (id: TabId) => {
+    setTab(id);
+    setSidebarOpen(false);
+  };
+
   return (
-    <div className="min-h-dvh bg-[var(--vassal-black)] text-[var(--vassal-cream)]">
-      <header className="sticky top-0 z-40 border-b border-[color-mix(in_srgb,var(--vassal-red)_40%,transparent)] bg-[color-mix(in_srgb,var(--vassal-black)_92%,transparent)] backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <Link href="/" className="flex items-center gap-3">
+    <div className="min-h-dvh bg-[var(--vassal-black)] text-[var(--vassal-cream)] lg:flex">
+      {/* Mobile top bar */}
+      <header className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-[color-mix(in_srgb,var(--vassal-red)_40%,transparent)] bg-[color-mix(in_srgb,var(--vassal-black)_92%,transparent)] px-4 py-3 backdrop-blur-md lg:hidden">
+        <button
+          type="button"
+          aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+          aria-expanded={sidebarOpen}
+          onClick={() => setSidebarOpen((o) => !o)}
+          className="flex h-10 w-10 items-center justify-center border border-[color-mix(in_srgb,var(--vassal-gold)_35%,transparent)]"
+        >
+          <span className="sr-only">Menu</span>
+          <span aria-hidden className="flex flex-col gap-1.5">
+            <span className="block h-0.5 w-4 bg-[var(--vassal-cream)]" />
+            <span className="block h-0.5 w-4 bg-[var(--vassal-cream)]" />
+            <span className="block h-0.5 w-4 bg-[var(--vassal-cream)]" />
+          </span>
+        </button>
+        <Link href="/" className="flex items-center gap-2">
+          <VassalLogo size={32} />
+          <span className="font-[family-name:var(--font-display)] text-sm tracking-[0.28em]">
+            VASSAL
+          </span>
+        </Link>
+        <UserAvatar
+          name={data.user.name}
+          avatarUrl={data.user.avatarUrl}
+          size="sm"
+        />
+      </header>
+
+      {/* Backdrop for mobile drawer */}
+      <div
+        className={`fixed inset-0 z-40 bg-black/60 transition-opacity duration-300 lg:hidden ${
+          sidebarOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+        onClick={() => setSidebarOpen(false)}
+        aria-hidden={!sidebarOpen}
+      />
+
+      {/* Sidebar */}
+      <aside
+        className={`dash-sidebar fixed inset-y-0 left-0 z-50 flex w-[min(86vw,17.5rem)] flex-col transition-transform duration-300 ease-out lg:static lg:z-auto lg:w-60 lg:translate-x-0 lg:border-r lg:border-[color-mix(in_srgb,var(--vassal-red)_35%,transparent)] ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center gap-3 px-5 py-5">
+          <Link href="/" className="flex items-center gap-3" onClick={() => setSidebarOpen(false)}>
             <VassalLogo size={36} />
             <span className="font-[family-name:var(--font-display)] text-sm tracking-[0.28em]">
               VASSAL
             </span>
           </Link>
-          <div className="flex items-center gap-3 sm:gap-5">
-            {data.user.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={data.user.avatarUrl}
-                alt=""
-                className="hidden h-8 w-8 rounded-full object-cover sm:block"
-              />
-            ) : null}
-            <p className="hidden font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.18em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)] sm:block">
+        </div>
+
+        <div className="mx-5 h-px bg-[color-mix(in_srgb,var(--vassal-red)_40%,transparent)]" />
+
+        <div className="flex items-center gap-3 px-5 py-5">
+          <UserAvatar
+            name={data.user.name}
+            avatarUrl={data.user.avatarUrl}
+            size="md"
+          />
+          <div className="min-w-0">
+            <p className="truncate font-[family-name:var(--font-display)] text-sm tracking-[0.08em] text-[var(--vassal-cream)]">
               {data.user.name}
             </p>
-            <button
-              type="button"
-              onClick={() => void logout()}
-              className="border border-[color-mix(in_srgb,var(--vassal-gold)_35%,transparent)] px-3 py-1.5 font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.18em] uppercase transition hover:border-[var(--vassal-blood)]"
-            >
-              Leave
-            </button>
+            <p className="mt-0.5 font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.18em] uppercase text-[var(--vassal-gold)]">
+              {isFan ? "Fan Court" : "Estate"}
+            </p>
+            {data.user.xUsername ? (
+              <p className="mt-1 truncate font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.08em] text-[color-mix(in_srgb,var(--vassal-cream)_50%,transparent)]">
+                @{data.user.xUsername}
+              </p>
+            ) : null}
           </div>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-        <section className="profile-banner relative overflow-hidden border border-[color-mix(in_srgb,var(--vassal-gold)_24%,transparent)]">
-          <div
-            className="relative h-36 bg-[linear-gradient(120deg,#2a0a10,#120608_55%,#1a0c08)] sm:h-44"
-            style={
-              data.user.headerUrl
-                ? {
-                    backgroundImage: `linear-gradient(180deg,rgba(7,4,5,0.15),rgba(7,4,5,0.55)), url(${data.user.headerUrl})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  }
-                : undefined
-            }
-          >
-            <input
-              ref={headerInput}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) =>
-                void onPickImage("header", e.target.files?.[0] ?? null)
-              }
-            />
+        <nav className="mt-2 flex flex-1 flex-col gap-1 px-3" aria-label="Dashboard">
+          {TABS.map((item) => (
             <button
+              key={item.id}
               type="button"
-              onClick={() => headerInput.current?.click()}
-              disabled={uploading === "header"}
-              className="absolute right-3 top-3 border border-[color-mix(in_srgb,var(--vassal-cream)_40%,transparent)] bg-[color-mix(in_srgb,var(--vassal-black)_55%,transparent)] px-3 py-1.5 font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.16em] uppercase backdrop-blur-sm transition hover:border-[var(--vassal-gold)] disabled:opacity-60"
-            >
-              {uploading === "header" ? "Uploading…" : "Upload header"}
-            </button>
-          </div>
-
-          <div className="relative px-5 pb-5 pt-0 sm:px-6">
-            <div className="-mt-10 flex flex-col gap-4 sm:-mt-12 sm:flex-row sm:items-end sm:justify-between">
-              <div className="flex items-end gap-4">
-                <div className="relative">
-                  <div className="h-20 w-20 overflow-hidden rounded-full border-2 border-[var(--vassal-black)] bg-[var(--vassal-stone)] sm:h-24 sm:w-24">
-                    {data.user.avatarUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={data.user.avatarUrl}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center font-[family-name:var(--font-display)] text-xl text-[var(--vassal-gold)]">
-                        {data.user.name.slice(0, 1).toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                  <input
-                    ref={avatarInput}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) =>
-                      void onPickImage("avatar", e.target.files?.[0] ?? null)
-                    }
-                  />
-                  <button
-                    type="button"
-                    onClick={() => avatarInput.current?.click()}
-                    disabled={uploading === "avatar"}
-                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] bg-[var(--vassal-black)] px-2 py-0.5 font-[family-name:var(--font-display)] text-[0.55rem] tracking-[0.14em] uppercase transition hover:border-[var(--vassal-blood)] disabled:opacity-60"
-                  >
-                    {uploading === "avatar" ? "…" : "Photo"}
-                  </button>
-                </div>
-                <div className="pb-1">
-                  <p className="font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.28em] uppercase text-[var(--vassal-gold)]">
-                    {isFan ? "Fan Court" : "Estate"}
-                  </p>
-                  <h1 className="mt-1 font-[family-name:var(--font-display)] text-2xl tracking-[0.08em] sm:text-3xl">
-                    {data.user.name}
-                  </h1>
-                  {data.user.xUsername ? (
-                    <p className="mt-1 font-[family-name:var(--font-display)] text-xs tracking-[0.12em] text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
-                      @{data.user.xUsername}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <nav className="mt-8 flex gap-2" aria-label="Dashboard">
-          {(
-            [
-              ["overview", "Overview"],
-              ["petitions", "Petitions"],
-              ["tenants", "Tenants"],
-            ] as const
-          ).map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setTab(id)}
-              className={`px-3 py-2 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.16em] uppercase transition ${
-                tab === id
-                  ? "border-b-2 border-[var(--vassal-blood)] text-[var(--vassal-cream)]"
-                  : "text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)] hover:text-[var(--vassal-cream)]"
+              onClick={() => selectTab(item.id)}
+              className={`px-3 py-2.5 text-left font-[family-name:var(--font-display)] text-[0.7rem] tracking-[0.16em] uppercase transition ${
+                tab === item.id
+                  ? "border-l-2 border-[var(--vassal-blood)] bg-[color-mix(in_srgb,var(--vassal-red)_18%,transparent)] text-[var(--vassal-cream)]"
+                  : "border-l-2 border-transparent text-[color-mix(in_srgb,var(--vassal-cream)_60%,transparent)] hover:text-[var(--vassal-cream)]"
               }`}
             >
-              {label}
+              {item.label}
             </button>
           ))}
         </nav>
 
-        {tab === "overview" && (
-          <>
-            <section className="mt-8 grid gap-4 sm:grid-cols-3">
-              <Stat label="Tenants" value={String(data.stats.tenants)} />
-              <Stat label="Open petitions" value={String(data.stats.openPetitions)} />
-              <Stat label="Standing" value={String(data.stats.standingAvg)} />
-            </section>
+        <div className="mt-auto border-t border-[color-mix(in_srgb,var(--vassal-red)_30%,transparent)] px-5 py-5">
+          <button
+            type="button"
+            onClick={() => void logout()}
+            className="w-full border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] px-3 py-2.5 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.2em] uppercase transition hover:border-[var(--vassal-blood)] hover:bg-[color-mix(in_srgb,var(--vassal-red)_20%,transparent)]"
+          >
+            Log out
+          </button>
+        </div>
+      </aside>
 
-            <section className="mt-8 grid gap-6 lg:grid-cols-2">
-              <div className="dash-panel p-5">
-                <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
-                  Today&apos;s decree
-                </h2>
-                <textarea
-                  value={decreeDraft}
-                  onChange={(e) => setDecreeDraft(e.target.value)}
-                  rows={3}
-                  className="mt-3 w-full resize-none border border-[color-mix(in_srgb,var(--vassal-gold)_25%,transparent)] bg-transparent px-3 py-2 font-[family-name:var(--font-body)] text-base italic leading-relaxed text-[var(--vassal-cream)] outline-none focus:border-[var(--vassal-blood)]"
-                />
-                <button
-                  type="button"
-                  onClick={() => void saveDecree()}
-                  disabled={savingDecree}
-                  className="mt-4 border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] px-4 py-2 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.18em] uppercase transition hover:border-[var(--vassal-blood)] disabled:opacity-60"
-                >
-                  {savingDecree ? "Saving…" : "Save decree"}
-                </button>
-              </div>
-              <div className="dash-panel p-5">
-                <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
-                  Steward
-                </h2>
-                <ul className="mt-4 space-y-3">
-                  <Pulse
-                    text={
-                      data.stats.openPetitions > 0
-                        ? `${data.stats.openPetitions} petitions await your seal`
-                        : "No open petitions"
+      <main className="min-w-0 flex-1 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <div className="mx-auto max-w-5xl">
+          <section className="profile-banner relative overflow-hidden border border-[color-mix(in_srgb,var(--vassal-gold)_24%,transparent)]">
+            <div
+              className="relative h-36 bg-[linear-gradient(120deg,#2a0a10,#120608_55%,#1a0c08)] sm:h-44"
+              style={
+                data.user.headerUrl
+                  ? {
+                      backgroundImage: `linear-gradient(180deg,rgba(7,4,5,0.15),rgba(7,4,5,0.55)), url(${data.user.headerUrl})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
                     }
-                  />
-                  <Pulse text={`${data.stats.tenants} tenants under your banner`} />
-                  <Pulse text={`Court standing averages ${data.stats.standingAvg}`} />
-                </ul>
-              </div>
-            </section>
-          </>
-        )}
-
-        {tab === "petitions" && (
-          <section className="mt-8">
-            {data.petitions.length === 0 ? (
-              <Empty label="No petitions yet." />
-            ) : (
-              <PetitionCourt
-                title="Petition board"
-                subtitle="Grant, defer, or deny."
-                seed={data.petitions}
-                grantLabel="Grant"
-                persist
+                  : undefined
+              }
+            >
+              <input
+                ref={headerInput}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) =>
+                  void onPickImage("header", e.target.files?.[0] ?? null)
+                }
               />
-            )}
-          </section>
-        )}
+              <button
+                type="button"
+                onClick={() => headerInput.current?.click()}
+                disabled={uploading === "header"}
+                className="absolute right-3 top-3 border border-[color-mix(in_srgb,var(--vassal-cream)_40%,transparent)] bg-[color-mix(in_srgb,var(--vassal-black)_55%,transparent)] px-3 py-1.5 font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.16em] uppercase backdrop-blur-sm transition hover:border-[var(--vassal-gold)] disabled:opacity-60"
+              >
+                {uploading === "header" ? "Uploading…" : "Upload header"}
+              </button>
+            </div>
 
-        {tab === "tenants" && (
-          <section className="mt-8">
-            {data.tenants.length === 0 ? (
-              <Empty label="No tenants yet." />
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[520px] border-collapse text-left">
-                  <thead>
-                    <tr className="border-b border-[color-mix(in_srgb,var(--vassal-gold)_25%,transparent)]">
-                      {["Name", "Rank", "Standing", "Status"].map((h) => (
-                        <th
-                          key={h}
-                          className="px-3 py-3 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.18em] uppercase text-[var(--vassal-gold)]"
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.tenants.map((row) => (
-                      <tr
-                        key={row.id}
-                        className="border-b border-[color-mix(in_srgb,var(--vassal-cream)_8%,transparent)]"
-                      >
-                        <Td>{row.name}</Td>
-                        <Td>{row.rank}</Td>
-                        <Td>{row.standing}</Td>
-                        <Td>{row.status}</Td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            <div className="relative px-5 pb-5 pt-0 sm:px-6">
+              <div className="-mt-10 flex flex-col gap-4 sm:-mt-12 sm:flex-row sm:items-end sm:justify-between">
+                <div className="flex items-end gap-4">
+                  <div className="relative">
+                    <div className="h-20 w-20 overflow-hidden rounded-full border-2 border-[var(--vassal-black)] bg-[var(--vassal-stone)] sm:h-24 sm:w-24">
+                      {data.user.avatarUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={data.user.avatarUrl}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center font-[family-name:var(--font-display)] text-xl text-[var(--vassal-gold)]">
+                          {data.user.name.slice(0, 1).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      ref={avatarInput}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) =>
+                        void onPickImage("avatar", e.target.files?.[0] ?? null)
+                      }
+                    />
+                    <button
+                      type="button"
+                      onClick={() => avatarInput.current?.click()}
+                      disabled={uploading === "avatar"}
+                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] bg-[var(--vassal-black)] px-2 py-0.5 font-[family-name:var(--font-display)] text-[0.55rem] tracking-[0.14em] uppercase transition hover:border-[var(--vassal-blood)] disabled:opacity-60"
+                    >
+                      {uploading === "avatar" ? "…" : "Photo"}
+                    </button>
+                  </div>
+                  <div className="pb-1">
+                    <p className="font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.28em] uppercase text-[var(--vassal-gold)]">
+                      {isFan ? "Fan Court" : "Estate"}
+                    </p>
+                    <h1 className="mt-1 font-[family-name:var(--font-display)] text-2xl tracking-[0.08em] sm:text-3xl">
+                      {data.user.name}
+                    </h1>
+                    {data.user.xUsername ? (
+                      <p className="mt-1 font-[family-name:var(--font-display)] text-xs tracking-[0.12em] text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
+                        @{data.user.xUsername}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
               </div>
-            )}
+            </div>
           </section>
-        )}
+
+          {tab === "overview" && (
+            <>
+              <section className="mt-8 grid gap-4 sm:grid-cols-3">
+                <Stat label="Tenants" value={String(data.stats.tenants)} />
+                <Stat label="Open petitions" value={String(data.stats.openPetitions)} />
+                <Stat label="Standing" value={String(data.stats.standingAvg)} />
+              </section>
+
+              <section className="mt-8 grid gap-6 lg:grid-cols-2">
+                <div className="dash-panel p-5">
+                  <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
+                    Today&apos;s decree
+                  </h2>
+                  <textarea
+                    value={decreeDraft}
+                    onChange={(e) => setDecreeDraft(e.target.value)}
+                    rows={3}
+                    className="mt-3 w-full resize-none border border-[color-mix(in_srgb,var(--vassal-gold)_25%,transparent)] bg-transparent px-3 py-2 font-[family-name:var(--font-body)] text-base italic leading-relaxed text-[var(--vassal-cream)] outline-none focus:border-[var(--vassal-blood)]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void saveDecree()}
+                    disabled={savingDecree}
+                    className="mt-4 border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] px-4 py-2 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.18em] uppercase transition hover:border-[var(--vassal-blood)] disabled:opacity-60"
+                  >
+                    {savingDecree ? "Saving…" : "Save decree"}
+                  </button>
+                </div>
+                <div className="dash-panel p-5">
+                  <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
+                    Steward
+                  </h2>
+                  <ul className="mt-4 space-y-3">
+                    <Pulse
+                      text={
+                        data.stats.openPetitions > 0
+                          ? `${data.stats.openPetitions} petitions await your seal`
+                          : "No open petitions"
+                      }
+                    />
+                    <Pulse text={`${data.stats.tenants} tenants under your banner`} />
+                    <Pulse text={`Court standing averages ${data.stats.standingAvg}`} />
+                  </ul>
+                </div>
+              </section>
+            </>
+          )}
+
+          {tab === "petitions" && (
+            <section className="mt-8">
+              {data.petitions.length === 0 ? (
+                <Empty label="No petitions yet." />
+              ) : (
+                <PetitionCourt
+                  title="Petition board"
+                  subtitle="Grant, defer, or deny."
+                  seed={data.petitions}
+                  grantLabel="Grant"
+                  persist
+                />
+              )}
+            </section>
+          )}
+
+          {tab === "tenants" && (
+            <section className="mt-8">
+              {data.tenants.length === 0 ? (
+                <Empty label="No tenants yet." />
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[520px] border-collapse text-left">
+                    <thead>
+                      <tr className="border-b border-[color-mix(in_srgb,var(--vassal-gold)_25%,transparent)]">
+                        {["Name", "Rank", "Standing", "Status"].map((h) => (
+                          <th
+                            key={h}
+                            className="px-3 py-3 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.18em] uppercase text-[var(--vassal-gold)]"
+                          >
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.tenants.map((row) => (
+                        <tr
+                          key={row.id}
+                          className="border-b border-[color-mix(in_srgb,var(--vassal-cream)_8%,transparent)]"
+                        >
+                          <Td>{row.name}</Td>
+                          <Td>{row.rank}</Td>
+                          <Td>{row.standing}</Td>
+                          <Td>{row.status}</Td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </section>
+          )}
+        </div>
       </main>
+    </div>
+  );
+}
+
+function UserAvatar({
+  name,
+  avatarUrl,
+  size,
+}: {
+  name: string;
+  avatarUrl: string | null;
+  size: "sm" | "md";
+}) {
+  const dim = size === "sm" ? "h-8 w-8 text-xs" : "h-11 w-11 text-sm";
+  return (
+    <div
+      className={`shrink-0 overflow-hidden rounded-full border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] bg-[var(--vassal-stone)] ${dim}`}
+    >
+      {avatarUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center font-[family-name:var(--font-display)] text-[var(--vassal-gold)]">
+          {name.slice(0, 1).toUpperCase()}
+        </div>
+      )}
     </div>
   );
 }

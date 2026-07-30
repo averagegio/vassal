@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { writeSessionCookie } from "../../../../lib/session";
 import { upsertUserFromX } from "../../../../lib/users";
@@ -10,12 +11,28 @@ import {
   getXClientSecret,
 } from "../../../../lib/x-oauth";
 
+function clearXCookies(res: NextResponse) {
+  const names = [
+    "vassal_x_verifier",
+    "vassal_x_state",
+    "vassal_x_holding",
+    "vassal_x_mode",
+    "vassal_x_redirect",
+  ];
+  for (const name of names) {
+    res.cookies.set(name, "", { path: "/", maxAge: 0 });
+  }
+}
+
 export async function GET(request: Request) {
   const appUrl = getAppUrl(request);
-  const fail = (message: string) =>
-    NextResponse.redirect(
+  const fail = (message: string) => {
+    const res = NextResponse.redirect(
       new URL(`/login?error=${encodeURIComponent(message)}`, appUrl),
     );
+    clearXCookies(res);
+    return res;
+  };
 
   try {
     const clientId = getXClientId();
@@ -35,31 +52,24 @@ export async function GET(request: Request) {
       return fail("Missing X authorization code.");
     }
 
-    const cookieHeader = request.headers.get("cookie") || "";
-    const jar = Object.fromEntries(
-      cookieHeader
-        .split(";")
-        .map((part) => part.trim())
-        .filter(Boolean)
-        .map((part) => {
-          const i = part.indexOf("=");
-          return [part.slice(0, i), decodeURIComponent(part.slice(i + 1))];
-        }),
-    );
+    const jar = await cookies();
+    const savedState = jar.get("vassal_x_state")?.value;
+    const verifier = jar.get("vassal_x_verifier")?.value;
+    const holding =
+      jar.get("vassal_x_holding")?.value === "estate" ? "estate" : "fan";
+    const redirectUri =
+      jar.get("vassal_x_redirect")?.value || getXCallbackUrl(request);
 
-    if (!jar.vassal_x_state || jar.vassal_x_state !== state) {
-      return fail("Invalid X sign-in state.");
+    if (!savedState || savedState !== state) {
+      return fail("Invalid X sign-in state. Try again.");
     }
-    const verifier = jar.vassal_x_verifier;
     if (!verifier) {
       return fail("X sign-in expired. Try again.");
     }
 
-    const holding = jar.vassal_x_holding === "estate" ? "estate" : "fan";
-
     const accessToken = await exchangeXCode({
       code,
-      redirectUri: getXCallbackUrl(request),
+      redirectUri,
       verifier,
       clientId,
       clientSecret,
@@ -80,13 +90,17 @@ export async function GET(request: Request) {
       name: user.name,
       holding: user.holding,
     });
-    res.cookies.delete("vassal_x_verifier");
-    res.cookies.delete("vassal_x_state");
-    res.cookies.delete("vassal_x_holding");
-    res.cookies.delete("vassal_x_mode");
+    clearXCookies(res);
     return res;
   } catch (err) {
     console.error("x callback", err);
-    return fail("Could not finish X sign-in.");
+    const detail =
+      err instanceof Error && err.message
+        ? err.message
+        : "Could not finish X sign-in.";
+    // Keep messages short for the login banner.
+    const message =
+      detail.length > 120 ? "Could not finish X sign-in." : detail;
+    return fail(message);
   }
 }

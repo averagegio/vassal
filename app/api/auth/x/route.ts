@@ -8,13 +8,22 @@ import {
   getXClientSecret,
 } from "../../../lib/x-oauth";
 
+const COOKIE_OPTS = {
+  httpOnly: true,
+  sameSite: "lax" as const,
+  path: "/",
+  maxAge: 60 * 10,
+};
+
 export async function GET(request: Request) {
   const clientId = getXClientId();
   const clientSecret = getXClientSecret();
   if (!clientId || !clientSecret) {
+    const url = new URL(request.url);
+    const mode = url.searchParams.get("mode") === "login" ? "login" : "signup";
     return NextResponse.redirect(
       new URL(
-        "/signup?error=" +
+        `/${mode}?error=` +
           encodeURIComponent("X sign-in is not configured yet."),
         getAppUrl(request),
       ),
@@ -34,18 +43,17 @@ export async function GET(request: Request) {
     challenge,
   });
 
+  const secure =
+    process.env.NODE_ENV === "production" ||
+    redirectUri.startsWith("https://");
+  const cookieOpts = { ...COOKIE_OPTS, secure };
+
   const res = NextResponse.redirect(authorizeUrl);
-  const secure = process.env.NODE_ENV === "production";
-  const cookieOpts = {
-    httpOnly: true,
-    sameSite: "lax" as const,
-    secure,
-    path: "/",
-    maxAge: 60 * 10,
-  };
   res.cookies.set("vassal_x_verifier", verifier, cookieOpts);
   res.cookies.set("vassal_x_state", state, cookieOpts);
   res.cookies.set("vassal_x_holding", holding, cookieOpts);
   res.cookies.set("vassal_x_mode", mode, cookieOpts);
+  // Exact redirect_uri used at authorize time — must match on token exchange.
+  res.cookies.set("vassal_x_redirect", redirectUri, cookieOpts);
   return res;
 }

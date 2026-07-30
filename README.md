@@ -32,11 +32,13 @@ X_CLIENT_SECRET=...
 APP_URL=https://your-domain.com
 ```
 
-In the X Developer Portal, set callback URL to:
+In the X Developer Portal (OAuth 2.0, confidential / Web App):
 
-`https://your-domain.com/api/auth/x/callback`
+- Callback URL (exact match): `https://your-domain.com/api/auth/x/callback`
+- Also add preview/local callbacks you use (e.g. `http://127.0.0.1:3000/api/auth/x/callback`)
+- Scopes: `users.read`, `tweet.read`, `offline.access`
 
-Scopes: `users.read`, `tweet.read`, `offline.access`.
+`APP_URL` is optional; the app prefers the live request host so PKCE cookies and the redirect URI stay aligned.
 
 ## run
 

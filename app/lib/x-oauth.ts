@@ -8,7 +8,30 @@ export function getXClientSecret() {
   return process.env.X_CLIENT_SECRET || process.env.TWITTER_CLIENT_SECRET || "";
 }
 
+/**
+ * Public origin for OAuth redirects. Prefer the live request host so PKCE
+ * cookies and redirect_uri stay on the same domain (preview vs production).
+ * APP_URL is a fallback when the request host is unavailable.
+ */
 export function getAppUrl(request: Request) {
+  const forwardedHost = request.headers
+    .get("x-forwarded-host")
+    ?.split(",")[0]
+    ?.trim();
+  const forwardedProto = request.headers
+    .get("x-forwarded-proto")
+    ?.split(",")[0]
+    ?.trim();
+  if (forwardedHost) {
+    const proto = forwardedProto || "https";
+    return `${proto}://${forwardedHost}`.replace(/\/$/, "");
+  }
+
+  const url = new URL(request.url);
+  if (url.hostname && url.hostname !== "0.0.0.0") {
+    return `${url.protocol}//${url.host}`.replace(/\/$/, "");
+  }
+
   const envUrl =
     process.env.APP_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
@@ -17,8 +40,7 @@ export function getAppUrl(request: Request) {
       : "") ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
   if (envUrl) return envUrl.replace(/\/$/, "");
-  const url = new URL(request.url);
-  return `${url.protocol}//${url.host}`;
+  return `${url.protocol}//${url.host}`.replace(/\/$/, "");
 }
 
 export function getXCallbackUrl(request: Request) {
@@ -47,7 +69,7 @@ export function buildXAuthorizeUrl(input: {
     code_challenge: input.challenge,
     code_challenge_method: "S256",
   });
-  return `https://twitter.com/i/oauth2/authorize?${params.toString()}`;
+  return `https://x.com/i/oauth2/authorize?${params.toString()}`;
 }
 
 export async function exchangeXCode(input: {
@@ -69,7 +91,7 @@ export async function exchangeXCode(input: {
     `${input.clientId}:${input.clientSecret}`,
   ).toString("base64");
 
-  const res = await fetch("https://api.twitter.com/2/oauth2/token", {
+  const res = await fetch("https://api.x.com/2/oauth2/token", {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -92,7 +114,7 @@ export async function exchangeXCode(input: {
 
 export async function fetchXProfile(accessToken: string) {
   const res = await fetch(
-    "https://api.twitter.com/2/users/me?user.fields=profile_image_url,name,username",
+    "https://api.x.com/2/users/me?user.fields=profile_image_url,name,username",
     {
       headers: { Authorization: `Bearer ${accessToken}` },
     },

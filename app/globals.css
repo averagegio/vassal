@@ -464,6 +464,19 @@ body {
   );
 }
 
+.dash-sidebar {
+  background:
+    linear-gradient(180deg, #1a0a0c 0%, #0c0506 55%, #070405 100%);
+  border-right: 1px solid color-mix(in srgb, var(--vassal-red) 35%, transparent);
+  box-shadow: 12px 0 40px rgba(0, 0, 0, 0.45);
+}
+
+@media (min-width: 1024px) {
+  .dash-sidebar {
+    box-shadow: none;
+  }
+}
+
 .profile-banner {
   background: linear-gradient(
     180deg,
