@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
   RANK_LABEL,
@@ -116,6 +116,8 @@ function formatEnds(iso: string) {
 
 export function LordsHall({ initial }: LordsHallProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const isPreview = pathname?.startsWith("/hall/preview") ?? false;
   const [data, setData] = useState(initial);
   const [tab, setTab] = useState<HallTab>("scoreboard");
   const [busy, setBusy] = useState(false);
@@ -207,6 +209,10 @@ export function LordsHall({ initial }: LordsHallProps) {
             }
           : prev.season,
     }));
+    if (isPreview) {
+      setMessage("Preview applied locally. Sign in as Lord to save for real.");
+      return;
+    }
     setBusy(true);
     setMessage(null);
     try {
@@ -265,9 +271,31 @@ export function LordsHall({ initial }: LordsHallProps) {
     }
   };
 
+  const bumpLocalScore = (field: "replies" | "reposts" | "mentions") => {
+    setData((prev) => ({
+      ...prev,
+      scoreboard: prev.scoreboard.map((row) =>
+        row.userId === prev.viewer.userId
+          ? {
+              ...row,
+              [field]: row[field] + 1,
+              standing:
+                row.standing +
+                (field === "replies" ? 1 : field === "reposts" ? 2 : 3),
+            }
+          : row,
+      ),
+    }));
+  };
+
   const logService = async (field: "replies" | "reposts" | "mentions") => {
     if (!data.viewer.isMember) {
       setMessage("Swear fealty to appear on the scoreboard.");
+      return;
+    }
+    if (isPreview) {
+      bumpLocalScore(field);
+      setMessage("Preview: service logged on the board.");
       return;
     }
     setBusy(true);
@@ -283,20 +311,8 @@ export function LordsHall({ initial }: LordsHallProps) {
         scoreboard?: HallScoreRow[];
       };
       if (res.status === 401 || res.status === 404) {
-        // Preview / unsigned: bump local scoreboard so the UX is testable.
-        setData((prev) => ({
-          ...prev,
-          scoreboard: prev.scoreboard.map((row) =>
-            row.userId === prev.viewer.userId
-              ? {
-                  ...row,
-                  [field]: row[field] + 1,
-                  standing: row.standing + (field === "replies" ? 1 : field === "reposts" ? 2 : 3),
-                }
-              : row,
-          ),
-        }));
-        setMessage("Preview service logged on the board.");
+        bumpLocalScore(field);
+        setMessage("Preview: service logged on the board.");
         return;
       }
       if (!res.ok) {
@@ -317,6 +333,22 @@ export function LordsHall({ initial }: LordsHallProps) {
   const addSong = async () => {
     if (!songTitle.trim()) {
       setMessage("Song title required.");
+      return;
+    }
+    if (isPreview) {
+      const track = {
+        id: `local-${Date.now()}`,
+        title: songTitle.trim(),
+        artist: songArtist.trim(),
+        url: songUrl.trim(),
+        by: "You",
+      };
+      setData((prev) => ({ ...prev, playlist: [track, ...prev.playlist] }));
+      setActiveTrackId(track.id);
+      setSongTitle("");
+      setSongArtist("");
+      setSongUrl("");
+      setMessage("Preview: track added to the booth.");
       return;
     }
     setBusy(true);
@@ -361,6 +393,21 @@ export function LordsHall({ initial }: LordsHallProps) {
   const addPin = async () => {
     if (!pinImage.trim()) {
       setMessage("Image URL required.");
+      return;
+    }
+    if (isPreview) {
+      const pin = {
+        id: `local-${Date.now()}`,
+        title: pinTitle.trim(),
+        imageUrl: pinImage.trim(),
+        sourceUrl: pinSource.trim(),
+        by: "You",
+      };
+      setData((prev) => ({ ...prev, moodboard: [pin, ...prev.moodboard] }));
+      setPinTitle("");
+      setPinImage("");
+      setPinSource("");
+      setMessage("Preview: pinned to the board.");
       return;
     }
     setBusy(true);
@@ -473,6 +520,12 @@ export function LordsHall({ initial }: LordsHallProps) {
               </button>
             ))}
         </nav>
+
+        {isPreview ? (
+          <p className="mt-4 border border-dashed border-[color-mix(in_srgb,var(--vassal-gold)_35%,transparent)] px-3 py-2 font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.12em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)]">
+            Dev preview — changes stay local until you sign in as Lord.
+          </p>
+        ) : null}
 
         {message ? (
           <p
@@ -886,7 +939,7 @@ export function LordsHall({ initial }: LordsHallProps) {
                   className="auth-input mt-2 w-full border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
                 />
               </label>
-              <div className="mt-3 grid grid-cols-3 gap-2">
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <label className="block">
                   <span className="font-[family-name:var(--font-display)] text-[0.55rem] tracking-[0.14em] uppercase text-[var(--vassal-gold)]">
                     Replies
@@ -896,7 +949,7 @@ export function LordsHall({ initial }: LordsHallProps) {
                     min={1}
                     value={targetReplies}
                     onChange={(e) => setTargetReplies(e.target.value)}
-                    className="auth-input mt-2 w-full border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-2 py-2"
+                    className="auth-input mt-2 w-full border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
                   />
                 </label>
                 <label className="block">
@@ -908,7 +961,7 @@ export function LordsHall({ initial }: LordsHallProps) {
                     min={1}
                     value={targetReposts}
                     onChange={(e) => setTargetReposts(e.target.value)}
-                    className="auth-input mt-2 w-full border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-2 py-2"
+                    className="auth-input mt-2 w-full border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
                   />
                 </label>
                 <label className="block">
@@ -920,7 +973,7 @@ export function LordsHall({ initial }: LordsHallProps) {
                     min={1}
                     value={targetMentions}
                     onChange={(e) => setTargetMentions(e.target.value)}
-                    className="auth-input mt-2 w-full border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-2 py-2"
+                    className="auth-input mt-2 w-full border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
                   />
                 </label>
               </div>
