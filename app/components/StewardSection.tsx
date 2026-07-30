@@ -9,7 +9,7 @@ export function StewardSection() {
       <div className="steward-glow pointer-events-none absolute inset-0" aria-hidden />
 
       <div className="relative mx-auto max-w-5xl px-6 py-16 sm:py-24">
-        <header className="mx-auto max-w-xl text-center">
+        <header data-tour="steward" className="mx-auto max-w-xl text-center">
           <p className="font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.32em] uppercase text-[var(--vassal-gold)]">
             Shared
           </p>

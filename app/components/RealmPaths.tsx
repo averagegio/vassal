@@ -12,7 +12,7 @@ export function RealmPaths({ activePath, onSelect }: RealmPathsProps) {
       className="relative border-t border-[color-mix(in_srgb,var(--vassal-red)_35%,transparent)] px-6 py-16 sm:py-24"
     >
       <div className="pointer-events-none absolute inset-0 opacity-40 realm-ash" aria-hidden />
-      <div className="relative mx-auto max-w-3xl text-center">
+      <div data-tour="paths" className="relative mx-auto max-w-3xl text-center">
         <p className="font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.32em] uppercase text-[var(--vassal-gold)]">
           Two doors
         </p>

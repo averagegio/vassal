@@ -482,6 +482,199 @@ body {
   }
 }
 
+/* ── First-time landing tour ── */
+.tour-root {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: auto;
+}
+
+.tour-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 30%, rgba(40, 8, 12, 0.35), transparent 70%),
+    rgba(4, 2, 3, 0.62);
+  animation: tour-veil-in 0.45s ease both;
+}
+
+.tour-spotlight {
+  position: absolute;
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 55%, transparent);
+  box-shadow:
+    0 0 0 9999px rgba(4, 2, 3, 0.72),
+    inset 0 0 0 1px color-mix(in srgb, var(--vassal-cream) 8%, transparent);
+  background: transparent;
+  border-radius: 2px;
+  transition:
+    top 0.4s ease,
+    left 0.4s ease,
+    width 0.4s ease,
+    height 0.4s ease;
+  pointer-events: none;
+  animation: tour-spot-in 0.5s ease both;
+}
+
+.tour-panel {
+  position: fixed;
+  z-index: 2;
+  width: min(92vw, 22rem);
+  max-height: min(42vh, 20rem);
+  overflow: auto;
+  padding: 1.25rem 1.2rem 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 38%, transparent);
+  background:
+    linear-gradient(165deg, rgba(48, 14, 18, 0.97), rgba(10, 5, 6, 0.99));
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+  animation: tour-panel-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.tour-panel-dock {
+  left: 50%;
+  bottom: max(1.1rem, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+}
+
+.tour-count {
+  letter-spacing: 0.18em;
+  color: color-mix(in srgb, var(--vassal-cream) 45%, transparent);
+}
+
+.tour-eyebrow {
+  margin: 0;
+  font-family: var(--font-display), serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--vassal-gold);
+}
+
+.tour-title {
+  margin: 0.55rem 0 0;
+  font-family: var(--font-display), serif;
+  font-size: 1.35rem;
+  letter-spacing: 0.08em;
+  color: var(--vassal-cream);
+}
+
+.tour-body {
+  margin: 0.55rem 0 0;
+  font-family: var(--font-body), Georgia, serif;
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--vassal-cream) 78%, transparent);
+}
+
+.tour-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.15rem;
+}
+
+.tour-skip {
+  border: 0;
+  background: transparent;
+  padding: 0.4rem 0;
+  font-family: var(--font-display), serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--vassal-cream) 50%, transparent);
+  cursor: pointer;
+}
+
+.tour-skip:hover {
+  color: var(--vassal-cream);
+}
+
+.tour-dots {
+  display: flex;
+  gap: 0.4rem;
+  flex: 1;
+  justify-content: center;
+}
+
+.tour-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  rotate: 45deg;
+  background: color-mix(in srgb, var(--vassal-cream) 28%, transparent);
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+
+.tour-dot-active {
+  background: var(--vassal-blood);
+  transform: scale(1.15);
+}
+
+.tour-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.tour-back,
+.tour-next {
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 40%, transparent);
+  background: transparent;
+  padding: 0.55rem 0.85rem;
+  font-family: var(--font-display), serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--vassal-cream);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.tour-back:hover {
+  border-color: color-mix(in srgb, var(--vassal-cream) 45%, transparent);
+}
+
+.tour-next {
+  border-color: color-mix(in srgb, var(--vassal-gold) 55%, transparent);
+  background: color-mix(in srgb, var(--vassal-red) 38%, transparent);
+}
+
+.tour-next:hover {
+  background: color-mix(in srgb, var(--vassal-red) 55%, transparent);
+}
+
+@keyframes tour-veil-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes tour-spot-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tour-panel-in {
+  from {
+    opacity: 0;
+    filter: saturate(0.7);
+  }
+  to {
+    opacity: 1;
+    filter: saturate(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .flag-cloth-stage,
   .flag-billow-track,
@@ -492,7 +685,10 @@ body {
   .torch-flame.lit,
   .intro-exit,
   .tenure-rung,
-  .steward-glow {
+  .steward-glow,
+  .tour-veil,
+  .tour-spotlight,
+  .tour-panel {
     animation: none !important;
   }
 
@@ -500,7 +696,8 @@ body {
     filter: none !important;
   }
 
-  .portcullis {
+  .portcullis,
+  .tour-spotlight {
     transition: none;
   }
 }

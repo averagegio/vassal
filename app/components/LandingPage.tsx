@@ -7,6 +7,7 @@ import { RealmPaths } from "./RealmPaths";
 import { FanHoldingSection } from "./FanHoldingSection";
 import { RealEstateSection } from "./RealEstateSection";
 import { StewardSection } from "./StewardSection";
+import { LandingTour } from "./LandingTour";
 
 type LandingPageProps = {
   active: boolean;
@@ -15,6 +16,7 @@ type LandingPageProps = {
 export function LandingPage({ active }: LandingPageProps) {
   const [gatesOpen, setGatesOpen] = useState(false);
   const [lampsLit, setLampsLit] = useState(false);
+  const [tourReady, setTourReady] = useState(false);
   const [showNav, setShowNav] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activePath, setActivePath] = useState<"fan" | "estate">("fan");
@@ -24,9 +26,18 @@ export function LandingPage({ active }: LandingPageProps) {
     // Hold sealed portcullis briefly, then raise it
     const gateTimer = window.setTimeout(() => setGatesOpen(true), 700);
     const lampTimer = window.setTimeout(() => setLampsLit(true), 3200);
+    // Portcullis transition is 2.8s; wait until the corridor is clear.
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const tourTimer = window.setTimeout(
+      () => setTourReady(true),
+      reduceMotion ? 200 : 3600,
+    );
     return () => {
       window.clearTimeout(gateTimer);
       window.clearTimeout(lampTimer);
+      window.clearTimeout(tourTimer);
     };
   }, [active]);
 
@@ -93,7 +104,10 @@ export function LandingPage({ active }: LandingPageProps) {
             gatesOpen ? "opacity-100" : "opacity-0"
           }`}
         >
-          <div className="flex w-full max-w-[min(92vw,22rem)] flex-col items-center sm:max-w-md">
+          <div
+            data-tour="hero"
+            className="flex w-full max-w-[min(92vw,22rem)] flex-col items-center sm:max-w-md"
+          >
             <VassalLogo size={72} className="mb-4 drop-shadow-[0_8px_24px_rgba(0,0,0,0.65)]" />
             <h1 className="font-[family-name:var(--font-display)] text-[clamp(1.75rem,5.5vw,2.85rem)] font-semibold tracking-[0.38em] text-[var(--vassal-cream)] drop-shadow-[0_6px_28px_rgba(0,0,0,0.85)]">
               VASSAL
@@ -132,6 +146,8 @@ export function LandingPage({ active }: LandingPageProps) {
           Fans. Freeholds. One Steward.
         </p>
       </footer>
+
+      <LandingTour ready={tourReady} />
     </div>
   );
 }

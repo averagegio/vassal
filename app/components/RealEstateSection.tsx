@@ -12,7 +12,7 @@ export function RealEstateSection() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_10%,rgba(201,162,39,0.08),transparent_50%)]" aria-hidden />
 
       <div className="relative mx-auto max-w-5xl px-6 py-16 sm:py-24">
-        <header className="max-w-xl">
+        <header data-tour="estate" className="max-w-xl">
           <p className="font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.32em] uppercase text-[var(--vassal-gold)]">
             Estate
           </p>

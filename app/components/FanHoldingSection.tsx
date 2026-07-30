@@ -12,7 +12,7 @@ export function FanHoldingSection() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,rgba(176,16,32,0.16),transparent_55%)]" aria-hidden />
 
       <div className="relative mx-auto max-w-5xl px-6 py-16 sm:py-24">
-        <header className="max-w-xl">
+        <header data-tour="fan" className="max-w-xl">
           <p className="font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.32em] uppercase text-[var(--vassal-gold)]">
             Fan Court
           </p>
