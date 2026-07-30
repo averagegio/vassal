@@ -97,7 +97,10 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
       if (!res.ok || !json?.post) {
         setDecreeMessage({
           type: "err",
-          text: json?.error || "Could not post decree.",
+          text:
+            res.status === 401
+              ? "Session expired — log in again."
+              : json?.error || "Could not post decree.",
         });
         return;
       }
