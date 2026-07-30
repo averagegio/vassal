@@ -148,6 +148,7 @@ export async function createCourt(input: {
     VALUES (${court.id}, ${input.lordUserId}, 'duke', 100, 'lord')
   `;
 
+  await ensureActiveSeason(court.id, input.lordUserId);
   return court;
 }
 
@@ -199,7 +200,9 @@ export async function joinCourt(input: {
     VALUES (${court.id}, ${input.userId}, 'serf', 0, 'vassal')
     RETURNING id, court_id, user_id, rank, standing, role, joined_at
   `;
-  return { court, member: rows[0] as DbCourtMember };
+  const member = rows[0] as DbCourtMember;
+  await ensureScoreRow(court.id, input.userId);
+  return { court, member };
 }
 
 export async function updateCourtSettings(
@@ -351,18 +354,32 @@ export async function addMoodPin(input: {
 export async function getHallBundle(slug: string) {
   const court = await getCourtBySlug(slug);
   if (!court) return null;
-  const [leaderboard, playlist, moodboard, lordRows] = await Promise.all([
-    listLeaderboard(court.id),
-    court.widget === "playlist" ? listPlaylist(court.id) : Promise.resolve([]),
-    court.widget === "moodboard" ? listMoodPins(court.id) : Promise.resolve([]),
-    (async () => {
-      const db = getDb();
-      return db`
-        SELECT id, name, avatar_url, x_username
-        FROM users WHERE id = ${court.lord_user_id} LIMIT 1
-      `;
-    })(),
-  ]);
+
+  const season = await ensureActiveSeason(court.id, court.lord_user_id);
+  const [leaderboard, playlist, moodboard, scoreboard, lordRows] =
+    await Promise.all([
+      listLeaderboard(court.id),
+      court.widget === "playlist" ? listPlaylist(court.id) : Promise.resolve([]),
+      court.widget === "moodboard" ? listMoodPins(court.id) : Promise.resolve([]),
+      listScoreboard(season.id),
+      (async () => {
+        const db = getDb();
+        return db`
+          SELECT id, name, avatar_url, x_username
+          FROM users WHERE id = ${court.lord_user_id} LIMIT 1
+        `;
+      })(),
+    ]);
+
+  // Ensure every member has a score row.
+  await Promise.all(
+    leaderboard.map((m) => ensureScoreRowForSeason(season.id, m.user_id)),
+  );
+  const scores =
+    scoreboard.length === leaderboard.length
+      ? scoreboard
+      : await listScoreboard(season.id);
+
   const lord = lordRows[0] as
     | {
         id: string;
@@ -372,5 +389,173 @@ export async function getHallBundle(slug: string) {
       }
     | undefined;
 
-  return { court, leaderboard, playlist, moodboard, lord: lord ?? null };
+  return {
+    court,
+    leaderboard,
+    playlist,
+    moodboard,
+    season,
+    scoreboard: scores,
+    lord: lord ?? null,
+  };
+}
+
+export type DbSeason = {
+  id: string;
+  court_id: string;
+  title: string;
+  target_replies: number;
+  target_reposts: number;
+  target_mentions: number;
+  starts_at: string;
+  ends_at: string;
+};
+
+export type DbSeasonScore = {
+  user_id: string;
+  name: string;
+  avatar_url: string | null;
+  rank: CourtRank;
+  role: "lord" | "vassal";
+  standing: number;
+  replies: number;
+  reposts: number;
+  mentions: number;
+};
+
+async function ensureActiveSeason(
+  courtId: string,
+  lordUserId: string,
+): Promise<DbSeason> {
+  await ensureSchema();
+  const db = getDb();
+  const existing = await db`
+    SELECT id, court_id, title, target_replies, target_reposts, target_mentions,
+           starts_at, ends_at
+    FROM court_seasons
+    WHERE court_id = ${courtId} AND ends_at > NOW()
+    ORDER BY starts_at DESC
+    LIMIT 1
+  `;
+  if (existing[0]) {
+    await ensureScoreRowForSeason(String(existing[0].id), lordUserId);
+    return existing[0] as DbSeason;
+  }
+
+  const rows = await db`
+    INSERT INTO court_seasons (court_id, title)
+    VALUES (${courtId}, 'Season of Service')
+    RETURNING id, court_id, title, target_replies, target_reposts, target_mentions,
+              starts_at, ends_at
+  `;
+  const season = rows[0] as DbSeason;
+  await ensureScoreRowForSeason(season.id, lordUserId);
+  return season;
+}
+
+async function ensureScoreRow(courtId: string, userId: string) {
+  const season = await ensureActiveSeason(courtId, userId);
+  await ensureScoreRowForSeason(season.id, userId);
+}
+
+async function ensureScoreRowForSeason(seasonId: string, userId: string) {
+  const db = getDb();
+  await db`
+    INSERT INTO season_scores (season_id, user_id)
+    VALUES (${seasonId}, ${userId})
+    ON CONFLICT (season_id, user_id) DO NOTHING
+  `;
+}
+
+export async function listScoreboard(seasonId: string): Promise<DbSeasonScore[]> {
+  await ensureSchema();
+  const db = getDb();
+  const rows = await db`
+    SELECT m.user_id, u.name, u.avatar_url, m.rank, m.role, m.standing,
+           COALESCE(s.replies, 0) AS replies,
+           COALESCE(s.reposts, 0) AS reposts,
+           COALESCE(s.mentions, 0) AS mentions
+    FROM court_members m
+    JOIN users u ON u.id = m.user_id
+    JOIN court_seasons cs ON cs.id = ${seasonId} AND cs.court_id = m.court_id
+    LEFT JOIN season_scores s ON s.season_id = cs.id AND s.user_id = m.user_id
+    ORDER BY
+      CASE m.role WHEN 'lord' THEN 0 ELSE 1 END,
+      (COALESCE(s.replies,0) + COALESCE(s.reposts,0) * 2 + COALESCE(s.mentions,0) * 3) DESC,
+      m.standing DESC
+  `;
+  return rows as DbSeasonScore[];
+}
+
+export async function updateSeasonTargets(
+  lordUserId: string,
+  patch: {
+    title?: string;
+    targetReplies?: number;
+    targetReposts?: number;
+    targetMentions?: number;
+  },
+): Promise<DbSeason | null> {
+  await ensureSchema();
+  const court = await getCourtByLord(lordUserId);
+  if (!court) return null;
+  const season = await ensureActiveSeason(court.id, lordUserId);
+  const db = getDb();
+  const title = (patch.title ?? season.title).trim().slice(0, 80) || season.title;
+  const targetReplies = clampTarget(
+    patch.targetReplies ?? season.target_replies,
+  );
+  const targetReposts = clampTarget(
+    patch.targetReposts ?? season.target_reposts,
+  );
+  const targetMentions = clampTarget(
+    patch.targetMentions ?? season.target_mentions,
+  );
+  const rows = await db`
+    UPDATE court_seasons
+    SET title = ${title},
+        target_replies = ${targetReplies},
+        target_reposts = ${targetReposts},
+        target_mentions = ${targetMentions}
+    WHERE id = ${season.id}
+    RETURNING id, court_id, title, target_replies, target_reposts, target_mentions,
+              starts_at, ends_at
+  `;
+  return (rows[0] as DbSeason | undefined) ?? null;
+}
+
+function clampTarget(n: number) {
+  if (!Number.isFinite(n)) return 1;
+  return Math.max(1, Math.min(9999, Math.round(n)));
+}
+
+/** Demo/dev helper: bump a member's season score (until X sync exists). */
+export async function bumpSeasonScore(input: {
+  courtId: string;
+  userId: string;
+  replies?: number;
+  reposts?: number;
+  mentions?: number;
+}): Promise<DbSeasonScore | null> {
+  const season = await ensureActiveSeason(input.courtId, input.userId);
+  await ensureScoreRowForSeason(season.id, input.userId);
+  const db = getDb();
+  await db`
+    UPDATE season_scores
+    SET replies = replies + ${input.replies ?? 0},
+        reposts = reposts + ${input.reposts ?? 0},
+        mentions = mentions + ${input.mentions ?? 0}
+    WHERE season_id = ${season.id} AND user_id = ${input.userId}
+  `;
+  const standing =
+    (input.replies ?? 0) + (input.reposts ?? 0) * 2 + (input.mentions ?? 0) * 3;
+  if (standing > 0) {
+    await db`
+      UPDATE court_members
+      SET standing = standing + ${standing}
+      WHERE court_id = ${input.courtId} AND user_id = ${input.userId}
+    `;
+  }
+  const board = await listScoreboard(season.id);
+  return board.find((r) => r.user_id === input.userId) ?? null;
 }

@@ -95,6 +95,28 @@ CREATE TABLE IF NOT EXISTS hall_mood_pins (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS court_seasons (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  court_id UUID NOT NULL REFERENCES courts(id) ON DELETE CASCADE,
+  title TEXT NOT NULL DEFAULT 'Season of Service',
+  target_replies INTEGER NOT NULL DEFAULT 60,
+  target_reposts INTEGER NOT NULL DEFAULT 20,
+  target_mentions INTEGER NOT NULL DEFAULT 15,
+  starts_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  ends_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '30 days'),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS season_scores (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  season_id UUID NOT NULL REFERENCES court_seasons(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  replies INTEGER NOT NULL DEFAULT 0,
+  reposts INTEGER NOT NULL DEFAULT 0,
+  mentions INTEGER NOT NULL DEFAULT 0,
+  UNIQUE (season_id, user_id)
+);
+
 CREATE INDEX IF NOT EXISTS petitions_user_id_idx ON petitions(user_id);
 CREATE INDEX IF NOT EXISTS tenants_user_id_idx ON tenants(user_id);
 CREATE INDEX IF NOT EXISTS decrees_user_id_idx ON decrees(user_id);
@@ -103,4 +125,6 @@ CREATE INDEX IF NOT EXISTS courts_slug_idx ON courts(slug);
 CREATE INDEX IF NOT EXISTS court_members_court_id_idx ON court_members(court_id);
 CREATE INDEX IF NOT EXISTS hall_playlist_court_id_idx ON hall_playlist_tracks(court_id);
 CREATE INDEX IF NOT EXISTS hall_mood_court_id_idx ON hall_mood_pins(court_id);
+CREATE INDEX IF NOT EXISTS court_seasons_court_id_idx ON court_seasons(court_id);
+CREATE INDEX IF NOT EXISTS season_scores_season_id_idx ON season_scores(season_id);
 CREATE UNIQUE INDEX IF NOT EXISTS users_x_id_idx ON users(x_id) WHERE x_id IS NOT NULL;

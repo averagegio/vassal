@@ -18,39 +18,11 @@ export async function generateMetadata({ params }: PageProps) {
   };
 }
 
-export default async function HallPage({ params }: PageProps) {
-  const { slug } = await params;
-  let bundle: Awaited<ReturnType<typeof getHallBundle>> = null;
-  try {
-    bundle = await getHallBundle(slug);
-  } catch (err) {
-    console.error("hall page", err);
-  }
-  if (!bundle) notFound();
-
-  const session = await getSession();
-  let viewer: HallData["viewer"] = {
-    isMember: false,
-    isLord: false,
-    rank: null,
-    standing: null,
-    userId: session?.userId ?? null,
-  };
-
-  if (session) {
-    const membership = await getMembershipForUser(session.userId).catch(() => null);
-    if (membership && membership.court_id === bundle.court.id) {
-      viewer = {
-        isMember: true,
-        isLord: membership.role === "lord",
-        rank: membership.rank,
-        standing: membership.standing,
-        userId: session.userId,
-      };
-    }
-  }
-
-  const initial: HallData = {
+function toHallData(
+  bundle: NonNullable<Awaited<ReturnType<typeof getHallBundle>>>,
+  viewer: HallData["viewer"],
+): HallData {
+  return {
     court: {
       id: bundle.court.id,
       slug: bundle.court.slug,
@@ -67,6 +39,26 @@ export default async function HallPage({ params }: PageProps) {
           xUsername: bundle.lord.x_username,
         }
       : null,
+    season: {
+      id: bundle.season.id,
+      title: bundle.season.title,
+      targetReplies: bundle.season.target_replies,
+      targetReposts: bundle.season.target_reposts,
+      targetMentions: bundle.season.target_mentions,
+      startsAt: bundle.season.starts_at,
+      endsAt: bundle.season.ends_at,
+    },
+    scoreboard: bundle.scoreboard.map((m) => ({
+      userId: m.user_id,
+      name: m.name || "Vassal",
+      avatarUrl: m.avatar_url,
+      rank: (m.rank as CourtRank) || "serf",
+      role: m.role,
+      standing: m.standing,
+      replies: m.replies,
+      reposts: m.reposts,
+      mentions: m.mentions,
+    })),
     leaderboard: bundle.leaderboard.map((m) => ({
       userId: m.user_id,
       name: m.name || "Vassal",
@@ -92,6 +84,41 @@ export default async function HallPage({ params }: PageProps) {
     })),
     viewer,
   };
+}
 
-  return <LordsHall initial={initial} />;
+export default async function HallPage({ params }: PageProps) {
+  const { slug } = await params;
+  let bundle: Awaited<ReturnType<typeof getHallBundle>> = null;
+  try {
+    bundle = await getHallBundle(slug);
+  } catch (err) {
+    console.error("hall page", err);
+  }
+  if (!bundle) notFound();
+
+  const session = await getSession();
+  let viewer: HallData["viewer"] = {
+    isMember: false,
+    isLord: false,
+    rank: null,
+    standing: null,
+    userId: session?.userId ?? null,
+  };
+
+  if (session) {
+    const membership = await getMembershipForUser(session.userId).catch(
+      () => null,
+    );
+    if (membership && membership.court_id === bundle.court.id) {
+      viewer = {
+        isMember: true,
+        isLord: membership.role === "lord",
+        rank: membership.rank,
+        standing: membership.standing,
+        userId: session.userId,
+      };
+    }
+  }
+
+  return <LordsHall initial={toHallData(bundle, viewer)} />;
 }

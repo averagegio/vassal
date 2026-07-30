@@ -565,6 +565,163 @@ body {
   border-color: color-mix(in srgb, var(--vassal-blood) 50%, transparent);
 }
 
+.hall-tabs {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  border-bottom: 1px solid color-mix(in srgb, var(--vassal-gold) 22%, transparent);
+  padding-bottom: 0.15rem;
+}
+
+.hall-tab {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: color-mix(in srgb, var(--vassal-cream) 55%, transparent);
+  font-family: var(--font-display), serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.hall-tab-active {
+  color: var(--vassal-gold);
+  border-bottom-color: var(--vassal-gold);
+}
+
+.hall-score-card {
+  padding: 0.85rem 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 16%, transparent);
+  background: color-mix(in srgb, var(--vassal-black) 55%, transparent);
+}
+
+.hall-score-mine {
+  border-color: color-mix(in srgb, var(--vassal-gold) 42%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vassal-gold) 12%, transparent);
+}
+
+.hall-meter {
+  height: 0.35rem;
+  background: color-mix(in srgb, var(--vassal-cream) 10%, transparent);
+  overflow: hidden;
+}
+
+.hall-meter-fill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--vassal-red) 70%, transparent),
+    var(--vassal-gold)
+  );
+  transition: width 0.45s ease;
+}
+
+.hall-log-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px dashed color-mix(in srgb, var(--vassal-gold) 28%, transparent);
+}
+
+.hall-chip {
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 35%, transparent);
+  background: color-mix(in srgb, var(--vassal-red) 18%, transparent);
+  color: var(--vassal-cream);
+  font-family: var(--font-display), serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.65rem;
+  transition: background 0.2s ease;
+}
+
+.hall-chip:hover {
+  background: color-mix(in srgb, var(--vassal-red) 32%, transparent);
+}
+
+.hall-player {
+  padding: 1.1rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 28%, transparent);
+  background:
+    radial-gradient(ellipse 80% 70% at 20% 0%, rgba(225, 29, 46, 0.2), transparent 55%),
+    color-mix(in srgb, var(--vassal-black) 70%, transparent);
+}
+
+.hall-now-playing {
+  animation: hall-now-pulse 2.8s ease-in-out infinite;
+}
+
+.hall-track-btn {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  border-top: 1px solid color-mix(in srgb, var(--vassal-gold) 14%, transparent);
+  background: transparent;
+  color: inherit;
+  padding: 0.75rem 0.5rem;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.hall-track-active {
+  border-color: color-mix(in srgb, var(--vassal-gold) 35%, transparent);
+  background: color-mix(in srgb, var(--vassal-red) 14%, transparent);
+}
+
+.hall-mood-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .hall-mood-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.hall-fade-in {
+  animation: hall-fade-up 0.55s ease both;
+}
+
+.hall-fade-in-delay {
+  animation-delay: 0.08s;
+}
+
+.hall-panel-enter {
+  animation: hall-fade-up 0.35s ease both;
+}
+
+.hall-pin-reveal {
+  animation: hall-fade-up 0.4s ease both;
+}
+
+@keyframes hall-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hall-now-pulse {
+  0%,
+  100% {
+    opacity: 0.92;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 .profile-banner {
   background: linear-gradient(
     180deg,

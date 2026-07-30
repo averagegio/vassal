@@ -74,10 +74,10 @@ export function CourtPanel({ holding, membership, onMembership }: CourtPanelProp
           Enter Lord&apos;s Hall
         </Link>
         <p className="mt-3 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
-          See your name on the retinue board
+          Shared season scoreboard for every vassal
           {membership.role === "lord"
-            ? " and theme the hall for DJ playlists or fashion mood boards."
-            : " and curate beside your Lord."}
+            ? ", plus Lord setup for DJ playlists or fashion mood boards."
+            : " — and the community widget your Lord enabled."}
         </p>
       </section>
     );
