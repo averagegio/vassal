@@ -601,11 +601,7 @@ export function LordsHall({ initial }: LordsHallProps) {
                   }))
               )
                 .slice()
-                .sort((a, b) => {
-                  if (a.role === "lord" && b.role !== "lord") return -1;
-                  if (b.role === "lord" && a.role !== "lord") return 1;
-                  return seasonPoints(b) - seasonPoints(a);
-                })
+                .sort((a, b) => seasonPoints(b) - seasonPoints(a))
                 .map((row, index) => {
                   const targets = data.season;
                   const mine = row.userId === data.viewer.userId;
