@@ -3,7 +3,8 @@ import { cookies } from "next/headers";
 import { resolveDatabaseUrl } from "./db";
 
 const COOKIE = "vassal_session";
-const MAX_AGE = 60 * 60 * 24 * 30; // 30 days
+/** Practically indefinite — session ends only on explicit logout. */
+const MAX_AGE = 60 * 60 * 24 * 365 * 10; // 10 years
 
 export type SessionPayload = {
   userId: string;
@@ -66,7 +67,10 @@ function sessionCookieOptions() {
 
 export async function clearSessionCookie() {
   const jar = await cookies();
-  jar.delete(COOKIE);
+  jar.set(COOKIE, "", {
+    ...sessionCookieOptions(),
+    maxAge: 0,
+  });
 }
 
 export async function getSession(): Promise<SessionPayload | null> {
@@ -74,4 +78,9 @@ export async function getSession(): Promise<SessionPayload | null> {
   const token = jar.get(COOKIE)?.value;
   if (!token) return null;
   return verify(token);
+}
+
+/** Re-issue the cookie so a valid login keeps rolling until logout. */
+export async function touchSession(payload: SessionPayload) {
+  await setSession(payload);
 }

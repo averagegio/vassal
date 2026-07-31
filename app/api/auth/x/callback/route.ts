@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { joinCourt } from "../../../../lib/courts";
+import { getMembershipForUser, joinCourt } from "../../../../lib/courts";
+import { holdingHomeHref } from "../../../../lib/home";
 import { writeSessionCookie } from "../../../../lib/session";
 import { upsertUserFromX } from "../../../../lib/users";
 import {
@@ -101,6 +102,16 @@ export async function GET(request: Request) {
           "Signed in, but could not swear fealty to that court.",
         )}`;
       }
+    } else {
+      const membership = await getMembershipForUser(user.id);
+      nextPath = holdingHomeHref(
+        membership
+          ? {
+              slug: membership.court_slug,
+              role: membership.role === "lord" ? "lord" : "vassal",
+            }
+          : null,
+      );
     }
 
     const res = NextResponse.redirect(new URL(nextPath, appUrl));

@@ -73,14 +73,17 @@ function AuthFormInner({ mode }: AuthFormProps) {
             : { email, password },
         ),
       });
-      const data = (await res.json()) as { error?: string };
+      const data = (await res.json()) as {
+        error?: string;
+        homeHref?: string;
+      };
       if (!res.ok) {
         setError(data.error || "Something went wrong.");
         setPending(false);
         return;
       }
 
-      let next = "/dashboard";
+      let next = data.homeHref || "/dashboard";
       if (courtSlug) {
         const join = await fetch("/api/court", {
           method: "POST",
