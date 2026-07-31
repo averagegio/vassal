@@ -1,15 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import type { LandingViewer } from "../lib/home";
 import { IntroScreen } from "./IntroScreen";
 import { LandingPage } from "./LandingPage";
 
 type HomeExperienceProps = {
   /** Arrive already past the intro (e.g. Back / Vassal from auth). */
   skipIntro?: boolean;
+  viewer?: LandingViewer | null;
 };
 
-export function HomeExperience({ skipIntro = false }: HomeExperienceProps) {
+export function HomeExperience({
+  skipIntro = false,
+  viewer = null,
+}: HomeExperienceProps) {
   const [entered, setEntered] = useState(skipIntro);
   const [introGone, setIntroGone] = useState(skipIntro);
 
@@ -42,7 +47,11 @@ export function HomeExperience({ skipIntro = false }: HomeExperienceProps) {
       {/* Mount under the intro so the transition feels continuous;
           only start gate/lamp choreography once the intro has cleared. */}
       {(entered || introGone) && (
-        <LandingPage active={introGone} skipChoreography={skipIntro} />
+        <LandingPage
+          active={introGone}
+          skipChoreography={skipIntro}
+          viewer={viewer}
+        />
       )}
     </div>
   );

@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type { LandingViewer } from "../lib/home";
 import { VassalLogo } from "./VassalLogo";
 
 type SideDrawerProps = {
@@ -8,9 +10,10 @@ type SideDrawerProps = {
   visible: boolean;
   onOpen: () => void;
   onClose: () => void;
+  viewer?: LandingViewer | null;
 };
 
-const LINKS = [
+const ANON_LINKS = [
   { href: "#paths", label: "Holdings" },
   { href: "#fan-holding", label: "Fan Court" },
   { href: "#estate-holding", label: "Estate" },
@@ -19,7 +22,30 @@ const LINKS = [
   { href: "/signup", label: "Sign up" },
 ];
 
-export function SideDrawer({ open, visible, onOpen, onClose }: SideDrawerProps) {
+const MEMBER_LINKS = [
+  { href: "#paths", label: "Holdings" },
+  { href: "#fan-holding", label: "Fan Court" },
+  { href: "#estate-holding", label: "Estate" },
+  { href: "#steward", label: "Steward" },
+];
+
+export function SideDrawer({
+  open,
+  visible,
+  onOpen,
+  onClose,
+  viewer = null,
+}: SideDrawerProps) {
+  const router = useRouter();
+  const links = viewer ? MEMBER_LINKS : ANON_LINKS;
+
+  const logout = async () => {
+    onClose();
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/");
+    router.refresh();
+  };
+
   return (
     <>
       <button
@@ -73,8 +99,40 @@ export function SideDrawer({ open, visible, onOpen, onClose }: SideDrawerProps) 
           </p>
         </div>
         <div className="mt-3 h-px w-16 bg-[var(--vassal-red)]" />
+
+        {viewer ? (
+          <Link
+            href={viewer.homeHref}
+            onClick={onClose}
+            className="mt-8 flex items-center gap-3"
+          >
+            <span className="inline-flex h-11 w-11 shrink-0 overflow-hidden rounded-full border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] bg-[var(--vassal-stone)]">
+              {viewer.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={viewer.avatarUrl}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span className="flex h-full w-full items-center justify-center font-[family-name:var(--font-display)] text-sm text-[var(--vassal-gold)]">
+                  {viewer.name.slice(0, 1).toUpperCase()}
+                </span>
+              )}
+            </span>
+            <span className="min-w-0 text-left">
+              <span className="block truncate font-[family-name:var(--font-display)] text-sm tracking-[0.08em]">
+                {viewer.name}
+              </span>
+              <span className="mt-0.5 block font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.18em] uppercase text-[var(--vassal-gold)]">
+                Enter holding
+              </span>
+            </span>
+          </Link>
+        ) : null}
+
         <nav className="mt-10 flex flex-col gap-5">
-          {LINKS.map((link) =>
+          {links.map((link) =>
             link.href.startsWith("/") ? (
               <Link
                 key={link.href}
@@ -96,6 +154,17 @@ export function SideDrawer({ open, visible, onOpen, onClose }: SideDrawerProps) 
             ),
           )}
         </nav>
+
+        {viewer ? (
+          <button
+            type="button"
+            onClick={() => void logout()}
+            className="mt-8 self-start border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] px-4 py-2.5 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.2em] uppercase transition hover:border-[var(--vassal-blood)]"
+          >
+            Log out
+          </button>
+        ) : null}
+
         <p className="mt-auto font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_50%,transparent)]">
           Swear. Seal. Rise.
         </p>

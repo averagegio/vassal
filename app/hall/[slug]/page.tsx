@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export async function generateMetadata({ params }: PageProps) {
@@ -90,8 +91,9 @@ function toHallData(
   };
 }
 
-export default async function HallPage({ params }: PageProps) {
+export default async function HallPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
+  const query = await searchParams;
   let bundle: Awaited<ReturnType<typeof getHallBundle>> = null;
   try {
     bundle = await getHallBundle(slug);
@@ -137,5 +139,16 @@ export default async function HallPage({ params }: PageProps) {
         .followers
     : 0;
 
-  return <LordsHall initial={toHallData(bundle, viewer, lordFollowers)} />;
+  const tabParam = Array.isArray(query.tab) ? query.tab[0] : query.tab;
+  const initialTab =
+    tabParam === "setup" || tabParam === "community" || tabParam === "scoreboard"
+      ? tabParam
+      : undefined;
+
+  return (
+    <LordsHall
+      initial={toHallData(bundle, viewer, lordFollowers)}
+      initialTab={initialTab}
+    />
+  );
 }

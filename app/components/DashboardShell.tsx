@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState, type ReactNode } from "react";
 import type { Petition } from "../lib/features";
-import { LANDING_HREF } from "../lib/home";
+import { holdingHomeHref, LANDING_HREF } from "../lib/home";
 import type { CourtRank } from "../lib/ranks";
 import { CourtPanel, type CourtMembershipSummary } from "./CourtPanel";
 import { PetitionCourt } from "./PetitionCourt";
@@ -179,6 +179,11 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
   }
 
   const isFan = data.user.holding !== "estate";
+  const lordSetupHref = holdingHomeHref(
+    data.court
+      ? { slug: data.court.slug, role: data.court.role }
+      : null,
+  );
 
   const selectTab = (id: TabId) => {
     setTab(id);
@@ -209,11 +214,17 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
             VASSAL
           </span>
         </Link>
-        <UserAvatar
-          name={data.user.name}
-          avatarUrl={data.user.avatarUrl}
-          size="sm"
-        />
+        <Link
+          href={lordSetupHref}
+          aria-label="Open your lord dashboard setup"
+          className="rounded-full"
+        >
+          <UserAvatar
+            name={data.user.name}
+            avatarUrl={data.user.avatarUrl}
+            size="sm"
+          />
+        </Link>
       </header>
 
       {/* Backdrop for mobile drawer */}
@@ -242,18 +253,27 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
 
         <div className="mx-5 h-px bg-[color-mix(in_srgb,var(--vassal-red)_40%,transparent)]" />
 
-        <div className="flex items-center gap-3 px-5 py-5">
+        <Link
+          href={lordSetupHref}
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Open your lord dashboard setup"
+          className="flex items-center gap-3 px-5 py-5 transition hover:bg-[color-mix(in_srgb,var(--vassal-red)_12%,transparent)]"
+        >
           <UserAvatar
             name={data.user.name}
             avatarUrl={data.user.avatarUrl}
             size="md"
           />
-          <div className="min-w-0">
+          <div className="min-w-0 text-left">
             <p className="truncate font-[family-name:var(--font-display)] text-sm tracking-[0.08em] text-[var(--vassal-cream)]">
               {data.user.name}
             </p>
             <p className="mt-0.5 font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.18em] uppercase text-[var(--vassal-gold)]">
-              {isFan ? "Fan Court" : "Estate"}
+              {data.court?.role === "lord"
+                ? "Lord setup"
+                : isFan
+                  ? "Fan Court"
+                  : "Estate"}
             </p>
             {data.user.xUsername ? (
               <p className="mt-1 truncate font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.08em] text-[color-mix(in_srgb,var(--vassal-cream)_50%,transparent)]">
@@ -261,7 +281,7 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
               </p>
             ) : null}
           </div>
-        </div>
+        </Link>
 
         <nav className="mt-2 flex flex-1 flex-col gap-1 px-3" aria-label="Dashboard">
           {TABS.map((item) => (
@@ -410,18 +430,23 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
               {data.court ? (
                 <section className="mb-6">
                   <Link
-                    href={`/hall/${data.court.slug}`}
+                    href={lordSetupHref}
                     className="dash-panel flex items-center justify-between gap-3 px-4 py-4 transition hover:border-[color-mix(in_srgb,var(--vassal-blood)_45%,transparent)]"
                   >
                     <div>
                       <p className="font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.2em] uppercase text-[var(--vassal-gold)]">
-                        Lord&apos;s Hall
+                        {data.court.role === "lord"
+                          ? "Lord setup"
+                          : "Lord\u2019s Hall"}
                       </p>
                       <p className="mt-1 font-[family-name:var(--font-display)] text-lg tracking-[0.06em]">
                         {data.court.name}
                       </p>
                       <p className="mt-1 text-xs tracking-[0.12em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
-                        {(data.court.rank as string) || "serf"} · enter retinue
+                        {(data.court.rank as string) || "serf"} ·{" "}
+                        {data.court.role === "lord"
+                          ? "open setup"
+                          : "enter retinue"}
                       </p>
                     </div>
                     <span className="font-[family-name:var(--font-display)] text-xs tracking-[0.18em] uppercase text-[var(--vassal-blood)]">

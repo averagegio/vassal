@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getMembershipForUser } from "../../../lib/courts";
+import { holdingHomeHref } from "../../../lib/home";
 import { findUserByEmail, verifyPassword } from "../../../lib/users";
 import { setSession } from "../../../lib/session";
 
@@ -28,6 +30,16 @@ export async function POST(request: Request) {
       holding: user.holding,
     });
 
+    const membership = await getMembershipForUser(user.id);
+    const court = membership
+      ? {
+          slug: membership.court_slug,
+          role: (membership.role === "lord" ? "lord" : "vassal") as
+            | "lord"
+            | "vassal",
+        }
+      : null;
+
     return NextResponse.json({
       user: {
         id: user.id,
@@ -35,6 +47,7 @@ export async function POST(request: Request) {
         email: user.email,
         holding: user.holding,
       },
+      homeHref: holdingHomeHref(court),
     });
   } catch (err) {
     console.error("login", err);

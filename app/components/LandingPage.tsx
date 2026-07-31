@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { LandingViewer } from "../lib/home";
 import { SideDrawer } from "./SideDrawer";
 import { VassalLogo } from "./VassalLogo";
 import { RealmPaths } from "./RealmPaths";
@@ -9,15 +10,19 @@ import { RealEstateSection } from "./RealEstateSection";
 import { StewardSection } from "./StewardSection";
 import { LandingTour } from "./LandingTour";
 
+export type { LandingViewer };
+
 type LandingPageProps = {
   active: boolean;
   /** Skip the sealed-gate hold and open already clear (return from auth). */
   skipChoreography?: boolean;
+  viewer?: LandingViewer | null;
 };
 
 export function LandingPage({
   active,
   skipChoreography = false,
+  viewer = null,
 }: LandingPageProps) {
   const [gatesOpen, setGatesOpen] = useState(skipChoreography);
   const [heroVisible, setHeroVisible] = useState(skipChoreography);
@@ -68,6 +73,7 @@ export function LandingPage({
         visible={showNav}
         onOpen={() => setDrawerOpen(true)}
         onClose={() => setDrawerOpen(false)}
+        viewer={viewer}
       />
 
       <section className="relative min-h-dvh overflow-hidden dungeon-bg">
@@ -134,18 +140,48 @@ export function LandingPage({
               AI landlords for fans and freeholds.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <a
-                href="/signup"
-                className="inline-flex border border-[color-mix(in_srgb,var(--vassal-gold)_50%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_40%,transparent)] px-6 py-3 font-[family-name:var(--font-display)] text-xs tracking-[0.22em] uppercase text-[var(--vassal-cream)] transition hover:bg-[color-mix(in_srgb,var(--vassal-red)_55%,transparent)]"
-              >
-                Join
-              </a>
-              <a
-                href="/login"
-                className="inline-flex border border-[color-mix(in_srgb,var(--vassal-gold)_35%,transparent)] bg-transparent px-6 py-3 font-[family-name:var(--font-display)] text-xs tracking-[0.22em] uppercase text-[var(--vassal-cream)] transition hover:border-[var(--vassal-blood)]"
-              >
-                Log in
-              </a>
+              {viewer ? (
+                <>
+                  <a
+                    href={viewer.homeHref}
+                    className="inline-flex items-center gap-3 border border-[color-mix(in_srgb,var(--vassal-gold)_50%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_40%,transparent)] px-5 py-3 font-[family-name:var(--font-display)] text-xs tracking-[0.22em] uppercase text-[var(--vassal-cream)] transition hover:bg-[color-mix(in_srgb,var(--vassal-red)_55%,transparent)]"
+                  >
+                    <span
+                      className="inline-flex h-7 w-7 shrink-0 overflow-hidden rounded-full border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] bg-[var(--vassal-stone)]"
+                      aria-hidden
+                    >
+                      {viewer.avatarUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={viewer.avatarUrl}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-full w-full items-center justify-center text-[0.65rem] text-[var(--vassal-gold)]">
+                          {viewer.name.slice(0, 1).toUpperCase()}
+                        </span>
+                      )}
+                    </span>
+                    Enter holding
+                  </a>
+                </>
+              ) : (
+                <>
+                  <a
+                    href="/signup"
+                    className="inline-flex border border-[color-mix(in_srgb,var(--vassal-gold)_50%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_40%,transparent)] px-6 py-3 font-[family-name:var(--font-display)] text-xs tracking-[0.22em] uppercase text-[var(--vassal-cream)] transition hover:bg-[color-mix(in_srgb,var(--vassal-red)_55%,transparent)]"
+                  >
+                    Join
+                  </a>
+                  <a
+                    href="/login"
+                    className="inline-flex border border-[color-mix(in_srgb,var(--vassal-gold)_35%,transparent)] bg-transparent px-6 py-3 font-[family-name:var(--font-display)] text-xs tracking-[0.22em] uppercase text-[var(--vassal-cream)] transition hover:border-[var(--vassal-blood)]"
+                  >
+                    Log in
+                  </a>
+                </>
+              )}
             </div>
           </div>
         </div>

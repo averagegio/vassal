@@ -97,6 +97,8 @@ type HallTab = "scoreboard" | "community" | "setup";
 
 type LordsHallProps = {
   initial: HallData;
+  /** Deep-link tab from `?tab=` (e.g. lord setup). */
+  initialTab?: HallTab;
 };
 
 function seasonPoints(row: HallScoreRow) {
@@ -119,12 +121,24 @@ function formatEnds(iso: string) {
   }
 }
 
-export function LordsHall({ initial }: LordsHallProps) {
+function resolveInitialTab(
+  initial: HallData,
+  requested: HallTab | undefined,
+): HallTab {
+  if (requested === "setup" && initial.viewer.isLord) return "setup";
+  if (requested === "community") return "community";
+  if (requested === "scoreboard") return "scoreboard";
+  return "scoreboard";
+}
+
+export function LordsHall({ initial, initialTab }: LordsHallProps) {
   const router = useRouter();
   const pathname = usePathname();
   const isPreview = pathname?.startsWith("/hall/preview") ?? false;
   const [data, setData] = useState(initial);
-  const [tab, setTab] = useState<HallTab>("scoreboard");
+  const [tab, setTab] = useState<HallTab>(() =>
+    resolveInitialTab(initial, initialTab),
+  );
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [songTitle, setSongTitle] = useState("");
