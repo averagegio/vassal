@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, type FormEvent, type ReactNode } from "react";
+import { LANDING_HREF } from "../lib/home";
 import { VassalLogo } from "./VassalLogo";
 
 type AuthMode = "login" | "signup";
@@ -24,7 +25,7 @@ function AuthShell({ children }: { children?: ReactNode }) {
     <div className="auth-shell relative flex min-h-dvh flex-col items-center justify-center px-6 py-16">
       <div className="pointer-events-none absolute inset-0 cobblestone opacity-40" aria-hidden />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(176,16,32,0.22),transparent_60%)]" aria-hidden />
-      <div className="relative w-full max-w-md">{children}</div>
+      <div className="relative flex w-full max-w-md flex-col">{children}</div>
     </div>
   );
 }
@@ -112,7 +113,20 @@ function AuthFormInner({ mode }: AuthFormProps) {
 
   return (
     <AuthShell>
-      <Link href="/" className="mb-8 flex flex-col items-center text-center">
+      <Link
+        href={LANDING_HREF}
+        className="mb-6 inline-flex items-center gap-2 self-start font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.2em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)] transition hover:text-[var(--vassal-cream)]"
+      >
+        <span aria-hidden className="text-sm leading-none">
+          ←
+        </span>
+        Back
+      </Link>
+
+      <Link
+        href={LANDING_HREF}
+        className="mb-8 flex flex-col items-center text-center"
+      >
         <VassalLogo size={56} />
         <span className="mt-3 font-[family-name:var(--font-display)] text-lg tracking-[0.32em] text-[var(--vassal-cream)]">
           VASSAL

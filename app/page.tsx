@@ -1,5 +1,11 @@
 import { HomeExperience } from "./components/HomeExperience";
+import { shouldSkipIntro } from "./lib/home";
 
-export default function Home() {
-  return <HomeExperience />;
+type HomeProps = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default async function Home({ searchParams }: HomeProps) {
+  const params = await searchParams;
+  return <HomeExperience skipIntro={shouldSkipIntro(params)} />;
 }
