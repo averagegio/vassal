@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState, type ReactNode } from "react";
 import type { Petition } from "../lib/features";
+import { LANDING_HREF } from "../lib/home";
 import type { CourtRank } from "../lib/ranks";
 import { CourtPanel, type CourtMembershipSummary } from "./CourtPanel";
 import { PetitionCourt } from "./PetitionCourt";
@@ -202,7 +203,7 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
             <span className="block h-0.5 w-4 bg-[var(--vassal-cream)]" />
           </span>
         </button>
-        <Link href="/" className="flex items-center gap-2">
+        <Link href={LANDING_HREF} className="flex items-center gap-2">
           <VassalLogo size={32} />
           <span className="font-[family-name:var(--font-display)] text-sm tracking-[0.28em]">
             VASSAL
@@ -231,7 +232,7 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
         }`}
       >
         <div className="flex items-center gap-3 px-5 py-5">
-          <Link href="/" className="flex items-center gap-3" onClick={() => setSidebarOpen(false)}>
+          <Link href={LANDING_HREF} className="flex items-center gap-3" onClick={() => setSidebarOpen(false)}>
             <VassalLogo size={36} />
             <span className="font-[family-name:var(--font-display)] text-sm tracking-[0.28em]">
               VASSAL

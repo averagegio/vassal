@@ -11,18 +11,24 @@ import { LandingTour } from "./LandingTour";
 
 type LandingPageProps = {
   active: boolean;
+  /** Skip the sealed-gate hold and open already clear (return from auth). */
+  skipChoreography?: boolean;
 };
 
-export function LandingPage({ active }: LandingPageProps) {
-  const [gatesOpen, setGatesOpen] = useState(false);
-  const [lampsLit, setLampsLit] = useState(false);
-  const [tourReady, setTourReady] = useState(false);
+export function LandingPage({
+  active,
+  skipChoreography = false,
+}: LandingPageProps) {
+  const [gatesOpen, setGatesOpen] = useState(skipChoreography);
+  const [heroVisible, setHeroVisible] = useState(skipChoreography);
+  const [lampsLit, setLampsLit] = useState(skipChoreography);
+  const [tourReady, setTourReady] = useState(skipChoreography);
   const [showNav, setShowNav] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activePath, setActivePath] = useState<"fan" | "estate">("fan");
 
   useEffect(() => {
-    if (!active) return;
+    if (!active || skipChoreography) return;
     // Hold sealed portcullis briefly, then raise it
     const gateTimer = window.setTimeout(() => setGatesOpen(true), 700);
     const lampTimer = window.setTimeout(() => setLampsLit(true), 3200);
@@ -30,6 +36,10 @@ export function LandingPage({ active }: LandingPageProps) {
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
+    // Reduced motion snaps the gate — reveal hero with the open state.
+    const heroTimer = reduceMotion
+      ? window.setTimeout(() => setHeroVisible(true), 700)
+      : undefined;
     const tourTimer = window.setTimeout(
       () => setTourReady(true),
       reduceMotion ? 200 : 3600,
@@ -37,9 +47,10 @@ export function LandingPage({ active }: LandingPageProps) {
     return () => {
       window.clearTimeout(gateTimer);
       window.clearTimeout(lampTimer);
+      if (heroTimer !== undefined) window.clearTimeout(heroTimer);
       window.clearTimeout(tourTimer);
     };
-  }, [active]);
+  }, [active, skipChoreography]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -91,6 +102,11 @@ export function LandingPage({ active }: LandingPageProps) {
                     ? "translate3d(0, -108%, 0)"
                     : "translate3d(0, 0, 0)",
                 }}
+                onTransitionEnd={(e) => {
+                  if (e.propertyName !== "transform") return;
+                  if (!gatesOpen) return;
+                  setHeroVisible(true);
+                }}
               >
                 <Portcullis />
               </div>
@@ -98,10 +114,12 @@ export function LandingPage({ active }: LandingPageProps) {
           </div>
         </div>
 
-        {/* Hero sits above the gate so copy is never clipped in the margin */}
+        {/* Hero sits above the gate; copy waits until the portcullis is fully up */}
         <div
           className={`hero-copy relative z-30 flex min-h-dvh flex-col items-center justify-center px-8 text-center transition-opacity duration-700 sm:px-12 ${
-            gatesOpen ? "opacity-100" : "opacity-0"
+            heroVisible
+              ? "opacity-100"
+              : "pointer-events-none opacity-0"
           }`}
         >
           <div
