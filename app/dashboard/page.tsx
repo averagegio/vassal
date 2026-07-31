@@ -10,6 +10,8 @@ import {
   listTenants,
 } from "../lib/users";
 import { getMembershipForUser } from "../lib/courts";
+import { getFollowCounts } from "../lib/follows";
+import { profileHandle } from "../lib/profile";
 import type { CourtRank } from "../lib/ranks";
 
 export const metadata = {
@@ -30,7 +32,7 @@ export default async function DashboardPage() {
   let loadError: string | undefined;
 
   try {
-    const [stats, petitions, tenants, decree, decrees, membership] =
+    const [stats, petitions, tenants, decree, decrees, membership, follows] =
       await Promise.all([
         getDashboardStats(session.userId),
         listPetitions(session.userId),
@@ -38,6 +40,7 @@ export default async function DashboardPage() {
         getUserDecree(session.userId),
         listDecrees(session.userId),
         getMembershipForUser(session.userId),
+        getFollowCounts(session.userId),
       ]);
 
     initialData = {
@@ -49,6 +52,11 @@ export default async function DashboardPage() {
         xUsername: user.x_username,
         avatarUrl: user.avatar_url,
         headerUrl: user.header_url,
+      },
+      follows: {
+        followers: follows.followers,
+        following: follows.following,
+        handle: profileHandle(user),
       },
       stats,
       decree,

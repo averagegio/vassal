@@ -41,6 +41,31 @@ export async function findUserById(id: string): Promise<DbUser | null> {
   return (rows[0] as DbUser | undefined) ?? null;
 }
 
+/** Safe public fields — never include email or password hash. */
+export type PublicUser = {
+  id: string;
+  name: string;
+  holding: "fan" | "estate";
+  decree: string;
+  x_username: string | null;
+  avatar_url: string | null;
+  header_url: string | null;
+  created_at: string;
+};
+
+export function toPublicUser(user: DbUser): PublicUser {
+  return {
+    id: user.id,
+    name: user.name,
+    holding: user.holding,
+    decree: user.decree,
+    x_username: user.x_username,
+    avatar_url: user.avatar_url,
+    header_url: user.header_url,
+    created_at: user.created_at,
+  };
+}
+
 export async function findUserByXId(xId: string): Promise<DbUser | null> {
   await ensureSchema();
   const db = getDb();

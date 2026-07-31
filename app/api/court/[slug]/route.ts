@@ -8,6 +8,7 @@ import {
   updateCourtSettings,
   updateSeasonTargets,
 } from "../../../lib/courts";
+import { getFollowCounts, isFollowing } from "../../../lib/follows";
 import {
   HALL_THEMES,
   HALL_WIDGETS,
@@ -26,7 +27,9 @@ function serializeHall(
     rank: string | null;
     standing: number | null;
     userId?: string | null;
+    isFollowingLord: boolean;
   },
+  lordFollowers: number,
 ) {
   return {
     court: {
@@ -43,6 +46,7 @@ function serializeHall(
           name: bundle.lord.name,
           avatarUrl: bundle.lord.avatar_url,
           xUsername: bundle.lord.x_username,
+          followers: lordFollowers,
         }
       : null,
     season: {
@@ -58,6 +62,7 @@ function serializeHall(
       userId: m.user_id,
       name: m.name,
       avatarUrl: m.avatar_url,
+      xUsername: m.x_username,
       rank: m.rank,
       role: m.role,
       standing: m.standing,
@@ -107,18 +112,21 @@ export async function GET(_request: Request, { params }: Params) {
       rank: string | null;
       standing: number | null;
       userId: string | null;
+      isFollowingLord: boolean;
     } = {
       isMember: false,
       isLord: false,
       rank: null,
       standing: null,
       userId: session?.userId ?? null,
+      isFollowingLord: false,
     };
 
     if (session) {
       const membership = await getMembershipForUser(session.userId);
       if (membership && membership.court_id === bundle.court.id) {
         viewer = {
+          ...viewer,
           isMember: true,
           isLord: membership.role === "lord",
           rank: membership.rank,
@@ -126,9 +134,19 @@ export async function GET(_request: Request, { params }: Params) {
           userId: session.userId,
         };
       }
+      if (bundle.lord && bundle.lord.id !== session.userId) {
+        viewer.isFollowingLord = await isFollowing(
+          session.userId,
+          bundle.lord.id,
+        );
+      }
     }
 
-    return NextResponse.json(serializeHall(bundle, viewer));
+    const lordFollowers = bundle.lord
+      ? (await getFollowCounts(bundle.lord.id)).followers
+      : 0;
+
+    return NextResponse.json(serializeHall(bundle, viewer, lordFollowers));
   } catch (err) {
     console.error("hall get", err);
     return NextResponse.json({ error: "Could not load hall." }, { status: 500 });

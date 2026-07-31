@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { profileHandle } from "../lib/profile";
 import {
   RANK_LABEL,
   THEME_LABEL,
@@ -13,6 +14,7 @@ import {
   HALL_THEMES,
   HALL_WIDGETS,
 } from "../lib/ranks";
+import { FollowButton } from "./FollowButton";
 import { VassalLogo } from "./VassalLogo";
 
 export type HallLeaderRow = {
@@ -29,6 +31,7 @@ export type HallScoreRow = {
   userId: string;
   name: string;
   avatarUrl: string | null | undefined;
+  xUsername?: string | null;
   rank: CourtRank | string;
   role: "lord" | "vassal";
   standing: number;
@@ -61,6 +64,7 @@ export type HallData = {
     name: string;
     avatarUrl: string | null;
     xUsername: string | null;
+    followers?: number;
   } | null;
   season: HallSeason | null;
   scoreboard: HallScoreRow[];
@@ -85,6 +89,7 @@ export type HallData = {
     rank: string | null;
     standing: number | null;
     userId?: string | null;
+    isFollowingLord?: boolean;
   };
 };
 
@@ -496,10 +501,43 @@ export function LordsHall({ initial }: LordsHallProps) {
             </p>
           ) : null}
           {data.lord ? (
-            <p className="mt-3 font-[family-name:var(--font-display)] text-xs tracking-[0.14em] text-[color-mix(in_srgb,var(--vassal-cream)_60%,transparent)]">
-              Lord {data.lord.name}
-              {data.lord.xUsername ? ` · @${data.lord.xUsername}` : ""}
-            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <Link
+                href={`/u/${encodeURIComponent(
+                  profileHandle({
+                    id: data.lord.id,
+                    x_username: data.lord.xUsername,
+                  }),
+                )}`}
+                className="font-[family-name:var(--font-display)] text-xs tracking-[0.14em] text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)] hover:text-[var(--vassal-gold)]"
+              >
+                Lord {data.lord.name}
+                {data.lord.xUsername ? ` · @${data.lord.xUsername}` : ""}
+                {typeof data.lord.followers === "number"
+                  ? ` · ${data.lord.followers} followers`
+                  : ""}
+              </Link>
+              {!data.viewer.isLord && data.viewer.userId !== data.lord.id ? (
+                <FollowButton
+                  userId={data.lord.id}
+                  handle={data.lord.xUsername}
+                  initialFollowing={Boolean(data.viewer.isFollowingLord)}
+                  size="sm"
+                  onChange={({ isFollowing, counts }) =>
+                    setData((prev) => ({
+                      ...prev,
+                      lord: prev.lord
+                        ? { ...prev.lord, followers: counts.followers }
+                        : prev.lord,
+                      viewer: {
+                        ...prev.viewer,
+                        isFollowingLord: isFollowing,
+                      },
+                    }))
+                  }
+                />
+              ) : null}
+            </div>
           ) : null}
         </section>
 
@@ -592,6 +630,7 @@ export function LordsHall({ initial }: LordsHallProps) {
                     userId: r.userId,
                     name: r.name,
                     avatarUrl: r.avatarUrl,
+                    xUsername: r.xUsername,
                     rank: r.rank,
                     role: r.role,
                     standing: r.standing,
@@ -616,20 +655,30 @@ export function LordsHall({ initial }: LordsHallProps) {
                         <span className="w-6 font-[family-name:var(--font-display)] text-xs text-[var(--vassal-gold)]">
                           {index + 1}
                         </span>
-                        <Avatar name={row.name} src={row.avatarUrl} />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate font-[family-name:var(--font-display)] text-sm tracking-[0.06em]">
-                            {row.name}
-                            {row.role === "lord" ? " · Lord" : ""}
-                            {mine ? " · You" : ""}
-                          </p>
-                          <p className="font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.14em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
-                            {RANK_LABEL[(row.rank as CourtRank) || "serf"] ||
-                              row.rank}
-                            {" · "}
-                            {seasonPoints(row)} season pts
-                          </p>
-                        </div>
+                        <Link
+                          href={`/u/${encodeURIComponent(
+                            profileHandle({
+                              id: row.userId,
+                              x_username: row.xUsername,
+                            }),
+                          )}`}
+                          className="flex min-w-0 flex-1 items-center gap-3 hover:text-[var(--vassal-gold)]"
+                        >
+                          <Avatar name={row.name} src={row.avatarUrl} />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-[family-name:var(--font-display)] text-sm tracking-[0.06em]">
+                              {row.name}
+                              {row.role === "lord" ? " · Lord" : ""}
+                              {mine ? " · You" : ""}
+                            </p>
+                            <p className="font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.14em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
+                              {RANK_LABEL[(row.rank as CourtRank) || "serf"] ||
+                                row.rank}
+                              {" · "}
+                              {seasonPoints(row)} season pts
+                            </p>
+                          </div>
+                        </Link>
                       </div>
                       <div className="mt-3 grid gap-2">
                         <Meter

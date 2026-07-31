@@ -415,6 +415,7 @@ export type DbSeasonScore = {
   user_id: string;
   name: string;
   avatar_url: string | null;
+  x_username: string | null;
   rank: CourtRank;
   role: "lord" | "vassal";
   standing: number;
@@ -471,7 +472,7 @@ export async function listScoreboard(seasonId: string): Promise<DbSeasonScore[]>
   await ensureSchema();
   const db = getDb();
   const rows = await db`
-    SELECT m.user_id, u.name, u.avatar_url, m.rank, m.role, m.standing,
+    SELECT m.user_id, u.name, u.avatar_url, u.x_username, m.rank, m.role, m.standing,
            COALESCE(s.replies, 0) AS replies,
            COALESCE(s.reposts, 0) AS reposts,
            COALESCE(s.mentions, 0) AS mentions

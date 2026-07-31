@@ -16,6 +16,7 @@ const MOCK: HallData = {
     name: "Lady Meridian",
     avatarUrl: null,
     xUsername: "meridian",
+    followers: 128,
   },
   season: {
     id: "s1",
@@ -31,6 +32,7 @@ const MOCK: HallData = {
       userId: "lord1",
       name: "Lady Meridian",
       avatarUrl: null,
+      xUsername: "meridian",
       rank: "duke",
       role: "lord",
       standing: 100,
@@ -42,6 +44,7 @@ const MOCK: HallData = {
       userId: "v1",
       name: "Ser Kael",
       avatarUrl: null,
+      xUsername: "kael",
       rank: "count",
       role: "vassal",
       standing: 72,
@@ -53,6 +56,7 @@ const MOCK: HallData = {
       userId: "v2",
       name: "Rowan",
       avatarUrl: null,
+      xUsername: "rowan",
       rank: "baron",
       role: "vassal",
       standing: 41,
@@ -64,6 +68,7 @@ const MOCK: HallData = {
       userId: "v3",
       name: "New Blood",
       avatarUrl: null,
+      xUsername: null,
       rank: "serf",
       role: "vassal",
       standing: 0,
@@ -141,6 +146,7 @@ const MOCK: HallData = {
     rank: "duke",
     standing: 100,
     userId: "lord1",
+    isFollowingLord: false,
   },
 };
 

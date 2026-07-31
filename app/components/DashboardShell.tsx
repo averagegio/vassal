@@ -25,6 +25,11 @@ export type DashboardData = {
     avatarUrl: string | null;
     headerUrl: string | null;
   };
+  follows: {
+    followers: number;
+    following: number;
+    handle: string;
+  };
   stats: {
     tenants: number;
     openPetitions: number;
@@ -367,6 +372,32 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
                         @{data.user.xUsername}
                       </p>
                     ) : null}
+                    <div className="mt-2 flex flex-wrap gap-4">
+                      <Link
+                        href={`/u/${encodeURIComponent(data.follows.handle)}?tab=followers`}
+                        className="font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.12em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)] hover:text-[var(--vassal-gold)]"
+                      >
+                        <span className="text-[var(--vassal-gold)]">
+                          {data.follows.followers}
+                        </span>{" "}
+                        Followers
+                      </Link>
+                      <Link
+                        href={`/u/${encodeURIComponent(data.follows.handle)}?tab=following`}
+                        className="font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.12em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)] hover:text-[var(--vassal-gold)]"
+                      >
+                        <span className="text-[var(--vassal-gold)]">
+                          {data.follows.following}
+                        </span>{" "}
+                        Following
+                      </Link>
+                      <Link
+                        href={`/u/${encodeURIComponent(data.follows.handle)}`}
+                        className="font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.12em] uppercase text-[var(--vassal-gold)]"
+                      >
+                        Public profile →
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>

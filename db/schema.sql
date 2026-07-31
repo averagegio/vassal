@@ -117,6 +117,15 @@ CREATE TABLE IF NOT EXISTS season_scores (
   UNIQUE (season_id, user_id)
 );
 
+CREATE TABLE IF NOT EXISTS follows (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  follower_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  following_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (follower_id, following_id),
+  CHECK (follower_id <> following_id)
+);
+
 CREATE INDEX IF NOT EXISTS petitions_user_id_idx ON petitions(user_id);
 CREATE INDEX IF NOT EXISTS tenants_user_id_idx ON tenants(user_id);
 CREATE INDEX IF NOT EXISTS decrees_user_id_idx ON decrees(user_id);
@@ -127,4 +136,6 @@ CREATE INDEX IF NOT EXISTS hall_playlist_court_id_idx ON hall_playlist_tracks(co
 CREATE INDEX IF NOT EXISTS hall_mood_court_id_idx ON hall_mood_pins(court_id);
 CREATE INDEX IF NOT EXISTS court_seasons_court_id_idx ON court_seasons(court_id);
 CREATE INDEX IF NOT EXISTS season_scores_season_id_idx ON season_scores(season_id);
+CREATE INDEX IF NOT EXISTS follows_follower_id_idx ON follows(follower_id);
+CREATE INDEX IF NOT EXISTS follows_following_id_idx ON follows(following_id);
 CREATE UNIQUE INDEX IF NOT EXISTS users_x_id_idx ON users(x_id) WHERE x_id IS NOT NULL;

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { LordsHall, type HallData } from "../../components/LordsHall";
 import { getHallBundle, getMembershipForUser } from "../../lib/courts";
+import { getFollowCounts, isFollowing } from "../../lib/follows";
 import type { CourtRank, HallTheme, HallWidget } from "../../lib/ranks";
 import { getSession } from "../../lib/session";
 
@@ -21,6 +22,7 @@ export async function generateMetadata({ params }: PageProps) {
 function toHallData(
   bundle: NonNullable<Awaited<ReturnType<typeof getHallBundle>>>,
   viewer: HallData["viewer"],
+  lordFollowers: number,
 ): HallData {
   return {
     court: {
@@ -37,6 +39,7 @@ function toHallData(
           name: bundle.lord.name,
           avatarUrl: bundle.lord.avatar_url,
           xUsername: bundle.lord.x_username,
+          followers: lordFollowers,
         }
       : null,
     season: {
@@ -52,6 +55,7 @@ function toHallData(
       userId: m.user_id,
       name: m.name || "Vassal",
       avatarUrl: m.avatar_url,
+      xUsername: m.x_username,
       rank: (m.rank as CourtRank) || "serf",
       role: m.role,
       standing: m.standing,
@@ -103,6 +107,7 @@ export default async function HallPage({ params }: PageProps) {
     rank: null,
     standing: null,
     userId: session?.userId ?? null,
+    isFollowingLord: false,
   };
 
   if (session) {
@@ -111,6 +116,7 @@ export default async function HallPage({ params }: PageProps) {
     );
     if (membership && membership.court_id === bundle.court.id) {
       viewer = {
+        ...viewer,
         isMember: true,
         isLord: membership.role === "lord",
         rank: membership.rank,
@@ -118,7 +124,18 @@ export default async function HallPage({ params }: PageProps) {
         userId: session.userId,
       };
     }
+    if (bundle.lord && bundle.lord.id !== session.userId) {
+      viewer.isFollowingLord = await isFollowing(
+        session.userId,
+        bundle.lord.id,
+      ).catch(() => false);
+    }
   }
 
-  return <LordsHall initial={toHallData(bundle, viewer)} />;
+  const lordFollowers = bundle.lord
+    ? (await getFollowCounts(bundle.lord.id).catch(() => ({ followers: 0 })))
+        .followers
+    : 0;
+
+  return <LordsHall initial={toHallData(bundle, viewer, lordFollowers)} />;
 }

@@ -51,5 +51,6 @@ npm run dev
 - `/` landing
 - `/signup` join (`?court=slug` swears into a hall after auth)
 - `/login` enter
-- `/dashboard` holding + Court tab
-- `/hall/[slug]` Lord's Hall (leaderboard, themes, playlist / mood board)
+- `/dashboard` holding + Court tab (followers / following counts)
+- `/u/[handle]` public profile (follow / unfollow, lists)
+- `/hall/[slug]` Lord's Hall (scoreboard, follow Lord, themes, playlist / mood board)
