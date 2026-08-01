@@ -1,6 +1,7 @@
 "use client";
 
 import { REAL_ESTATE_FEATURES, REAL_ESTATE_TIERS } from "../lib/features";
+import { LexiconTerm } from "./Lexicon";
 import { TenureLadder } from "./TenureLadder";
 
 export function RealEstateSection() {
@@ -14,13 +15,13 @@ export function RealEstateSection() {
       <div className="relative mx-auto max-w-5xl px-6 py-16 sm:py-24">
         <header data-tour="estate" className="max-w-xl">
           <p className="font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.32em] uppercase text-[var(--vassal-gold)]">
-            Estate
+            <LexiconTerm id="estate">Estate</LexiconTerm>
           </p>
           <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl tracking-[0.1em] text-[var(--vassal-cream)] sm:text-4xl">
-            Steward for doors
+            AI front desk for your doors
           </h2>
           <p className="mt-3 font-[family-name:var(--font-body)] text-base italic text-[color-mix(in_srgb,var(--vassal-cream)_78%,transparent)]">
-            Law. Repairs. Renewals.
+            House rules, repair requests, and renewals — with less inbox noise.
           </p>
         </header>
 
@@ -41,7 +42,11 @@ export function RealEstateSection() {
         </ol>
 
         <div className="mt-16 max-w-lg">
-          <TenureLadder eyebrow="Seats" title="Holdings" tiers={REAL_ESTATE_TIERS} />
+          <TenureLadder
+            eyebrow="Plans"
+            title="Estate sizes"
+            tiers={REAL_ESTATE_TIERS}
+          />
         </div>
 
         <div className="mt-12">
@@ -49,7 +54,7 @@ export function RealEstateSection() {
             href="/signup"
             className="inline-flex border border-[color-mix(in_srgb,var(--vassal-gold)_50%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_30%,transparent)] px-6 py-3 font-[family-name:var(--font-display)] text-xs tracking-[0.22em] uppercase text-[var(--vassal-cream)] transition hover:bg-[color-mix(in_srgb,var(--vassal-red)_50%,transparent)]"
           >
-            Start a freehold
+            Start an estate
           </a>
         </div>
       </div>

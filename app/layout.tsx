@@ -16,9 +16,9 @@ const imFell = IM_Fell_English({
 });
 
 export const metadata: Metadata = {
-  title: "Vassal — Landlords for Fan Courts & Freeholds",
+  title: "Vassal — AI for creator communities & rentals",
   description:
-    "AI Steward membership for creator fan courts and real-estate freeholds. Tenure, petitions, decrees, and loyalty ranks under one banner.",
+    "Vassal helps creators run paid fan communities and hosts manage rentals — with an AI Steward that drafts updates in your voice.",
 };
 
 export default function RootLayout({

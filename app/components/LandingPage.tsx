@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { LandingViewer } from "../lib/home";
+import { LexiconProvider, LexiconTerm, useLexicon } from "./Lexicon";
 import { SideDrawer } from "./SideDrawer";
 import { VassalLogo } from "./VassalLogo";
 import { RealmPaths } from "./RealmPaths";
@@ -67,6 +68,52 @@ export function LandingPage({
   }, []);
 
   return (
+    <LexiconProvider>
+      <LandingBody
+        viewer={viewer}
+        drawerOpen={drawerOpen}
+        showNav={showNav}
+        setDrawerOpen={setDrawerOpen}
+        gatesOpen={gatesOpen}
+        heroVisible={heroVisible}
+        lampsLit={lampsLit}
+        tourReady={tourReady}
+        activePath={activePath}
+        setActivePath={setActivePath}
+        setHeroVisible={setHeroVisible}
+      />
+    </LexiconProvider>
+  );
+}
+
+function LandingBody({
+  viewer,
+  drawerOpen,
+  showNav,
+  setDrawerOpen,
+  gatesOpen,
+  heroVisible,
+  lampsLit,
+  tourReady,
+  activePath,
+  setActivePath,
+  setHeroVisible,
+}: {
+  viewer: LandingViewer | null;
+  drawerOpen: boolean;
+  showNav: boolean;
+  setDrawerOpen: (open: boolean) => void;
+  gatesOpen: boolean;
+  heroVisible: boolean;
+  lampsLit: boolean;
+  tourReady: boolean;
+  activePath: "fan" | "estate";
+  setActivePath: (path: "fan" | "estate") => void;
+  setHeroVisible: (open: boolean) => void;
+}) {
+  const { openLexicon } = useLexicon();
+
+  return (
     <div className="relative">
       <SideDrawer
         open={drawerOpen}
@@ -74,6 +121,7 @@ export function LandingPage({
         onOpen={() => setDrawerOpen(true)}
         onClose={() => setDrawerOpen(false)}
         viewer={viewer}
+        onOpenLexicon={() => openLexicon()}
       />
 
       <section className="relative min-h-dvh overflow-hidden dungeon-bg">
@@ -137,7 +185,7 @@ export function LandingPage({
               VASSAL
             </h1>
             <p className="mt-4 font-[family-name:var(--font-body)] text-base italic leading-snug text-[color-mix(in_srgb,var(--vassal-cream)_88%,transparent)] sm:text-lg">
-              AI landlords for fans and freeholds.
+              AI help for creator communities and rentals.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               {viewer ? (
@@ -163,7 +211,7 @@ export function LandingPage({
                         </span>
                       )}
                     </span>
-                    Enter holding
+                    Open dashboard
                   </a>
                 </>
               ) : (
@@ -197,8 +245,16 @@ export function LandingPage({
           Vassal
         </p>
         <p className="mt-2 text-sm text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
-          Fans. Freeholds. One Steward.
+          Creators. Rentals. One{" "}
+          <LexiconTerm id="steward">Steward</LexiconTerm>.
         </p>
+        <button
+          type="button"
+          onClick={() => openLexicon()}
+          className="mt-5 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.22em] uppercase text-[var(--vassal-gold)] underline-offset-4 transition hover:text-[var(--vassal-cream)] hover:underline"
+        >
+          Lexicon — what do these words mean?
+        </button>
       </footer>
 
       <LandingTour ready={tourReady} />

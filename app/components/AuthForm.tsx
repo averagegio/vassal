@@ -142,27 +142,29 @@ function AuthFormInner({ mode }: AuthFormProps) {
         </h1>
         <p className="mt-2 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)]">
           {courtSlug
-            ? `Swear into @${courtSlug.replace(/^@/, "")}'s court.`
+            ? `Join @${courtSlug.replace(/^@/, "")}'s community.`
             : isSignup
-              ? "Open your holding."
+              ? "Pick what you're building."
               : "Welcome back."}
         </p>
 
         {isSignup && !courtSlug && (
           <fieldset className="mt-6">
             <legend className="font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.22em] uppercase text-[var(--vassal-gold)]">
-              Holding
+              Path
             </legend>
             <div className="mt-3 grid grid-cols-2 gap-2">
               <HoldingPick
                 active={holding === "fan"}
                 onClick={() => setHolding("fan")}
                 title="Fan Court"
+                subtitle="Creator community"
               />
               <HoldingPick
                 active={holding === "estate"}
                 onClick={() => setHolding("estate")}
                 title="Estate"
+                subtitle="Rentals & property"
               />
             </div>
           </fieldset>
@@ -295,22 +297,31 @@ function HoldingPick({
   active,
   onClick,
   title,
+  subtitle,
 }: {
   active: boolean;
   onClick: () => void;
   title: string;
+  subtitle?: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`border px-3 py-3 font-[family-name:var(--font-display)] text-xs tracking-[0.14em] uppercase transition ${
+      className={`border px-3 py-3 text-left transition ${
         active
           ? "border-[var(--vassal-blood)] bg-[color-mix(in_srgb,var(--vassal-red)_30%,transparent)] text-[var(--vassal-cream)]"
           : "border-[color-mix(in_srgb,var(--vassal-gold)_28%,transparent)] text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)] hover:border-[var(--vassal-gold)]"
       }`}
     >
-      {title}
+      <span className="block font-[family-name:var(--font-display)] text-xs tracking-[0.14em] uppercase">
+        {title}
+      </span>
+      {subtitle ? (
+        <span className="mt-1 block font-[family-name:var(--font-body)] text-[0.7rem] normal-case tracking-normal italic text-[color-mix(in_srgb,var(--vassal-cream)_60%,transparent)]">
+          {subtitle}
+        </span>
+      ) : null}
     </button>
   );
 }

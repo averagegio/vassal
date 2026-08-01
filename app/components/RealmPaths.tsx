@@ -17,8 +17,11 @@ export function RealmPaths({ activePath, onSelect }: RealmPathsProps) {
           Two doors
         </p>
         <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl tracking-[0.1em] text-[var(--vassal-cream)] sm:text-4xl">
-          Pick a holding
+          Choose your path
         </h2>
+        <p className="mx-auto mt-3 max-w-md font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)]">
+          Creator community or rentals — pick one to start.
+        </p>
       </div>
 
       <div className="relative mx-auto mt-10 flex max-w-3xl flex-col gap-4 sm:flex-row sm:gap-6">
@@ -27,7 +30,7 @@ export function RealmPaths({ activePath, onSelect }: RealmPathsProps) {
           onClick={() => onSelect("fan")}
           eyebrow="Creators"
           title="Fan Court"
-          body="Ranks. Petitions. Tribute."
+          body="Paid tiers, member requests, public ranks."
           href="#fan-holding"
         />
         <PathButton
@@ -35,7 +38,7 @@ export function RealmPaths({ activePath, onSelect }: RealmPathsProps) {
           onClick={() => onSelect("estate")}
           eyebrow="Property"
           title="Estate"
-          body="Law. Repairs. Renewals."
+          body="House rules, repairs, and renewals."
           href="#estate-holding"
         />
       </div>

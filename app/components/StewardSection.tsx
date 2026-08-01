@@ -1,4 +1,7 @@
+"use client";
+
 import { SHARED_STEWARD } from "../lib/features";
+import { LexiconTerm } from "./Lexicon";
 
 export function StewardSection() {
   return (
@@ -14,10 +17,10 @@ export function StewardSection() {
             Shared
           </p>
           <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl tracking-[0.12em] text-[var(--vassal-cream)] sm:text-4xl">
-            AI Steward
+            AI <LexiconTerm id="steward">Steward</LexiconTerm>
           </h2>
           <p className="mt-3 font-[family-name:var(--font-body)] text-base italic text-[color-mix(in_srgb,var(--vassal-cream)_78%,transparent)]">
-            Keeps the court warm when you leave.
+            Your assistant keeps things moving when you step away.
           </p>
         </header>
 
@@ -37,7 +40,7 @@ export function StewardSection() {
 
         <div className="mx-auto mt-12 max-w-lg text-center">
           <p className="font-[family-name:var(--font-display)] text-sm tracking-[0.1em] text-[var(--vassal-cream)]">
-            Access is cheap. Standing isn&apos;t.
+            Easy to join. Status is earned.
           </p>
           <a
             href="/signup"
