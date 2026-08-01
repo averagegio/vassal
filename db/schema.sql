@@ -56,12 +56,17 @@ CREATE TABLE IF NOT EXISTS courts (
   slug TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
   theme TEXT NOT NULL DEFAULT 'crimson'
-    CHECK (theme IN ('crimson', 'midnight', 'goldleaf', 'neon', 'atelier')),
+    CHECK (theme IN ('crimson', 'midnight', 'goldleaf', 'neon', 'atelier', 'frost', 'verdant', 'slate')),
   widget TEXT NOT NULL DEFAULT 'none'
     CHECK (widget IN ('none', 'playlist', 'moodboard')),
   tagline TEXT NOT NULL DEFAULT '',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Widen theme check for existing installs
+ALTER TABLE courts DROP CONSTRAINT IF EXISTS courts_theme_check;
+ALTER TABLE courts ADD CONSTRAINT courts_theme_check
+  CHECK (theme IN ('crimson', 'midnight', 'goldleaf', 'neon', 'atelier', 'frost', 'verdant', 'slate'));
 
 CREATE TABLE IF NOT EXISTS court_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -139,3 +144,22 @@ CREATE INDEX IF NOT EXISTS season_scores_season_id_idx ON season_scores(season_i
 CREATE INDEX IF NOT EXISTS follows_follower_id_idx ON follows(follower_id);
 CREATE INDEX IF NOT EXISTS follows_following_id_idx ON follows(following_id);
 CREATE UNIQUE INDEX IF NOT EXISTS users_x_id_idx ON users(x_id) WHERE x_id IS NOT NULL;
+
+-- Custom parchment scrolls: vassal membership invites + lord nominations
+CREATE TABLE IF NOT EXISTS court_scrolls (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  token TEXT NOT NULL UNIQUE,
+  kind TEXT NOT NULL CHECK (kind IN ('vassal', 'nominate_lord')),
+  court_id UUID REFERENCES courts(id) ON DELETE CASCADE,
+  author_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL DEFAULT '',
+  greeting TEXT NOT NULL DEFAULT '',
+  body TEXT NOT NULL DEFAULT '',
+  sign_off TEXT NOT NULL DEFAULT '',
+  nominee_name TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS court_scrolls_token_idx ON court_scrolls(token);
+CREATE INDEX IF NOT EXISTS court_scrolls_author_idx ON court_scrolls(author_user_id);
+CREATE INDEX IF NOT EXISTS court_scrolls_court_idx ON court_scrolls(court_id);

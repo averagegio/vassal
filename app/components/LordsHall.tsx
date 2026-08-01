@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { profileHandle } from "../lib/profile";
 import {
   RANK_LABEL,
+  THEME_BLURB,
   THEME_LABEL,
+  WIDGET_BLURB,
   WIDGET_LABEL,
   type CourtRank,
   type HallTheme,
@@ -16,7 +18,19 @@ import {
 } from "../lib/ranks";
 import { FollowButton } from "./FollowButton";
 import { PetitionCompose } from "./PetitionCompose";
+import { ScrollComposer } from "./ScrollComposer";
 import { VassalLogo } from "./VassalLogo";
+
+const THEME_SWATCH: Record<HallTheme, { a: string; b: string }> = {
+  crimson: { a: "#8b1524", b: "#1a0508" },
+  midnight: { a: "#28468c", b: "#05060a" },
+  goldleaf: { a: "#c9a227", b: "#0a0804" },
+  neon: { a: "#e11d2e", b: "#2a0a18" },
+  atelier: { a: "#f3e6d8", b: "#0c0908" },
+  frost: { a: "#8cbee6", b: "#050810" },
+  verdant: { a: "#286e46", b: "#040805" },
+  slate: { a: "#788291", b: "#08090b" },
+};
 
 export type HallLeaderRow = {
   userId: string;
@@ -684,7 +698,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                   Court playlist
                 </h2>
                 <p className="mt-1 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
-                  DJ booth — vassals queue tracks the whole court can open.
+                  Shared queue — vassals add tracks the whole court can open.
                 </p>
 
                 <div className="hall-player mt-5">
@@ -779,7 +793,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                   Mood board
                 </h2>
                 <p className="mt-1 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
-                  Fashion court — pin image links from Pinterest or the open web.
+                  Shared pins — drop image links from anywhere on the open web.
                 </p>
 
                 {data.viewer.isMember ? (
@@ -793,7 +807,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                     <input
                       value={pinSource}
                       onChange={(e) => setPinSource(e.target.value)}
-                      placeholder="Pinterest / source link (optional)"
+                      placeholder="Source link (optional)"
                       className="auth-input border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
                     />
                     <input
@@ -816,7 +830,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                 <div className="hall-mood-grid mt-5">
                   {data.moodboard.length === 0 ? (
                     <p className="col-span-full font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
-                      No pins yet — drop the first look.
+                      No pins yet — drop the first image.
                     </p>
                   ) : (
                     data.moodboard.map((p) => (
@@ -850,7 +864,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                 </h2>
                 <p className="mt-2 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
                   {data.viewer.isLord
-                    ? "Open Lord setup to add a playlist booth or fashion mood board for your court."
+                    ? "Open Lord setup to add a playlist or mood board widget for your court."
                     : "Your Lord has not enabled a community widget yet. Check the scoreboard while you wait."}
                 </p>
                 {data.viewer.isLord ? (
@@ -864,6 +878,12 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                 ) : null}
               </div>
             ) : null}
+
+            {data.viewer.isMember && !data.viewer.isLord ? (
+              <div className="mt-8">
+                <ScrollComposer kind="nominate_lord" courtSlug={data.court.slug} />
+              </div>
+            ) : null}
           </section>
         ) : null}
 
@@ -873,49 +893,73 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               Make the hall yours
             </h2>
             <p className="mt-1 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
-              DJ court? Fashion court? Theme the page and pick the widget your
-              vassals curate together.
+              Pick a hall theme, add a community widget, and seal scrolls to
+              invite vassals.
             </p>
 
-            <label className="mt-5 block">
+            <div className="mt-5">
               <span className="font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.18em] uppercase text-[var(--vassal-gold)]">
-                Theme
+                Hall theme
               </span>
-              <select
-                className="auth-input mt-2 w-full border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2 text-[var(--vassal-cream)]"
-                value={data.court.theme}
-                disabled={busy}
-                onChange={(e) =>
-                  void saveTheme({ theme: e.target.value as HallTheme })
-                }
-              >
-                {HALL_THEMES.map((t) => (
-                  <option key={t} value={t}>
-                    {THEME_LABEL[t]}
-                  </option>
-                ))}
-              </select>
-            </label>
+              <div className="hall-theme-swatches mt-2">
+                {HALL_THEMES.map((t) => {
+                  const active = data.court.theme === t;
+                  const swatch = THEME_SWATCH[t];
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      disabled={busy}
+                      className={`hall-theme-swatch ${active ? "hall-theme-swatch-active" : ""}`}
+                      onClick={() => void saveTheme({ theme: t })}
+                    >
+                      <span
+                        className="hall-theme-chip"
+                        style={
+                          {
+                            "--swatch-a": swatch.a,
+                            "--swatch-b": swatch.b,
+                          } as CSSProperties
+                        }
+                      />
+                      <span className="block font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.08em]">
+                        {THEME_LABEL[t]}
+                      </span>
+                      <span className="mt-1 block font-[family-name:var(--font-body)] text-[0.7rem] italic text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
+                        {THEME_BLURB[t]}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
-            <label className="mt-4 block">
+            <div className="mt-5">
               <span className="font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.18em] uppercase text-[var(--vassal-gold)]">
-                Community widget
+                Add a widget
               </span>
-              <select
-                className="auth-input mt-2 w-full border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2 text-[var(--vassal-cream)]"
-                value={data.court.widget}
-                disabled={busy}
-                onChange={(e) =>
-                  void saveTheme({ widget: e.target.value as HallWidget })
-                }
-              >
-                {HALL_WIDGETS.map((w) => (
-                  <option key={w} value={w}>
-                    {WIDGET_LABEL[w]}
-                  </option>
-                ))}
-              </select>
-            </label>
+              <div className="hall-widget-options mt-2">
+                {HALL_WIDGETS.map((w) => {
+                  const active = data.court.widget === w;
+                  return (
+                    <button
+                      key={w}
+                      type="button"
+                      disabled={busy}
+                      className={`hall-widget-option ${active ? "hall-widget-option-active" : ""}`}
+                      onClick={() => void saveTheme({ widget: w })}
+                    >
+                      <span className="block font-[family-name:var(--font-display)] text-[0.7rem] tracking-[0.1em] uppercase">
+                        {WIDGET_LABEL[w]}
+                      </span>
+                      <span className="mt-1 block font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_60%,transparent)]">
+                        {WIDGET_BLURB[w]}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
             <label className="mt-4 block">
               <span className="font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.18em] uppercase text-[var(--vassal-gold)]">
@@ -1009,6 +1053,15 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               >
                 Save season goals
               </button>
+            </div>
+
+            <div className="mt-6">
+              <ScrollComposer
+                kind="vassal"
+                courtSlug={data.court.slug}
+                heading="Vassal summons"
+                subtitle="Customize a parchment scroll and send the link to prospective members."
+              />
             </div>
           </section>
         ) : null}

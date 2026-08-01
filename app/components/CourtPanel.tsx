@@ -7,6 +7,7 @@ import {
   HALL_WIDGETS,
   RANK_LABEL,
   THEME_LABEL,
+  WIDGET_BLURB,
   WIDGET_LABEL,
   type CourtRank,
   type HallTheme,
@@ -82,8 +83,8 @@ export function CourtPanel({ holding, membership, onMembership }: CourtPanelProp
         <p className="mt-3 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
           Shared season scoreboard for every vassal
           {membership.role === "lord"
-            ? ", plus Lord setup for DJ playlists or fashion mood boards."
-            : " — and the community widget your Lord enabled."}
+            ? ", plus Lord setup for themes, widgets, and vassal summons."
+            : " — and scrolls to nominate a new Lord."}
         </p>
       </section>
     );
@@ -166,28 +167,38 @@ export function CourtPanel({ holding, membership, onMembership }: CourtPanelProp
             placeholder="Hall name"
             className="auth-input border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
           />
-          <select
-            value={theme}
-            onChange={(e) => setTheme(e.target.value as HallTheme)}
-            className="auth-input border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
-          >
-            {HALL_THEMES.map((t) => (
-              <option key={t} value={t}>
-                {THEME_LABEL[t]}
-              </option>
-            ))}
-          </select>
-          <select
-            value={widget}
-            onChange={(e) => setWidget(e.target.value as HallWidget)}
-            className="auth-input border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
-          >
-            {HALL_WIDGETS.map((w) => (
-              <option key={w} value={w}>
-                {WIDGET_LABEL[w]}
-              </option>
-            ))}
-          </select>
+          <label className="block">
+            <span className="font-[family-name:var(--font-display)] text-[0.55rem] tracking-[0.14em] uppercase text-[var(--vassal-gold)]">
+              Hall theme
+            </span>
+            <select
+              value={theme}
+              onChange={(e) => setTheme(e.target.value as HallTheme)}
+              className="auth-input mt-2 w-full border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
+            >
+              {HALL_THEMES.map((t) => (
+                <option key={t} value={t}>
+                  {THEME_LABEL[t]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="font-[family-name:var(--font-display)] text-[0.55rem] tracking-[0.14em] uppercase text-[var(--vassal-gold)]">
+              Add a widget
+            </span>
+            <select
+              value={widget}
+              onChange={(e) => setWidget(e.target.value as HallWidget)}
+              className="auth-input mt-2 w-full border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
+            >
+              {HALL_WIDGETS.map((w) => (
+                <option key={w} value={w}>
+                  {WIDGET_LABEL[w]} — {WIDGET_BLURB[w]}
+                </option>
+              ))}
+            </select>
+          </label>
           {error ? (
             <p className="text-[0.7rem] text-[var(--vassal-blood)]">{error}</p>
           ) : null}
