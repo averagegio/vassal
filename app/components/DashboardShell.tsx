@@ -7,6 +7,7 @@ import type { Petition } from "../lib/features";
 import { holdingHomeHref, LANDING_HREF } from "../lib/home";
 import type { CourtRank } from "../lib/ranks";
 import { CourtPanel, type CourtMembershipSummary } from "./CourtPanel";
+import { PetitionCompose } from "./PetitionCompose";
 import { PetitionCourt } from "./PetitionCourt";
 import { VassalLogo } from "./VassalLogo";
 
@@ -597,17 +598,34 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
           )}
 
           {tab === "petitions" && (
-            <section className="mt-8">
-              {data.petitions.length === 0 ? (
-                <Empty label="No petitions yet." />
-              ) : (
-                <PetitionCourt
-                  title="Petition board"
-                  subtitle="Grant, defer, or deny."
-                  seed={data.petitions}
-                  grantLabel="Grant"
-                  persist
+            <section className="mt-8 flex flex-col gap-10">
+              {data.court?.role === "vassal" ? (
+                <PetitionCompose
+                  courtSlug={data.court.slug}
+                  subtitle={`Ask the Lord of ${data.court.name}. They seal on their board.`}
                 />
+              ) : null}
+
+              {data.court?.role === "vassal" && data.petitions.length === 0 ? null : (
+                <>
+                  {data.petitions.length === 0 ? (
+                    <Empty
+                      label={
+                        data.court?.role === "vassal"
+                          ? "You seal nothing here — file above, then wait."
+                          : "No petitions yet. Members file from your hall or profile."
+                      }
+                    />
+                  ) : (
+                    <PetitionCourt
+                      title="Petition board"
+                      subtitle="Grant, defer, or deny."
+                      seed={data.petitions}
+                      grantLabel="Grant"
+                      persist
+                    />
+                  )}
+                </>
               )}
             </section>
           )}

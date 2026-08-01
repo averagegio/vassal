@@ -178,6 +178,35 @@ export async function listPetitions(userId: string): Promise<DbPetition[]> {
   return rows as DbPetition[];
 }
 
+/** Create a petition for a holding owner to seal. */
+export async function createPetition(input: {
+  ownerUserId: string;
+  fromName: string;
+  rank: string;
+  ask: string;
+}): Promise<DbPetition> {
+  await ensureSchema();
+  const db = getDb();
+  const ask = input.ask.trim().slice(0, 500);
+  const fromName = input.fromName.trim().slice(0, 80) || "Anonymous";
+  const rank = input.rank.trim().slice(0, 40) || "serf";
+  if (!ask) {
+    throw new Error("Ask required.");
+  }
+  const rows = await db`
+    INSERT INTO petitions (user_id, from_name, rank, ask, status)
+    VALUES (
+      ${input.ownerUserId},
+      ${fromName},
+      ${rank},
+      ${ask},
+      'open'
+    )
+    RETURNING id, user_id, from_name, rank, ask, status, created_at
+  `;
+  return rows[0] as DbPetition;
+}
+
 export async function updatePetitionStatus(
   userId: string,
   petitionId: string,
