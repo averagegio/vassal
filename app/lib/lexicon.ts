@@ -17,7 +17,8 @@ export type LexiconTermId =
   | "freehold"
   | "serf"
   | "retinue"
-  | "seal";
+  | "seal"
+  | "scroll";
 
 export type LexiconEntry = {
   id: LexiconTermId;
@@ -67,7 +68,7 @@ export const LEXICON: LexiconEntry[] = [
     term: "Lord",
     plain: "The owner of a court",
     detail:
-      "The person who opens the court, sets the look, posts updates, and runs Lord setup for playlists or boards.",
+      "The person who opens the court, picks a hall theme, enables a community widget, and runs Lord setup.",
   },
   {
     id: "vassal",
@@ -145,6 +146,13 @@ export const LEXICON: LexiconEntry[] = [
     plain: "Approve or publish",
     detail:
       "Your final say: seal a petition, seal a decree. Nothing goes live as “you” without it.",
+  },
+  {
+    id: "scroll",
+    term: "Scroll",
+    plain: "A shareable invite parchment",
+    detail:
+      "Lords seal vassal summons to recruit members. Vassals seal nomination scrolls asking a creator to open a hall as Lord.",
   },
 ];
 

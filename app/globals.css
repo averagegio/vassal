@@ -498,6 +498,180 @@ body {
     #0c0908;
 }
 
+.hall-theme-frost {
+  background:
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(140, 190, 230, 0.16), transparent 60%),
+    #050810;
+}
+
+.hall-theme-verdant {
+  background:
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(40, 110, 70, 0.22), transparent 60%),
+    #040805;
+}
+
+.hall-theme-slate {
+  background:
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(120, 130, 145, 0.16), transparent 60%),
+    #08090b;
+}
+
+.hall-theme-swatches {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+@media (min-width: 640px) {
+  .hall-theme-swatches {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.hall-theme-swatch {
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 28%, transparent);
+  background: color-mix(in srgb, var(--vassal-black) 70%, transparent);
+  padding: 0.65rem 0.7rem;
+  text-align: left;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.hall-theme-swatch:hover {
+  border-color: color-mix(in srgb, var(--vassal-gold) 55%, transparent);
+}
+
+.hall-theme-swatch-active {
+  border-color: color-mix(in srgb, var(--vassal-gold) 70%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vassal-gold) 35%, transparent);
+}
+
+.hall-theme-chip {
+  display: block;
+  height: 0.55rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(90deg, var(--swatch-a), var(--swatch-b));
+}
+
+.hall-widget-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hall-widget-option {
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 28%, transparent);
+  background: transparent;
+  padding: 0.75rem 0.85rem;
+  text-align: left;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.hall-widget-option:hover {
+  border-color: color-mix(in srgb, var(--vassal-gold) 50%, transparent);
+}
+
+.hall-widget-option-active {
+  border-color: color-mix(in srgb, var(--vassal-gold) 65%, transparent);
+  background: color-mix(in srgb, var(--vassal-red) 14%, transparent);
+}
+
+/* ── Parchment scroll invites ── */
+.scroll-page {
+  position: relative;
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 10%, rgba(176, 16, 32, 0.2), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 80% 80%, rgba(201, 162, 39, 0.08), transparent 50%),
+    var(--vassal-black);
+  color: var(--vassal-cream);
+}
+
+.scroll-page-glow {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(255, 255, 255, 0.01) 3px,
+      rgba(255, 255, 255, 0.01) 4px
+    );
+  opacity: 0.5;
+}
+
+.parchment-scroll {
+  position: relative;
+  filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.45));
+}
+
+.parchment-inner {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(255, 245, 220, 0.55), transparent 55%),
+    linear-gradient(180deg, #f3e2c4 0%, #e8d0a8 45%, #d9bc8e 100%);
+  border-left: 1px solid rgba(92, 58, 30, 0.25);
+  border-right: 1px solid rgba(92, 58, 30, 0.25);
+  color: #2a1a10;
+  padding: 2rem 1.6rem 2.2rem;
+}
+
+@media (min-width: 640px) {
+  .parchment-inner {
+    padding: 2.5rem 2.4rem 2.8rem;
+  }
+}
+
+.parchment-roll {
+  height: 1.1rem;
+  background:
+    linear-gradient(
+      180deg,
+      #6b4423 0%,
+      #c4a06a 35%,
+      #8a6236 70%,
+      #5c3a1e 100%
+    );
+  border-radius: 999px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.parchment-roll-top {
+  margin-bottom: -0.35rem;
+}
+
+.parchment-roll-bottom {
+  margin-top: -0.35rem;
+}
+
+.parchment-unfurl {
+  animation: parchment-unfurl 0.7s ease-out both;
+}
+
+@keyframes parchment-unfurl {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scaleY(0.96);
+    transform-origin: top center;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+    transform-origin: top center;
+  }
+}
+
+.scroll-composer {
+  border-top: 1px solid color-mix(in srgb, var(--vassal-gold) 18%, transparent);
+  padding-top: 1.25rem;
+}
+
+.scroll-share {
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 28%, transparent);
+  background: color-mix(in srgb, var(--vassal-black) 55%, transparent);
+  padding: 0.9rem 1rem;
+}
+
 .hall-hero {
   border: 1px solid color-mix(in srgb, var(--vassal-gold) 28%, transparent);
   background: linear-gradient(

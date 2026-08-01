@@ -339,7 +339,7 @@ export async function addMoodPin(input: {
   await ensureSchema();
   const imageUrl = safeHttpUrl(input.imageUrl);
   if (!imageUrl) {
-    throw new Error("Image URL required (https link from Pinterest or elsewhere).");
+    throw new Error("Image URL required (https link).");
   }
   const sourceUrl = input.sourceUrl?.trim()
     ? safeHttpUrl(input.sourceUrl)
