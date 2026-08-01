@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { profileHandle } from "../lib/profile";
 import {
@@ -133,8 +133,6 @@ function resolveInitialTab(
 
 export function LordsHall({ initial, initialTab }: LordsHallProps) {
   const router = useRouter();
-  const pathname = usePathname();
-  const isPreview = pathname?.startsWith("/hall/preview") ?? false;
   const [data, setData] = useState(initial);
   const [tab, setTab] = useState<HallTab>(() =>
     resolveInitialTab(initial, initialTab),
@@ -228,10 +226,6 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
             }
           : prev.season,
     }));
-    if (isPreview) {
-      setMessage("Preview applied locally. Sign in as Lord to save for real.");
-      return;
-    }
     setBusy(true);
     setMessage(null);
     try {
@@ -241,7 +235,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
         body: JSON.stringify(patch),
       });
       if (res.status === 401 || res.status === 404) {
-        setMessage("Preview theme applied. Sign in as Lord to save.");
+        setMessage("Sign in as Lord to save hall changes.");
         return;
       }
       const json = (await res.json()) as {
@@ -290,31 +284,9 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
     }
   };
 
-  const bumpLocalScore = (field: "replies" | "reposts" | "mentions") => {
-    setData((prev) => ({
-      ...prev,
-      scoreboard: prev.scoreboard.map((row) =>
-        row.userId === prev.viewer.userId
-          ? {
-              ...row,
-              [field]: row[field] + 1,
-              standing:
-                row.standing +
-                (field === "replies" ? 1 : field === "reposts" ? 2 : 3),
-            }
-          : row,
-      ),
-    }));
-  };
-
   const logService = async (field: "replies" | "reposts" | "mentions") => {
     if (!data.viewer.isMember) {
       setMessage("Swear fealty to appear on the scoreboard.");
-      return;
-    }
-    if (isPreview) {
-      bumpLocalScore(field);
-      setMessage("Preview: service logged on the board.");
       return;
     }
     setBusy(true);
@@ -330,8 +302,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
         scoreboard?: HallScoreRow[];
       };
       if (res.status === 401 || res.status === 404) {
-        bumpLocalScore(field);
-        setMessage("Preview: service logged on the board.");
+        setMessage("Sign in to log service on the board.");
         return;
       }
       if (!res.ok) {
@@ -352,22 +323,6 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
   const addSong = async () => {
     if (!songTitle.trim()) {
       setMessage("Song title required.");
-      return;
-    }
-    if (isPreview) {
-      const track = {
-        id: `local-${Date.now()}`,
-        title: songTitle.trim(),
-        artist: songArtist.trim(),
-        url: songUrl.trim(),
-        by: "You",
-      };
-      setData((prev) => ({ ...prev, playlist: [track, ...prev.playlist] }));
-      setActiveTrackId(track.id);
-      setSongTitle("");
-      setSongArtist("");
-      setSongUrl("");
-      setMessage("Preview: track added to the booth.");
       return;
     }
     setBusy(true);
@@ -412,21 +367,6 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
   const addPin = async () => {
     if (!pinImage.trim()) {
       setMessage("Image URL required.");
-      return;
-    }
-    if (isPreview) {
-      const pin = {
-        id: `local-${Date.now()}`,
-        title: pinTitle.trim(),
-        imageUrl: pinImage.trim(),
-        sourceUrl: pinSource.trim(),
-        by: "You",
-      };
-      setData((prev) => ({ ...prev, moodboard: [pin, ...prev.moodboard] }));
-      setPinTitle("");
-      setPinImage("");
-      setPinSource("");
-      setMessage("Preview: pinned to the board.");
       return;
     }
     setBusy(true);
@@ -572,12 +512,6 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               </button>
             ))}
         </nav>
-
-        {isPreview ? (
-          <p className="mt-4 border border-dashed border-[color-mix(in_srgb,var(--vassal-gold)_35%,transparent)] px-3 py-2 font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.12em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)]">
-            Dev preview — changes stay local until you sign in as Lord.
-          </p>
-        ) : null}
 
         {message ? (
           <p
@@ -967,7 +901,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                 <input
                   value={taglineDraft}
                   onChange={(e) => setTaglineDraft(e.target.value)}
-                  placeholder="Bass for the loyal."
+                  placeholder="Short tagline for your hall"
                   className="auth-input min-w-0 flex-1 border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
                 />
                 <button

@@ -445,7 +445,7 @@ async function ensureActiveSeason(
 
   const rows = await db`
     INSERT INTO court_seasons (court_id, title)
-    VALUES (${courtId}, 'Season of Service')
+    VALUES (${courtId}, 'Current season')
     RETURNING id, court_id, title, target_replies, target_reposts, target_mentions,
               starts_at, ends_at
   `;
@@ -530,7 +530,7 @@ function clampTarget(n: number) {
   return Math.max(1, Math.min(9999, Math.round(n)));
 }
 
-/** Demo/dev helper: bump a member's season score (until X sync exists). */
+/** Record self-reported season service until X sync lands. */
 export async function bumpSeasonScore(input: {
   courtId: string;
   userId: string;

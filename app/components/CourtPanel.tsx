@@ -249,7 +249,7 @@ export function CourtPanel({ holding, membership, onMembership }: CourtPanelProp
           <input
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
-            placeholder="Court slug (e.g. meridian)"
+            placeholder="Court slug (e.g. your-court)"
             className="auth-input border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
           />
           {error ? (
