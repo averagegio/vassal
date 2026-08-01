@@ -85,10 +85,6 @@ export async function createUser(input: {
   await ensureSchema();
   const db = getDb();
   const passwordHash = await hashPassword(input.password);
-  const decree =
-    input.holding === "fan"
-      ? "Your court is open."
-      : "Your freehold is open.";
 
   const rows = await db.query(
     `INSERT INTO users (name, email, password_hash, holding, decree)
@@ -99,7 +95,7 @@ export async function createUser(input: {
       input.email.trim().toLowerCase(),
       passwordHash,
       input.holding,
-      decree,
+      "",
     ],
   );
   return rows[0] as DbUser;
@@ -135,10 +131,6 @@ export async function upsertUserFromX(input: {
   }
 
   const email = `x_${input.xId}@vassal.x`;
-  const decree =
-    input.holding === "fan"
-      ? "Your court is open."
-      : "Your freehold is open.";
 
   const rows = await db.query(
     `INSERT INTO users (
@@ -150,7 +142,7 @@ export async function upsertUserFromX(input: {
       input.name || input.username,
       email,
       input.holding,
-      decree,
+      "",
       input.xId,
       input.username,
       input.avatarUrl ?? null,
