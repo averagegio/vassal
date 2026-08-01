@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
+import { fetchApiFeed } from "../../../lib/api-feed";
 import {
+  addApiFeed,
   addMoodPin,
   addPlaylistTrack,
   bumpSeasonScore,
+  getApiFeedById,
   getHallBundle,
   getMembershipForUser,
+  removeApiFeed,
   updateCourtSettings,
   updateSeasonTargets,
 } from "../../../lib/courts";
@@ -92,6 +96,14 @@ function serializeHall(
       imageUrl: p.image_url,
       sourceUrl: p.source_url,
       by: p.name,
+    })),
+    apiFeeds: bundle.apiFeeds.map((f) => ({
+      id: f.id,
+      label: f.label,
+      apiUrl: f.api_url,
+      jsonPath: f.json_path,
+      by: f.name,
+      userId: f.user_id,
     })),
     viewer,
   };
@@ -232,14 +244,53 @@ export async function PATCH(request: Request, { params }: Params) {
 
 export async function POST(request: Request, { params }: Params) {
   try {
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const { slug } = await params;
     const bundle = await getHallBundle(slug);
     if (!bundle) {
       return NextResponse.json({ error: "Hall not found." }, { status: 404 });
+    }
+
+    const body = (await request.json()) as {
+      kind?: "playlist" | "moodboard" | "score" | "api" | "api-preview" | "api-remove";
+      title?: string;
+      artist?: string;
+      url?: string;
+      imageUrl?: string;
+      sourceUrl?: string;
+      label?: string;
+      apiUrl?: string;
+      jsonPath?: string;
+      feedId?: string;
+      replies?: number;
+      reposts?: number;
+      mentions?: number;
+    };
+
+    // Saved feeds are public hall content — anyone can load them.
+    if (body.kind === "api-preview" && body.feedId) {
+      if (bundle.court.widget !== "api") {
+        return NextResponse.json(
+          { error: "This hall is not in API import mode." },
+          { status: 400 },
+        );
+      }
+      const feed = await getApiFeedById(bundle.court.id, body.feedId);
+      if (!feed) {
+        return NextResponse.json({ error: "Feed not found." }, { status: 404 });
+      }
+      const result = await fetchApiFeed({
+        apiUrl: feed.api_url,
+        jsonPath: feed.json_path,
+      });
+      return NextResponse.json({
+        items: result.items,
+        count: result.count,
+      });
+    }
+
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const membership = await getMembershipForUser(session.userId);
@@ -249,18 +300,6 @@ export async function POST(request: Request, { params }: Params) {
         { status: 403 },
       );
     }
-
-    const body = (await request.json()) as {
-      kind?: "playlist" | "moodboard" | "score";
-      title?: string;
-      artist?: string;
-      url?: string;
-      imageUrl?: string;
-      sourceUrl?: string;
-      replies?: number;
-      reposts?: number;
-      mentions?: number;
-    };
 
     if (body.kind === "score") {
       const replies = Math.max(0, Math.min(50, Math.round(body.replies ?? 0)));
@@ -352,6 +391,79 @@ export async function POST(request: Request, { params }: Params) {
           by: session.name,
         },
       });
+    }
+
+    if (body.kind === "api-preview") {
+      if (bundle.court.widget !== "api") {
+        return NextResponse.json(
+          { error: "This hall is not in API import mode." },
+          { status: 400 },
+        );
+      }
+      const result = await fetchApiFeed({
+        apiUrl: body.apiUrl ?? "",
+        jsonPath: body.jsonPath,
+      });
+      return NextResponse.json({
+        items: result.items,
+        count: result.count,
+      });
+    }
+
+    if (body.kind === "api") {
+      if (bundle.court.widget !== "api") {
+        return NextResponse.json(
+          { error: "This hall is not in API import mode." },
+          { status: 400 },
+        );
+      }
+      // Validate the endpoint before saving.
+      await fetchApiFeed({
+        apiUrl: body.apiUrl ?? "",
+        jsonPath: body.jsonPath,
+      });
+      const feed = await addApiFeed({
+        courtId: bundle.court.id,
+        userId: session.userId,
+        label: body.label || body.title,
+        apiUrl: body.apiUrl ?? "",
+        jsonPath: body.jsonPath,
+      });
+      return NextResponse.json({
+        feed: {
+          id: feed.id,
+          label: feed.label,
+          apiUrl: feed.api_url,
+          jsonPath: feed.json_path,
+          by: session.name,
+          userId: session.userId,
+        },
+      });
+    }
+
+    if (body.kind === "api-remove") {
+      if (bundle.court.widget !== "api") {
+        return NextResponse.json(
+          { error: "This hall is not in API import mode." },
+          { status: 400 },
+        );
+      }
+      if (!body.feedId) {
+        return NextResponse.json({ error: "Feed id required." }, { status: 400 });
+      }
+      const removed = await removeApiFeed({
+        courtId: bundle.court.id,
+        feedId: body.feedId,
+        userId: session.userId,
+        isLord: membership.role === "lord",
+      });
+      if (!removed) {
+        return NextResponse.json(
+          { error: "Could not remove that feed." },
+          { status: 404 },
+        );
+      }
+      return NextResponse.json({ ok: true, feedId: body.feedId });
     }
 
     return NextResponse.json({ error: "Unknown contribution." }, { status: 400 });

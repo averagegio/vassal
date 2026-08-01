@@ -53,5 +53,5 @@ npm run dev
 - `/login` enter
 - `/dashboard` holding + Court tab (followers / following counts)
 - `/u/[handle]` public profile (follow / unfollow, lists)
-- `/hall/[slug]` Lord's Hall (scoreboard, follow Lord, themes, widgets, scrolls)
+- `/hall/[slug]` Lord's Hall (scoreboard, follow Lord, themes, widgets including API import, scrolls)
 - `/scroll/[token]` Custom parchment invite (vassal summons or Lord nomination)

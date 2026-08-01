@@ -98,6 +98,14 @@ export type HallData = {
     sourceUrl: string;
     by?: string;
   }>;
+  apiFeeds: Array<{
+    id: string;
+    label: string;
+    apiUrl: string;
+    jsonPath: string;
+    by?: string;
+    userId?: string;
+  }>;
   viewer: {
     isMember: boolean;
     isLord: boolean;
@@ -106,6 +114,14 @@ export type HallData = {
     userId?: string | null;
     isFollowingLord?: boolean;
   };
+};
+
+type ApiFeedItem = {
+  title: string;
+  subtitle: string;
+  url: string;
+  imageUrl: string;
+  description: string;
 };
 
 type HallTab = "scoreboard" | "community" | "setup";
@@ -148,7 +164,12 @@ function resolveInitialTab(
 
 export function LordsHall({ initial, initialTab }: LordsHallProps) {
   const router = useRouter();
-  const [data, setData] = useState(initial);
+  const [data, setData] = useState<HallData>(() => ({
+    ...initial,
+    apiFeeds: initial.apiFeeds ?? [],
+    playlist: initial.playlist ?? [],
+    moodboard: initial.moodboard ?? [],
+  }));
   const [tab, setTab] = useState<HallTab>(() =>
     resolveInitialTab(initial, initialTab),
   );
@@ -160,6 +181,14 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
   const [pinTitle, setPinTitle] = useState("");
   const [pinImage, setPinImage] = useState("");
   const [pinSource, setPinSource] = useState("");
+  const [apiLabel, setApiLabel] = useState("");
+  const [apiUrl, setApiUrl] = useState("");
+  const [apiJsonPath, setApiJsonPath] = useState("");
+  const [activeFeedId, setActiveFeedId] = useState<string | null>(
+    initial.apiFeeds[0]?.id ?? null,
+  );
+  const [apiItems, setApiItems] = useState<ApiFeedItem[]>([]);
+  const [apiLoading, setApiLoading] = useState(false);
   const [activeTrackId, setActiveTrackId] = useState<string | null>(
     initial.playlist[0]?.id ?? null,
   );
@@ -183,12 +212,71 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
   );
   const activeTrack =
     data.playlist.find((t) => t.id === activeTrackId) ?? data.playlist[0] ?? null;
+  const resolvedFeedId = activeFeedId ?? data.apiFeeds[0]?.id ?? null;
+  const activeFeed =
+    data.apiFeeds.find((f) => f.id === resolvedFeedId) ?? null;
+  const visibleApiItems = activeFeed ? apiItems : [];
 
   useEffect(() => {
     if (!activeTrackId && data.playlist[0]) {
       setActiveTrackId(data.playlist[0].id);
     }
   }, [activeTrackId, data.playlist]);
+
+  const loadFeedItems = async (feedId: string) => {
+    setApiLoading(true);
+    setMessage(null);
+    try {
+      const res = await fetch(`/api/court/${data.court.slug}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "api-preview", feedId }),
+      });
+      const json = (await res.json()) as {
+        error?: string;
+        items?: ApiFeedItem[];
+      };
+      if (!res.ok) {
+        setApiItems([]);
+        setMessage(json.error || "Could not load API feed.");
+        return;
+      }
+      setApiItems(json.items ?? []);
+    } finally {
+      setApiLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (data.court.widget !== "api" || !resolvedFeedId) return;
+    let cancelled = false;
+    void (async () => {
+      setApiLoading(true);
+      try {
+        const res = await fetch(`/api/court/${data.court.slug}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ kind: "api-preview", feedId: resolvedFeedId }),
+        });
+        const json = (await res.json()) as {
+          error?: string;
+          items?: ApiFeedItem[];
+        };
+        if (cancelled) return;
+        if (!res.ok) {
+          setApiItems([]);
+          setMessage(json.error || "Could not load API feed.");
+          return;
+        }
+        setApiItems(json.items ?? []);
+      } finally {
+        if (!cancelled) setApiLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [data.court.widget, resolvedFeedId, data.court.slug]);
 
   const refresh = async () => {
     const res = await fetch(`/api/court/${data.court.slug}`);
@@ -198,6 +286,9 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
       ...json,
       season: json.season ?? null,
       scoreboard: json.scoreboard ?? [],
+      apiFeeds: json.apiFeeds ?? [],
+      playlist: json.playlist ?? [],
+      moodboard: json.moodboard ?? [],
     });
     if (json.season) {
       setSeasonTitle(json.season.title);
@@ -264,6 +355,9 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
       }
       if (json.season) {
         setData((prev) => ({ ...prev, season: json.season! }));
+      }
+      if (patch.widget !== undefined) {
+        await refresh();
       }
       setMessage("Hall updated.");
     } finally {
@@ -417,6 +511,111 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
       setPinImage("");
       setPinSource("");
       setMessage("Pinned to the board.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const importApiFeed = async () => {
+    if (!apiUrl.trim()) {
+      setMessage("API URL required.");
+      return;
+    }
+    setBusy(true);
+    setMessage(null);
+    try {
+      const res = await fetch(`/api/court/${data.court.slug}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "api",
+          label: apiLabel,
+          apiUrl,
+          jsonPath: apiJsonPath,
+        }),
+      });
+      const json = (await res.json()) as {
+        error?: string;
+        feed?: HallData["apiFeeds"][number];
+      };
+      if (res.status === 401) {
+        setMessage("Sign in to import an API.");
+        return;
+      }
+      if (!res.ok || !json.feed) {
+        setMessage(json.error || "Could not import API.");
+        return;
+      }
+      setData((prev) => ({
+        ...prev,
+        apiFeeds: [json.feed!, ...prev.apiFeeds],
+      }));
+      setActiveFeedId(json.feed.id);
+      setApiLabel("");
+      setApiUrl("");
+      setApiJsonPath("");
+      setMessage("API feed imported.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const previewApiFeed = async () => {
+    if (!apiUrl.trim()) {
+      setMessage("API URL required to preview.");
+      return;
+    }
+    setApiLoading(true);
+    setMessage(null);
+    try {
+      const res = await fetch(`/api/court/${data.court.slug}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "api-preview",
+          apiUrl,
+          jsonPath: apiJsonPath,
+        }),
+      });
+      const json = (await res.json()) as {
+        error?: string;
+        items?: ApiFeedItem[];
+        count?: number;
+      };
+      if (!res.ok) {
+        setMessage(json.error || "Preview failed.");
+        return;
+      }
+      setApiItems(json.items ?? []);
+      setMessage(`Preview loaded ${json.count ?? 0} items.`);
+    } finally {
+      setApiLoading(false);
+    }
+  };
+
+  const removeFeed = async (feedId: string) => {
+    setBusy(true);
+    setMessage(null);
+    try {
+      const res = await fetch(`/api/court/${data.court.slug}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "api-remove", feedId }),
+      });
+      const json = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        setMessage(json.error || "Could not remove feed.");
+        return;
+      }
+      setData((prev) => {
+        const apiFeeds = prev.apiFeeds.filter((f) => f.id !== feedId);
+        return { ...prev, apiFeeds };
+      });
+      if (activeFeedId === feedId) {
+        setActiveFeedId(null);
+        setApiItems([]);
+      }
+      setMessage("Feed removed.");
     } finally {
       setBusy(false);
     }
@@ -857,6 +1056,180 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               </>
             ) : null}
 
+            {data.court.widget === "api" ? (
+              <>
+                <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
+                  API import
+                </h2>
+                <p className="mt-1 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
+                  Paste a public JSON API — the hall fetches and shows the feed.
+                </p>
+
+                {data.viewer.isMember ? (
+                  <div className="mt-5 flex flex-col gap-2">
+                    <input
+                      value={apiUrl}
+                      onChange={(e) => setApiUrl(e.target.value)}
+                      placeholder="https://api.example.com/feed.json"
+                      className="auth-input border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
+                    />
+                    <input
+                      value={apiLabel}
+                      onChange={(e) => setApiLabel(e.target.value)}
+                      placeholder="Label (optional)"
+                      className="auth-input border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
+                    />
+                    <input
+                      value={apiJsonPath}
+                      onChange={(e) => setApiJsonPath(e.target.value)}
+                      placeholder="JSON path (optional, e.g. data.items)"
+                      className="auth-input border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
+                    />
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        disabled={busy || apiLoading}
+                        onClick={() => void previewApiFeed()}
+                        className="border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] px-3 py-2 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.16em] uppercase"
+                      >
+                        Preview
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy || apiLoading}
+                        onClick={() => void importApiFeed()}
+                        className="border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_28%,transparent)] px-3 py-2 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.16em] uppercase"
+                      >
+                        Import API
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="mt-4 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
+                    Swear fealty to import your own API feed.
+                  </p>
+                )}
+
+                {data.apiFeeds.length > 0 ? (
+                  <ul className="mt-5 flex flex-col gap-2">
+                    {data.apiFeeds.map((feed) => {
+                      const active = activeFeed?.id === feed.id;
+                      const canRemove =
+                        data.viewer.isLord ||
+                        (data.viewer.userId &&
+                          feed.userId === data.viewer.userId);
+                      return (
+                        <li key={feed.id} className="flex items-stretch gap-2">
+                          <button
+                            type="button"
+                            className={`hall-track-btn min-w-0 flex-1 ${
+                              active ? "hall-track-active" : ""
+                            }`}
+                            onClick={() => setActiveFeedId(feed.id)}
+                          >
+                            <span className="block truncate font-[family-name:var(--font-display)] text-sm tracking-[0.06em]">
+                              {feed.label || "Untitled feed"}
+                            </span>
+                            <span className="mt-1 block truncate text-xs text-[color-mix(in_srgb,var(--vassal-cream)_50%,transparent)]">
+                              {feed.by ? `Imported by ${feed.by} · ` : ""}
+                              {feed.apiUrl}
+                            </span>
+                          </button>
+                          {canRemove ? (
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => void removeFeed(feed.id)}
+                              className="shrink-0 border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] px-2 font-[family-name:var(--font-display)] text-[0.55rem] tracking-[0.12em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_60%,transparent)]"
+                            >
+                              Remove
+                            </button>
+                          ) : null}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : null}
+
+                <div className="mt-5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
+                      {activeFeed
+                        ? activeFeed.label || "Feed items"
+                        : "Feed items"}
+                    </p>
+                    {activeFeed ? (
+                      <button
+                        type="button"
+                        disabled={apiLoading}
+                        onClick={() => void loadFeedItems(activeFeed.id)}
+                        className="font-[family-name:var(--font-display)] text-[0.55rem] tracking-[0.14em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]"
+                      >
+                        {apiLoading ? "Loading…" : "Refresh"}
+                      </button>
+                    ) : null}
+                  </div>
+                  {apiLoading && visibleApiItems.length === 0 ? (
+                    <p className="mt-3 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
+                      Fetching API…
+                    </p>
+                  ) : null}
+                  {!apiLoading && !activeFeed ? (
+                    <p className="mt-3 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
+                      No feeds yet — import a public JSON API to begin.
+                    </p>
+                  ) : null}
+                  {!apiLoading && activeFeed && visibleApiItems.length === 0 ? (
+                    <p className="mt-3 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
+                      No items found. Try a JSON path like data.items.
+                    </p>
+                  ) : null}
+                  <ul className="mt-3 flex flex-col gap-3">
+                    {visibleApiItems.map((item, index) => (
+                      <li key={`${item.title}-${index}`} className="hall-api-item">
+                        <div className="flex gap-3">
+                          {item.imageUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={item.imageUrl}
+                              alt=""
+                              className="h-16 w-16 shrink-0 object-cover"
+                            />
+                          ) : null}
+                          <div className="min-w-0 flex-1">
+                            {item.url ? (
+                              <a
+                                href={item.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="font-[family-name:var(--font-display)] text-sm tracking-[0.06em] text-[var(--vassal-cream)] hover:text-[var(--vassal-gold)]"
+                              >
+                                {item.title}
+                              </a>
+                            ) : (
+                              <p className="font-[family-name:var(--font-display)] text-sm tracking-[0.06em]">
+                                {item.title}
+                              </p>
+                            )}
+                            {item.subtitle ? (
+                              <p className="mt-1 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
+                                {item.subtitle}
+                              </p>
+                            ) : null}
+                            {item.description ? (
+                              <p className="mt-1 font-[family-name:var(--font-body)] text-sm text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)]">
+                                {item.description}
+                              </p>
+                            ) : null}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            ) : null}
+
             {data.court.widget === "none" ? (
               <div>
                 <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
@@ -864,7 +1237,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                 </h2>
                 <p className="mt-2 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
                   {data.viewer.isLord
-                    ? "Open Lord setup to add a playlist or mood board widget for your court."
+                    ? "Open Lord setup to add a playlist, mood board, or API import widget."
                     : "Your Lord has not enabled a community widget yet. Check the scoreboard while you wait."}
                 </p>
                 {data.viewer.isLord ? (
@@ -893,8 +1266,8 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               Make the hall yours
             </h2>
             <p className="mt-1 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
-              Pick a hall theme, add a community widget, and seal scrolls to
-              invite vassals.
+              Pick a hall theme, add a widget (including API import), and seal
+              scrolls to invite vassals.
             </p>
 
             <div className="mt-5">

@@ -87,6 +87,14 @@ function toHallData(
       sourceUrl: p.source_url,
       by: p.name,
     })),
+    apiFeeds: bundle.apiFeeds.map((f) => ({
+      id: f.id,
+      label: f.label,
+      apiUrl: f.api_url,
+      jsonPath: f.json_path,
+      by: f.name,
+      userId: f.user_id,
+    })),
     viewer,
   };
 }

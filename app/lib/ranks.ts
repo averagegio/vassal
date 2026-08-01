@@ -52,19 +52,21 @@ export const THEME_BLURB: Record<HallTheme, string> = {
   slate: "Cool grey bastion",
 };
 
-export const HALL_WIDGETS = ["none", "playlist", "moodboard"] as const;
+export const HALL_WIDGETS = ["none", "playlist", "moodboard", "api"] as const;
 export type HallWidget = (typeof HALL_WIDGETS)[number];
 
 export const WIDGET_LABEL: Record<HallWidget, string> = {
   none: "No widget",
   playlist: "Playlist",
   moodboard: "Mood board",
+  api: "API import",
 };
 
 export const WIDGET_BLURB: Record<HallWidget, string> = {
   none: "Scoreboard and petitions only",
   playlist: "Shared track queue for the court",
   moodboard: "Shared image pins for the court",
+  api: "Import a public JSON API feed",
 };
 
 export function slugifyCourt(input: string) {

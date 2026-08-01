@@ -1,4 +1,5 @@
 import { ensureSchema, getDb } from "./db";
+import { safePublicApiUrl, sanitizeJsonPath } from "./api-feed";
 import {
   type CourtRank,
   type HallTheme,
@@ -49,6 +50,17 @@ export type DbMoodPin = {
   title: string;
   image_url: string;
   source_url: string;
+  created_at: string;
+  name?: string;
+};
+
+export type DbApiFeed = {
+  id: string;
+  court_id: string;
+  user_id: string;
+  label: string;
+  api_url: string;
+  json_path: string;
   created_at: string;
   name?: string;
 };
@@ -362,16 +374,104 @@ export async function addMoodPin(input: {
   return rows[0] as DbMoodPin;
 }
 
+export async function listApiFeeds(courtId: string): Promise<DbApiFeed[]> {
+  await ensureSchema();
+  const db = getDb();
+  const rows = await db`
+    SELECT f.id, f.court_id, f.user_id, f.label, f.api_url, f.json_path,
+           f.created_at, u.name
+    FROM hall_api_feeds f
+    JOIN users u ON u.id = f.user_id
+    WHERE f.court_id = ${courtId}
+    ORDER BY f.created_at DESC
+    LIMIT 40
+  `;
+  return rows as DbApiFeed[];
+}
+
+export async function getApiFeedById(
+  courtId: string,
+  feedId: string,
+): Promise<DbApiFeed | null> {
+  await ensureSchema();
+  const db = getDb();
+  const rows = await db`
+    SELECT f.id, f.court_id, f.user_id, f.label, f.api_url, f.json_path,
+           f.created_at, u.name
+    FROM hall_api_feeds f
+    JOIN users u ON u.id = f.user_id
+    WHERE f.court_id = ${courtId} AND f.id = ${feedId}
+    LIMIT 1
+  `;
+  return (rows[0] as DbApiFeed | undefined) ?? null;
+}
+
+export async function addApiFeed(input: {
+  courtId: string;
+  userId: string;
+  label?: string;
+  apiUrl: string;
+  jsonPath?: string;
+}): Promise<DbApiFeed> {
+  await ensureSchema();
+  const apiUrl = safePublicApiUrl(input.apiUrl);
+  if (!apiUrl) {
+    throw new Error("API URL must be a public http(s) link.");
+  }
+  const jsonPath = sanitizeJsonPath(input.jsonPath);
+  const label = (input.label ?? "").trim().slice(0, 80);
+  const db = getDb();
+  const rows = await db`
+    INSERT INTO hall_api_feeds (court_id, user_id, label, api_url, json_path)
+    VALUES (
+      ${input.courtId},
+      ${input.userId},
+      ${label},
+      ${apiUrl},
+      ${jsonPath}
+    )
+    RETURNING id, court_id, user_id, label, api_url, json_path, created_at
+  `;
+  return rows[0] as DbApiFeed;
+}
+
+export async function removeApiFeed(input: {
+  courtId: string;
+  feedId: string;
+  userId: string;
+  isLord: boolean;
+}): Promise<boolean> {
+  await ensureSchema();
+  const db = getDb();
+  if (input.isLord) {
+    const rows = await db`
+      DELETE FROM hall_api_feeds
+      WHERE id = ${input.feedId} AND court_id = ${input.courtId}
+      RETURNING id
+    `;
+    return rows.length > 0;
+  }
+  const rows = await db`
+    DELETE FROM hall_api_feeds
+    WHERE id = ${input.feedId}
+      AND court_id = ${input.courtId}
+      AND user_id = ${input.userId}
+    RETURNING id
+  `;
+  return rows.length > 0;
+}
+
 export async function getHallBundle(slug: string) {
   const court = await getCourtBySlug(slug);
   if (!court) return null;
 
   const season = await ensureActiveSeason(court.id, court.lord_user_id);
-  const [leaderboard, playlist, moodboard, scoreboard, lordRows] =
+  const [leaderboard, playlist, moodboard, apiFeeds, scoreboard, lordRows] =
     await Promise.all([
       listLeaderboard(court.id),
       court.widget === "playlist" ? listPlaylist(court.id) : Promise.resolve([]),
       court.widget === "moodboard" ? listMoodPins(court.id) : Promise.resolve([]),
+      court.widget === "api" ? listApiFeeds(court.id) : Promise.resolve([]),
       listScoreboard(season.id),
       (async () => {
         const db = getDb();
@@ -405,6 +505,7 @@ export async function getHallBundle(slug: string) {
     leaderboard,
     playlist,
     moodboard,
+    apiFeeds,
     season,
     scoreboard: scores,
     lord: lord ?? null,
