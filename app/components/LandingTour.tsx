@@ -244,7 +244,7 @@ export function LandingTour({ ready }: LandingTourProps) {
               </button>
             )}
             <button type="button" className="tour-next" onClick={next}>
-              {isLast ? "Enter the realm" : "Next"}
+              {isLast ? "Got it" : "Next"}
             </button>
           </div>
         </div>

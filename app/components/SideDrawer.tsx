@@ -11,6 +11,7 @@ type SideDrawerProps = {
   onOpen: () => void;
   onClose: () => void;
   viewer?: LandingViewer | null;
+  onOpenLexicon?: () => void;
 };
 
 const ANON_LINKS = [
@@ -35,6 +36,7 @@ export function SideDrawer({
   onOpen,
   onClose,
   viewer = null,
+  onOpenLexicon,
 }: SideDrawerProps) {
   const router = useRouter();
   const links = viewer ? MEMBER_LINKS : ANON_LINKS;
@@ -125,7 +127,7 @@ export function SideDrawer({
                 {viewer.name}
               </span>
               <span className="mt-0.5 block font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.18em] uppercase text-[var(--vassal-gold)]">
-                Enter holding
+                Open dashboard
               </span>
             </span>
           </Link>
@@ -153,6 +155,18 @@ export function SideDrawer({
               </a>
             ),
           )}
+          {onOpenLexicon ? (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenLexicon();
+              }}
+              className="text-left font-[family-name:var(--font-display)] text-sm tracking-[0.18em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_85%,transparent)] transition hover:text-[var(--vassal-blood)]"
+            >
+              Lexicon
+            </button>
+          ) : null}
         </nav>
 
         {viewer ? (
@@ -166,7 +180,7 @@ export function SideDrawer({
         ) : null}
 
         <p className="mt-auto font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_50%,transparent)]">
-          Swear. Seal. Rise.
+          Join. Approve. Grow.
         </p>
       </aside>
     </>

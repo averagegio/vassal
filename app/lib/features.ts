@@ -1,4 +1,4 @@
-/** Shared product copy — keep punchy. */
+/** Shared product copy — keep punchy and plain. */
 
 export type TenureTier = {
   id: string;
@@ -25,61 +25,61 @@ export type Petition = {
 export const FAN_FEATURES: FeatureItem[] = [
   {
     id: "tenure",
-    title: "Tenure",
-    body: "Tribute buys a plot—not a feed dump.",
+    title: "Paid tiers",
+    body: "Fans pay for a membership level — not just a noisy feed.",
   },
   {
     id: "petitions",
-    title: "Petitions",
-    body: "Tenants ask. You seal. They feel seen.",
+    title: "Requests",
+    body: "Members ask for access or favors. You approve each one.",
   },
   {
     id: "audiences",
-    title: "Audiences",
-    body: "Timed court slots. Loyalty goes first.",
+    title: "Live slots",
+    body: "Timed sessions with you. Loyal fans go first.",
   },
   {
     id: "decrees",
-    title: "Decrees",
-    body: "Steward drafts. You crown the words.",
+    title: "Updates",
+    body: "The Steward drafts posts. You approve before they go out.",
   },
   {
     id: "ranks",
     title: "Ranks",
-    body: "Serf → Knight → Lord. Crown in public.",
+    body: "Public status ladder — earn recognition in the open.",
   },
   {
     id: "campaigns",
     title: "Seasons",
-    body: "Quests and titles. Churn gets a story.",
+    body: "Time-boxed challenges and titles so membership has a story.",
   },
 ];
 
 export const REAL_ESTATE_FEATURES: FeatureItem[] = [
   {
     id: "steward-door",
-    title: "Steward",
-    body: "Rent nudges and FAQ—without the inbox.",
+    title: "AI front desk",
+    body: "Rent reminders and FAQs without living in your inbox.",
   },
   {
     id: "house-law",
-    title: "House law",
-    body: "Rules on join. Steward handles the rest.",
+    title: "House rules",
+    body: "Shown on join. The Steward answers the repeat questions.",
   },
   {
     id: "repair-petitions",
     title: "Repairs",
-    body: "Photo in. You seal. Noise stays out.",
+    body: "Photo in, you approve, the noise stays out of group chats.",
   },
   {
     id: "standing",
-    title: "Standing",
-    body: "On-time and care unlock real perks.",
+    title: "Tenant score",
+    body: "On-time and careful tenants unlock real perks.",
   },
   {
     id: "short-stay",
     title: "Short-stay",
-    body: "Rules quiz, FAQ, returner ranks.",
+    body: "Rules quiz, FAQ, and return-guest recognition.",
   },
   {
     id: "renewals",
@@ -91,17 +91,17 @@ export const REAL_ESTATE_FEATURES: FeatureItem[] = [
 export const SHARED_STEWARD: FeatureItem[] = [
   {
     id: "decree-draft",
-    title: "Drafts decrees",
-    body: "Your voice. Your seal.",
+    title: "Drafts updates",
+    body: "Your voice. Your approval.",
   },
   {
     id: "favor-list",
-    title: "Names favor",
-    body: "Ranks who earned the shoutout.",
+    title: "Names who earned it",
+    body: "Surfaces members worth a shoutout.",
   },
   {
     id: "bounded-voice",
-    title: "Stays Steward",
+    title: "Stays the Steward",
     body: "Never fakes being you.",
   },
 ];
@@ -109,45 +109,45 @@ export const SHARED_STEWARD: FeatureItem[] = [
 export const FAN_TIERS: TenureTier[] = [
   {
     id: "serf",
-    name: "Serf's Plot",
+    name: "Starter",
     rent: "Entry",
-    blurb: "Common hall access.",
-    perks: ["Decrees", "Duties", "Ledger", "Quests"],
+    blurb: "Basic community access.",
+    perks: ["Updates", "Tasks", "Ledger", "Challenges"],
   },
   {
     id: "freeholder",
-    name: "Freeholder",
+    name: "Member+",
     rent: "Mid",
-    blurb: "Private hall + petition slot.",
+    blurb: "Private rooms + a request slot.",
     perks: ["Drops", "Priority", "Early access", "Boost"],
   },
   {
     id: "retainer",
-    name: "Retainer",
+    name: "Inner circle",
     rent: "High",
-    blurb: "Recurring audience with you.",
-    perks: ["Audiences", "Duties", "Coronation", "Counsel"],
+    blurb: "Recurring time with you.",
+    perks: ["Live slots", "Tasks", "Titles", "Counsel"],
   },
 ];
 
 export const REAL_ESTATE_TIERS: TenureTier[] = [
   {
     id: "host",
-    name: "Host Holding",
+    name: "Host plan",
     rent: "$29/mo",
     blurb: "One short-stay listing.",
-    perks: ["Check-in", "Law quiz", "Petitions", "Returners"],
+    perks: ["Check-in", "Rules quiz", "Requests", "Returners"],
   },
   {
     id: "freehold",
-    name: "Small Freehold",
+    name: "Small portfolio",
     rent: "$49/mo",
     blurb: "1–10 doors.",
-    perks: ["Front desk", "Repairs", "Standing", "Decrees"],
+    perks: ["Front desk", "Repairs", "Tenant score", "Updates"],
   },
   {
     id: "manor",
-    name: "Manor Seat",
+    name: "Larger portfolio",
     rent: "$79/mo",
     blurb: "Up to 20 units.",
     perks: ["Renewals", "Chill risk", "Referrals", "Support"],

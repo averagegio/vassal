@@ -934,6 +934,189 @@ body {
   }
 }
 
+/* ── Lexicon appendix ── */
+.lexicon-term {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--vassal-gold) 55%, transparent);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.lexicon-term:hover,
+.lexicon-term:focus-visible {
+  border-bottom-color: var(--vassal-blood);
+  color: var(--vassal-cream);
+  outline: none;
+}
+
+.lexicon-root {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.lexicon-veil {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(4, 2, 3, 0.72);
+  cursor: pointer;
+  animation: tour-veil-in 0.25s ease both;
+}
+
+.lexicon-panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(94vw, 28rem);
+  max-height: min(78vh, 36rem);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 38%, transparent);
+  background: linear-gradient(165deg, rgba(48, 14, 18, 0.98), rgba(10, 5, 6, 0.99));
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+  animation: tour-panel-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.lexicon-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.2rem 0.85rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--vassal-red) 35%, transparent);
+}
+
+.lexicon-eyebrow {
+  margin: 0;
+  font-family: var(--font-display), serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--vassal-gold);
+}
+
+.lexicon-title {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-display), serif;
+  font-size: 1.45rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--vassal-cream);
+}
+
+.lexicon-lead {
+  margin: 0.45rem 0 0;
+  max-width: 16rem;
+  font-family: var(--font-body), serif;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: color-mix(in srgb, var(--vassal-cream) 68%, transparent);
+}
+
+.lexicon-close {
+  flex-shrink: 0;
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 40%, transparent);
+  background: transparent;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-display), serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--vassal-cream);
+  cursor: pointer;
+}
+
+.lexicon-close:hover {
+  border-color: var(--vassal-blood);
+}
+
+.lexicon-focus {
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--vassal-gold) 22%, transparent);
+  background: color-mix(in srgb, var(--vassal-red) 14%, transparent);
+}
+
+.lexicon-term-name {
+  margin: 0;
+  font-family: var(--font-display), serif;
+  font-size: 1rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vassal-cream);
+}
+
+.lexicon-plain {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-display), serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: var(--vassal-gold);
+}
+
+.lexicon-detail {
+  margin: 0.55rem 0 0;
+  font-family: var(--font-body), serif;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--vassal-cream) 82%, transparent);
+}
+
+.lexicon-list {
+  flex: 1;
+  overflow: auto;
+  padding: 0.5rem 0.55rem 0.75rem;
+}
+
+.lexicon-row {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  border: 0;
+  border-left: 2px solid transparent;
+  background: transparent;
+  padding: 0.7rem 0.75rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.lexicon-row:hover,
+.lexicon-row-active {
+  border-left-color: var(--vassal-blood);
+  background: color-mix(in srgb, var(--vassal-red) 16%, transparent);
+}
+
+.lexicon-row-term {
+  font-family: var(--font-display), serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vassal-cream);
+}
+
+.lexicon-row-plain {
+  font-family: var(--font-body), serif;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: color-mix(in srgb, var(--vassal-cream) 62%, transparent);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .flag-cloth-stage,
   .flag-billow-track,
@@ -947,7 +1130,9 @@ body {
   .steward-glow,
   .tour-veil,
   .tour-spotlight,
-  .tour-panel {
+  .tour-panel,
+  .lexicon-veil,
+  .lexicon-panel {
     animation: none !important;
   }
 
