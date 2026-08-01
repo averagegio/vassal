@@ -661,6 +661,16 @@ body {
   }
 }
 
+.hall-api-item {
+  border-top: 1px solid color-mix(in srgb, var(--vassal-gold) 16%, transparent);
+  padding-top: 0.85rem;
+}
+
+.hall-api-item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
 .scroll-composer {
   border-top: 1px solid color-mix(in srgb, var(--vassal-gold) 18%, transparent);
   padding-top: 1.25rem;

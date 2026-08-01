@@ -58,15 +58,18 @@ CREATE TABLE IF NOT EXISTS courts (
   theme TEXT NOT NULL DEFAULT 'crimson'
     CHECK (theme IN ('crimson', 'midnight', 'goldleaf', 'neon', 'atelier', 'frost', 'verdant', 'slate')),
   widget TEXT NOT NULL DEFAULT 'none'
-    CHECK (widget IN ('none', 'playlist', 'moodboard')),
+    CHECK (widget IN ('none', 'playlist', 'moodboard', 'api')),
   tagline TEXT NOT NULL DEFAULT '',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Widen theme check for existing installs
+-- Widen theme / widget checks for existing installs
 ALTER TABLE courts DROP CONSTRAINT IF EXISTS courts_theme_check;
 ALTER TABLE courts ADD CONSTRAINT courts_theme_check
   CHECK (theme IN ('crimson', 'midnight', 'goldleaf', 'neon', 'atelier', 'frost', 'verdant', 'slate'));
+ALTER TABLE courts DROP CONSTRAINT IF EXISTS courts_widget_check;
+ALTER TABLE courts ADD CONSTRAINT courts_widget_check
+  CHECK (widget IN ('none', 'playlist', 'moodboard', 'api'));
 
 CREATE TABLE IF NOT EXISTS court_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -97,6 +100,16 @@ CREATE TABLE IF NOT EXISTS hall_mood_pins (
   title TEXT NOT NULL DEFAULT '',
   image_url TEXT NOT NULL,
   source_url TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS hall_api_feeds (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  court_id UUID NOT NULL REFERENCES courts(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  label TEXT NOT NULL DEFAULT '',
+  api_url TEXT NOT NULL,
+  json_path TEXT NOT NULL DEFAULT '',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -139,6 +152,7 @@ CREATE INDEX IF NOT EXISTS courts_slug_idx ON courts(slug);
 CREATE INDEX IF NOT EXISTS court_members_court_id_idx ON court_members(court_id);
 CREATE INDEX IF NOT EXISTS hall_playlist_court_id_idx ON hall_playlist_tracks(court_id);
 CREATE INDEX IF NOT EXISTS hall_mood_court_id_idx ON hall_mood_pins(court_id);
+CREATE INDEX IF NOT EXISTS hall_api_feeds_court_id_idx ON hall_api_feeds(court_id);
 CREATE INDEX IF NOT EXISTS court_seasons_court_id_idx ON court_seasons(court_id);
 CREATE INDEX IF NOT EXISTS season_scores_season_id_idx ON season_scores(season_id);
 CREATE INDEX IF NOT EXISTS follows_follower_id_idx ON follows(follower_id);
