@@ -15,6 +15,7 @@ import {
   HALL_WIDGETS,
 } from "../lib/ranks";
 import { FollowButton } from "./FollowButton";
+import { PetitionCompose } from "./PetitionCompose";
 import { VassalLogo } from "./VassalLogo";
 
 export type HallLeaderRow = {
@@ -654,6 +655,29 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
 
         {tab === "community" ? (
           <section className="dash-panel hall-panel-enter mt-5 p-4">
+            {data.viewer.isMember && !data.viewer.isLord ? (
+              <div className="mb-8 border-b border-[color-mix(in_srgb,var(--vassal-gold)_20%,transparent)] pb-8">
+                <PetitionCompose
+                  courtSlug={data.court.slug}
+                  subtitle={`Ask ${data.lord?.name || "your Lord"}. They seal grant, defer, or deny on their dashboard.`}
+                />
+              </div>
+            ) : null}
+            {data.viewer.isLord ? (
+              <p className="mb-6 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
+                Vassal petitions land on your{" "}
+                <Link href="/dashboard" className="text-[var(--vassal-gold)] underline-offset-4 hover:underline">
+                  dashboard
+                </Link>{" "}
+                to seal.
+              </p>
+            ) : null}
+            {!data.viewer.isMember ? (
+              <p className="mb-6 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
+                Swear fealty to file a petition with this Lord.
+              </p>
+            ) : null}
+
             {data.court.widget === "playlist" ? (
               <>
                 <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">

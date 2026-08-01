@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { profileHandle } from "../lib/profile";
 import { FollowButton } from "./FollowButton";
+import { PetitionCompose } from "./PetitionCompose";
 import { VassalLogo } from "./VassalLogo";
 
 export type ProfileListPerson = {
@@ -197,6 +198,19 @@ export function PublicProfile({
               Follow to keep them in your court circle. Swearing fealty (joining a
               hall) is separate.
             </p>
+            {!data.isSelf ? (
+              <div className="mt-8 border-t border-[color-mix(in_srgb,var(--vassal-gold)_20%,transparent)] pt-6">
+                <PetitionCompose
+                  toHandle={handle}
+                  title="Petition this holding"
+                  subtitle={
+                    data.user.holding === "estate"
+                      ? "Send a repair, renewal, or house ask. They seal on their dashboard."
+                      : "Ask for access, favor, or an audience. They seal on their dashboard."
+                  }
+                />
+              </div>
+            ) : null}
           </section>
         ) : (
           <section className="dash-panel mt-5 p-4">

@@ -90,19 +90,30 @@ export async function getCourtByLord(
 
 export async function getMembershipForUser(
   userId: string,
-): Promise<(DbCourtMember & { court_slug: string; court_name: string }) | null> {
+): Promise<
+  | (DbCourtMember & {
+      court_slug: string;
+      court_name: string;
+      lord_user_id: string;
+    })
+  | null
+> {
   await ensureSchema();
   const db = getDb();
   const rows = await db`
     SELECT m.id, m.court_id, m.user_id, m.rank, m.standing, m.role, m.joined_at,
-           c.slug AS court_slug, c.name AS court_name
+           c.slug AS court_slug, c.name AS court_name, c.lord_user_id
     FROM court_members m
     JOIN courts c ON c.id = m.court_id
     WHERE m.user_id = ${userId}
     LIMIT 1
   `;
   return (rows[0] as
-    | (DbCourtMember & { court_slug: string; court_name: string })
+    | (DbCourtMember & {
+        court_slug: string;
+        court_name: string;
+        lord_user_id: string;
+      })
     | undefined) ?? null;
 }
 
