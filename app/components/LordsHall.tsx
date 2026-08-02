@@ -162,6 +162,28 @@ function resolveInitialTab(
   return "scoreboard";
 }
 
+type HallSettingsDraft = {
+  theme: HallTheme;
+  widget: HallWidget;
+  tagline: string;
+  seasonTitle: string;
+  targetReplies: string;
+  targetReposts: string;
+  targetMentions: string;
+};
+
+function draftFromHall(hall: HallData): HallSettingsDraft {
+  return {
+    theme: hall.court.theme,
+    widget: hall.court.widget,
+    tagline: hall.court.tagline,
+    seasonTitle: hall.season?.title ?? "Season of Service",
+    targetReplies: String(hall.season?.targetReplies ?? 60),
+    targetReposts: String(hall.season?.targetReposts ?? 20),
+    targetMentions: String(hall.season?.targetMentions ?? 15),
+  };
+}
+
 export function LordsHall({ initial, initialTab }: LordsHallProps) {
   const router = useRouter();
   const [data, setData] = useState<HallData>(() => ({
@@ -192,19 +214,44 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
   const [activeTrackId, setActiveTrackId] = useState<string | null>(
     initial.playlist[0]?.id ?? null,
   );
-  const [seasonTitle, setSeasonTitle] = useState(initial.season?.title ?? "");
-  const [targetReplies, setTargetReplies] = useState(
-    String(initial.season?.targetReplies ?? 60),
+  const [draft, setDraft] = useState<HallSettingsDraft>(() =>
+    draftFromHall(initial),
   );
-  const [targetReposts, setTargetReposts] = useState(
-    String(initial.season?.targetReposts ?? 20),
-  );
-  const [targetMentions, setTargetMentions] = useState(
-    String(initial.season?.targetMentions ?? 15),
-  );
-  const [taglineDraft, setTaglineDraft] = useState(initial.court.tagline);
+  const [previewing, setPreviewing] = useState(false);
 
-  const theme = data.court.theme;
+  const settingsDirty = useMemo(() => {
+    const saved = draftFromHall(data);
+    return (
+      draft.theme !== saved.theme ||
+      draft.widget !== saved.widget ||
+      draft.tagline !== saved.tagline ||
+      draft.seasonTitle !== saved.seasonTitle ||
+      draft.targetReplies !== saved.targetReplies ||
+      draft.targetReposts !== saved.targetReposts ||
+      draft.targetMentions !== saved.targetMentions
+    );
+  }, [draft, data]);
+
+  // Draft look while editing, previewing, or when unsaved changes remain.
+  const showDraftLook = previewing || tab === "setup" || settingsDirty;
+  const theme = showDraftLook ? draft.theme : data.court.theme;
+  const displayTagline = showDraftLook ? draft.tagline : data.court.tagline;
+  const displayWidget = showDraftLook ? draft.widget : data.court.widget;
+  const displaySeasonTitle = showDraftLook
+    ? draft.seasonTitle
+    : data.season?.title || "Season scoreboard";
+  const displayTargets = {
+    replies: showDraftLook
+      ? Number(draft.targetReplies) || (data.season?.targetReplies ?? 60)
+      : (data.season?.targetReplies ?? 60),
+    reposts: showDraftLook
+      ? Number(draft.targetReposts) || (data.season?.targetReposts ?? 20)
+      : (data.season?.targetReposts ?? 20),
+    mentions: showDraftLook
+      ? Number(draft.targetMentions) || (data.season?.targetMentions ?? 15)
+      : (data.season?.targetMentions ?? 15),
+  };
+
   const myScore = useMemo(
     () =>
       data.scoreboard.find((r) => r.userId === data.viewer.userId) ?? null,
@@ -278,67 +325,56 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
     };
   }, [data.court.widget, resolvedFeedId, data.court.slug]);
 
-  const refresh = async () => {
+  const refresh = async (opts?: { syncDraft?: boolean }) => {
     const res = await fetch(`/api/court/${data.court.slug}`);
     if (!res.ok) return;
     const json = (await res.json()) as HallData;
-    setData({
+    const next: HallData = {
       ...json,
       season: json.season ?? null,
       scoreboard: json.scoreboard ?? [],
       apiFeeds: json.apiFeeds ?? [],
       playlist: json.playlist ?? [],
       moodboard: json.moodboard ?? [],
-    });
-    if (json.season) {
-      setSeasonTitle(json.season.title);
-      setTargetReplies(String(json.season.targetReplies));
-      setTargetReposts(String(json.season.targetReposts));
-      setTargetMentions(String(json.season.targetMentions));
+    };
+    setData(next);
+    if (opts?.syncDraft !== false) {
+      setDraft(draftFromHall(next));
     }
-    setTaglineDraft(json.court.tagline);
   };
 
-  const saveTheme = async (patch: {
-    theme?: HallTheme;
-    widget?: HallWidget;
-    tagline?: string;
-    seasonTitle?: string;
-    targetReplies?: number;
-    targetReposts?: number;
-    targetMentions?: number;
-  }) => {
-    setData((prev) => ({
-      ...prev,
-      court: {
-        ...prev.court,
-        theme: patch.theme ?? prev.court.theme,
-        widget: patch.widget ?? prev.court.widget,
-        tagline: patch.tagline ?? prev.court.tagline,
-      },
-      season:
-        prev.season &&
-        (patch.seasonTitle !== undefined ||
-          patch.targetReplies !== undefined ||
-          patch.targetReposts !== undefined ||
-          patch.targetMentions !== undefined)
-          ? {
-              ...prev.season,
-              title: patch.seasonTitle ?? prev.season.title,
-              targetReplies: patch.targetReplies ?? prev.season.targetReplies,
-              targetReposts: patch.targetReposts ?? prev.season.targetReposts,
-              targetMentions:
-                patch.targetMentions ?? prev.season.targetMentions,
-            }
-          : prev.season,
-    }));
+  const discardDraft = () => {
+    setDraft(draftFromHall(data));
+    setPreviewing(false);
+    setMessage("Draft discarded.");
+  };
+
+  const previewDraft = () => {
+    setPreviewing(true);
+    setTab("scoreboard");
+    setMessage("Previewing unsaved hall settings.");
+  };
+
+  const saveHallSettings = async () => {
+    if (!settingsDirty) {
+      setMessage("No changes to save.");
+      return;
+    }
     setBusy(true);
     setMessage(null);
     try {
       const res = await fetch(`/api/court/${data.court.slug}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(patch),
+        body: JSON.stringify({
+          theme: draft.theme,
+          widget: draft.widget,
+          tagline: draft.tagline,
+          seasonTitle: draft.seasonTitle,
+          targetReplies: Number(draft.targetReplies),
+          targetReposts: Number(draft.targetReposts),
+          targetMentions: Number(draft.targetMentions),
+        }),
       });
       if (res.status === 401 || res.status === 404) {
         setMessage("Sign in as Lord to save hall changes.");
@@ -346,20 +382,17 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
       }
       const json = (await res.json()) as {
         error?: string;
+        court?: HallData["court"];
         season?: HallSeason;
       };
       if (!res.ok) {
-        setMessage(json.error || "Could not update hall.");
-        await refresh();
+        setMessage(json.error || "Could not save hall settings.");
+        await refresh({ syncDraft: false });
         return;
       }
-      if (json.season) {
-        setData((prev) => ({ ...prev, season: json.season! }));
-      }
-      if (patch.widget !== undefined) {
-        await refresh();
-      }
-      setMessage("Hall updated.");
+      await refresh({ syncDraft: true });
+      setPreviewing(false);
+      setMessage("Hall settings saved.");
     } finally {
       setBusy(false);
     }
@@ -655,17 +688,58 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 py-6 pb-20">
+      <main className="mx-auto max-w-3xl px-4 py-6 pb-28">
+        {previewing && data.viewer.isLord ? (
+          <div className="hall-preview-banner mb-4" role="status">
+            <div>
+              <p className="font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
+                Previewing unsaved settings
+              </p>
+              <p className="mt-1 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)]">
+                Theme, widget, tagline, and season goals are draft-only until you
+                save.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setTab("setup")}
+                className="border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] px-3 py-2 font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.14em] uppercase"
+              >
+                Back to setup
+              </button>
+              <button
+                type="button"
+                disabled={busy || !settingsDirty}
+                onClick={() => void saveHallSettings()}
+                className="border border-[color-mix(in_srgb,var(--vassal-gold)_45%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_30%,transparent)] px-3 py-2 font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.14em] uppercase disabled:opacity-50"
+              >
+                Save settings
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={discardDraft}
+                className="border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] px-3 py-2 font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.14em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]"
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        ) : null}
+
         <section className="hall-hero px-5 py-6">
           <p className="hall-fade-in font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.28em] uppercase text-[var(--vassal-gold)]">
             Lord&apos;s Hall
+            {showDraftLook && settingsDirty ? " · Draft" : ""}
           </p>
           <h1 className="hall-fade-in hall-fade-in-delay mt-2 font-[family-name:var(--font-display)] text-3xl tracking-[0.08em]">
             {data.court.name}
           </h1>
-          {data.court.tagline ? (
+          {displayTagline ? (
             <p className="mt-2 font-[family-name:var(--font-body)] text-base italic text-[color-mix(in_srgb,var(--vassal-cream)_75%,transparent)]">
-              {data.court.tagline}
+              {displayTagline}
             </p>
           ) : null}
           {data.lord ? (
@@ -741,10 +815,11 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <div>
                 <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
-                  {data.season?.title || "Season scoreboard"}
+                  {displaySeasonTitle}
                 </h2>
                 <p className="mt-1 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
                   Every vassal sees the same board — replies, reposts, mentions.
+                  {previewing && settingsDirty ? " (draft preview)" : ""}
                 </p>
               </div>
               {data.season ? (
@@ -804,7 +879,6 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                 .slice()
                 .sort((a, b) => seasonPoints(b) - seasonPoints(a))
                 .map((row, index) => {
-                  const targets = data.season;
                   const mine = row.userId === data.viewer.userId;
                   return (
                     <li
@@ -846,17 +920,17 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                         <Meter
                           label="Replies"
                           value={row.replies}
-                          target={targets?.targetReplies ?? 60}
+                          target={displayTargets.replies}
                         />
                         <Meter
                           label="Reposts"
                           value={row.reposts}
-                          target={targets?.targetReposts ?? 20}
+                          target={displayTargets.reposts}
                         />
                         <Meter
                           label="Mentions"
                           value={row.mentions}
-                          target={targets?.targetMentions ?? 15}
+                          target={displayTargets.mentions}
                         />
                       </div>
                     </li>
@@ -891,7 +965,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               </p>
             ) : null}
 
-            {data.court.widget === "playlist" ? (
+            {displayWidget === "playlist" ? (
               <>
                 <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
                   Court playlist
@@ -986,7 +1060,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               </>
             ) : null}
 
-            {data.court.widget === "moodboard" ? (
+            {displayWidget === "moodboard" ? (
               <>
                 <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
                   Mood board
@@ -1056,7 +1130,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               </>
             ) : null}
 
-            {data.court.widget === "api" ? (
+            {displayWidget === "api" ? (
               <>
                 <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
                   API import
@@ -1230,14 +1304,16 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               </>
             ) : null}
 
-            {data.court.widget === "none" ? (
+            {displayWidget === "none" ? (
               <div>
                 <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
                   Community space
                 </h2>
                 <p className="mt-2 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
                   {data.viewer.isLord
-                    ? "Open Lord setup to add a playlist, mood board, or API import widget."
+                    ? previewing && draft.widget === "none"
+                      ? "Draft preview: no community widget selected. Save from Lord setup when ready."
+                      : "Open Lord setup to add a playlist, mood board, or API import widget."
                     : "Your Lord has not enabled a community widget yet. Check the scoreboard while you wait."}
                 </p>
                 {data.viewer.isLord ? (
@@ -1262,21 +1338,37 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
 
         {tab === "setup" && data.viewer.isLord ? (
           <section className="dash-panel hall-panel-enter mt-5 p-4">
-            <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
-              Make the hall yours
-            </h2>
-            <p className="mt-1 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
-              Pick a hall theme, add a widget (including API import), and seal
-              scrolls to invite vassals.
-            </p>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
+                  Make the hall yours
+                </h2>
+                <p className="mt-1 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
+                  Customize as a draft, preview the hall, then save when it looks
+                  right.
+                </p>
+              </div>
+              <p
+                className={`font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.14em] uppercase ${
+                  settingsDirty
+                    ? "text-[var(--vassal-gold)]"
+                    : "text-[color-mix(in_srgb,var(--vassal-cream)_45%,transparent)]"
+                }`}
+              >
+                {settingsDirty ? "Unsaved changes" : "All changes saved"}
+              </p>
+            </div>
 
             <div className="mt-5">
               <span className="font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.18em] uppercase text-[var(--vassal-gold)]">
                 Hall theme
               </span>
+              <p className="mt-1 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
+                Live on this page — the shell updates as you pick.
+              </p>
               <div className="hall-theme-swatches mt-2">
                 {HALL_THEMES.map((t) => {
-                  const active = data.court.theme === t;
+                  const active = draft.theme === t;
                   const swatch = THEME_SWATCH[t];
                   return (
                     <button
@@ -1284,7 +1376,9 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                       type="button"
                       disabled={busy}
                       className={`hall-theme-swatch ${active ? "hall-theme-swatch-active" : ""}`}
-                      onClick={() => void saveTheme({ theme: t })}
+                      onClick={() =>
+                        setDraft((prev) => ({ ...prev, theme: t }))
+                      }
                     >
                       <span
                         className="hall-theme-chip"
@@ -1313,14 +1407,16 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               </span>
               <div className="hall-widget-options mt-2">
                 {HALL_WIDGETS.map((w) => {
-                  const active = data.court.widget === w;
+                  const active = draft.widget === w;
                   return (
                     <button
                       key={w}
                       type="button"
                       disabled={busy}
                       className={`hall-widget-option ${active ? "hall-widget-option-active" : ""}`}
-                      onClick={() => void saveTheme({ widget: w })}
+                      onClick={() =>
+                        setDraft((prev) => ({ ...prev, widget: w }))
+                      }
                     >
                       <span className="block font-[family-name:var(--font-display)] text-[0.7rem] tracking-[0.1em] uppercase">
                         {WIDGET_LABEL[w]}
@@ -1338,22 +1434,14 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               <span className="font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.18em] uppercase text-[var(--vassal-gold)]">
                 Tagline
               </span>
-              <div className="mt-2 flex gap-2">
-                <input
-                  value={taglineDraft}
-                  onChange={(e) => setTaglineDraft(e.target.value)}
-                  placeholder="Short tagline for your hall"
-                  className="auth-input min-w-0 flex-1 border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
-                />
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => void saveTheme({ tagline: taglineDraft })}
-                  className="shrink-0 border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] px-3 py-2 font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.14em] uppercase"
-                >
-                  Save
-                </button>
-              </div>
+              <input
+                value={draft.tagline}
+                onChange={(e) =>
+                  setDraft((prev) => ({ ...prev, tagline: e.target.value }))
+                }
+                placeholder="Short tagline for your hall"
+                className="auth-input mt-2 w-full border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
+              />
             </label>
 
             <div className="mt-6 border-t border-[color-mix(in_srgb,var(--vassal-gold)_18%,transparent)] pt-5">
@@ -1368,8 +1456,13 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                   Season title
                 </span>
                 <input
-                  value={seasonTitle}
-                  onChange={(e) => setSeasonTitle(e.target.value)}
+                  value={draft.seasonTitle}
+                  onChange={(e) =>
+                    setDraft((prev) => ({
+                      ...prev,
+                      seasonTitle: e.target.value,
+                    }))
+                  }
                   className="auth-input mt-2 w-full border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
                 />
               </label>
@@ -1381,8 +1474,13 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                   <input
                     type="number"
                     min={1}
-                    value={targetReplies}
-                    onChange={(e) => setTargetReplies(e.target.value)}
+                    value={draft.targetReplies}
+                    onChange={(e) =>
+                      setDraft((prev) => ({
+                        ...prev,
+                        targetReplies: e.target.value,
+                      }))
+                    }
                     className="auth-input mt-2 w-full border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
                   />
                 </label>
@@ -1393,8 +1491,13 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                   <input
                     type="number"
                     min={1}
-                    value={targetReposts}
-                    onChange={(e) => setTargetReposts(e.target.value)}
+                    value={draft.targetReposts}
+                    onChange={(e) =>
+                      setDraft((prev) => ({
+                        ...prev,
+                        targetReposts: e.target.value,
+                      }))
+                    }
                     className="auth-input mt-2 w-full border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
                   />
                 </label>
@@ -1405,26 +1508,43 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                   <input
                     type="number"
                     min={1}
-                    value={targetMentions}
-                    onChange={(e) => setTargetMentions(e.target.value)}
+                    value={draft.targetMentions}
+                    onChange={(e) =>
+                      setDraft((prev) => ({
+                        ...prev,
+                        targetMentions: e.target.value,
+                      }))
+                    }
                     className="auth-input mt-2 w-full border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
                   />
                 </label>
               </div>
+            </div>
+
+            <div className="hall-settings-actions mt-6">
               <button
                 type="button"
                 disabled={busy}
-                className="mt-4 border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_28%,transparent)] px-4 py-2.5 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.16em] uppercase"
-                onClick={() =>
-                  void saveTheme({
-                    seasonTitle,
-                    targetReplies: Number(targetReplies),
-                    targetReposts: Number(targetReposts),
-                    targetMentions: Number(targetMentions),
-                  })
-                }
+                onClick={previewDraft}
+                className="border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] px-4 py-2.5 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.16em] uppercase"
               >
-                Save season goals
+                Preview hall
+              </button>
+              <button
+                type="button"
+                disabled={busy || !settingsDirty}
+                onClick={() => void saveHallSettings()}
+                className="border border-[color-mix(in_srgb,var(--vassal-gold)_45%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_30%,transparent)] px-4 py-2.5 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.16em] uppercase disabled:opacity-50"
+              >
+                {busy ? "Saving…" : "Save settings"}
+              </button>
+              <button
+                type="button"
+                disabled={busy || !settingsDirty}
+                onClick={discardDraft}
+                className="border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] px-4 py-2.5 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.16em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)] disabled:opacity-50"
+              >
+                Discard
               </button>
             </div>
 
@@ -1437,6 +1557,40 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               />
             </div>
           </section>
+        ) : null}
+
+        {data.viewer.isLord && settingsDirty && !previewing ? (
+          <div className="hall-settings-bar">
+            <p className="font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.14em] uppercase text-[var(--vassal-gold)]">
+              Unsaved hall settings
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={previewDraft}
+                className="border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] px-3 py-2 font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.14em] uppercase"
+              >
+                Preview
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void saveHallSettings()}
+                className="border border-[color-mix(in_srgb,var(--vassal-gold)_45%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_35%,transparent)] px-3 py-2 font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.14em] uppercase"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={discardDraft}
+                className="border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] px-3 py-2 font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.14em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]"
+              >
+                Discard
+              </button>
+            </div>
+          </div>
         ) : null}
       </main>
     </div>
