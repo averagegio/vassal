@@ -17,6 +17,7 @@ import {
   HALL_WIDGETS,
 } from "../lib/ranks";
 import { FollowButton } from "./FollowButton";
+import { HallMusicPlayer } from "./HallMusicPlayer";
 import { PetitionCompose } from "./PetitionCompose";
 import { ScrollComposer } from "./ScrollComposer";
 import { ThemeHerald } from "./ThemeHerald";
@@ -80,6 +81,7 @@ export type HallData = {
     artist: string;
     url: string;
     by?: string;
+    userId?: string;
   }>;
   moodboard: Array<{
     id: string;
@@ -253,12 +255,9 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
   const activeFeed =
     data.apiFeeds.find((f) => f.id === resolvedFeedId) ?? null;
   const visibleApiItems = activeFeed ? apiItems : [];
-
-  useEffect(() => {
-    if (!activeTrackId && data.playlist[0]) {
-      setActiveTrackId(data.playlist[0].id);
-    }
-  }, [activeTrackId, data.playlist]);
+  const canQueueMusic =
+    data.viewer.isLord ||
+    (data.viewer.isMember && data.court.widget === "playlist");
 
   const loadFeedItems = async (feedId: string) => {
     setApiLoading(true);
@@ -490,7 +489,34 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
       setSongTitle("");
       setSongArtist("");
       setSongUrl("");
-      setMessage("Track added to the booth.");
+      setMessage("Track added to the hall booth.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removeSong = async (trackId: string) => {
+    setBusy(true);
+    setMessage(null);
+    try {
+      const res = await fetch(`/api/court/${data.court.slug}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "playlist-remove", trackId }),
+      });
+      const json = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        setMessage(json.error || "Could not remove track.");
+        return;
+      }
+      setData((prev) => {
+        const playlist = prev.playlist.filter((t) => t.id !== trackId);
+        return { ...prev, playlist };
+      });
+      if (activeTrackId === trackId) {
+        setActiveTrackId(null);
+      }
+      setMessage("Track removed from the booth.");
     } finally {
       setBusy(false);
     }
@@ -771,6 +797,17 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               ) : null}
             </div>
           ) : null}
+
+          <HallMusicPlayer
+            tracks={data.playlist}
+            activeTrackId={activeTrackId}
+            onActiveTrackIdChange={setActiveTrackId}
+            emptyHint={
+              data.viewer.isLord
+                ? "Add a hall song below in Community or Lord setup — visitors will hear it here."
+                : "This hall is quiet for now."
+            }
+          />
         </section>
 
         <nav
@@ -955,47 +992,20 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               </p>
             ) : null}
 
-            {displayWidget === "playlist" ? (
+            {displayWidget === "playlist" || data.viewer.isLord || data.playlist.length > 0 ? (
               <>
                 <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
-                  Court playlist
+                  Hall booth queue
                 </h2>
                 <p className="mt-1 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
-                  Shared queue — vassals add tracks the whole court can open.
+                  {displayWidget === "playlist"
+                    ? "Built-in Myspace-style player up top — vassals may queue tracks for the whole court."
+                    : data.viewer.isLord
+                      ? "Your hall song plays in the booth above. Open Community jukebox if vassals should queue too."
+                      : "Tracks play in the hall booth above."}
                 </p>
 
-                <div className="hall-player mt-5">
-                  {activeTrack ? (
-                    <>
-                      <p className="font-[family-name:var(--font-display)] text-[0.55rem] tracking-[0.2em] uppercase text-[var(--vassal-gold)]">
-                        Now playing
-                      </p>
-                      <p className="hall-now-playing mt-2 font-[family-name:var(--font-display)] text-xl tracking-[0.06em]">
-                        {activeTrack.title}
-                      </p>
-                      <p className="mt-1 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)]">
-                        {activeTrack.artist || "Unknown artist"}
-                        {activeTrack.by ? ` · queued by ${activeTrack.by}` : ""}
-                      </p>
-                      {activeTrack.url ? (
-                        <a
-                          href={activeTrack.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="mt-4 inline-flex border border-[color-mix(in_srgb,var(--vassal-gold)_45%,transparent)] px-4 py-2 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.16em] uppercase text-[var(--vassal-gold)]"
-                        >
-                          Open track
-                        </a>
-                      ) : null}
-                    </>
-                  ) : (
-                    <p className="font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
-                      Queue is empty — add the first track.
-                    </p>
-                  )}
-                </div>
-
-                {data.viewer.isMember ? (
+                {canQueueMusic ? (
                   <div className="mt-5 flex flex-col gap-2">
                     <input
                       value={songTitle}
@@ -1012,7 +1022,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                     <input
                       value={songUrl}
                       onChange={(e) => setSongUrl(e.target.value)}
-                      placeholder="Spotify / YouTube / SoundCloud link"
+                      placeholder="mp3 / YouTube / Spotify / SoundCloud link"
                       className="auth-input border border-[color-mix(in_srgb,var(--vassal-gold)_30%,transparent)] bg-transparent px-3 py-2"
                     />
                     <button
@@ -1021,31 +1031,47 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                       onClick={() => void addSong()}
                       className="mt-1 border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] px-3 py-2 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.16em] uppercase"
                     >
-                      Add to playlist
+                      Add to booth
                     </button>
                   </div>
                 ) : null}
 
                 <ul className="mt-5 flex flex-col gap-2">
-                  {data.playlist.map((t) => (
-                    <li key={t.id}>
-                      <button
-                        type="button"
-                        className={`hall-track-btn ${
-                          activeTrack?.id === t.id ? "hall-track-active" : ""
-                        }`}
-                        onClick={() => setActiveTrackId(t.id)}
-                      >
-                        <span className="block truncate font-[family-name:var(--font-display)] text-sm tracking-[0.06em]">
-                          {t.title}
-                          {t.artist ? ` — ${t.artist}` : ""}
-                        </span>
-                        <span className="mt-1 block text-xs text-[color-mix(in_srgb,var(--vassal-cream)_50%,transparent)]">
-                          {t.by ? `Added by ${t.by}` : "Court track"}
-                        </span>
-                      </button>
-                    </li>
-                  ))}
+                  {data.playlist.map((t) => {
+                    const canRemove =
+                      data.viewer.isLord ||
+                      (Boolean(data.viewer.userId) &&
+                        t.userId === data.viewer.userId);
+                    return (
+                      <li key={t.id} className="hall-track-row">
+                        <button
+                          type="button"
+                          className={`hall-track-btn ${
+                            activeTrack?.id === t.id ? "hall-track-active" : ""
+                          }`}
+                          onClick={() => setActiveTrackId(t.id)}
+                        >
+                          <span className="block truncate font-[family-name:var(--font-display)] text-sm tracking-[0.06em]">
+                            {t.title}
+                            {t.artist ? ` — ${t.artist}` : ""}
+                          </span>
+                          <span className="mt-1 block text-xs text-[color-mix(in_srgb,var(--vassal-cream)_50%,transparent)]">
+                            {t.by ? `Added by ${t.by}` : "Court track"}
+                          </span>
+                        </button>
+                        {canRemove ? (
+                          <button
+                            type="button"
+                            className="hall-track-remove"
+                            disabled={busy}
+                            onClick={() => void removeSong(t.id)}
+                          >
+                            Remove
+                          </button>
+                        ) : null}
+                      </li>
+                    );
+                  })}
                 </ul>
               </>
             ) : null}
@@ -1302,9 +1328,9 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                 <p className="mt-2 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
                   {data.viewer.isLord
                     ? previewing && draft.widget === "none"
-                      ? "Draft preview: no community widget selected. Save from Lord setup when ready."
-                      : "Open Lord setup to add a playlist, mood board, or API import widget."
-                    : "Your Lord has not enabled a community widget yet. Check the scoreboard while you wait."}
+                      ? "Draft preview: no extra community widget. The hall booth still plays above."
+                      : "The hall booth is built in. Open Lord setup to add a jukebox, mood board, or API import widget."
+                    : "No extra community widget yet — the hall booth still plays above when the Lord sets a song."}
                 </p>
                 {data.viewer.isLord ? (
                   <button

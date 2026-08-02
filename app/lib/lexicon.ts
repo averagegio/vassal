@@ -68,7 +68,7 @@ export const LEXICON: LexiconEntry[] = [
     term: "Lord",
     plain: "The owner of a court",
     detail:
-      "The person who opens the court, picks a hall theme, enables a community widget (playlist, mood board, or API import), and runs Lord setup.",
+      "The person who opens the court, picks a hall theme, sets the built-in hall music booth, enables a community widget (jukebox, mood board, or API import), and runs Lord setup.",
   },
   {
     id: "vassal",
