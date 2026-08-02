@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { profileHandle } from "../lib/profile";
 import {
   RANK_LABEL,
@@ -19,18 +19,8 @@ import {
 import { FollowButton } from "./FollowButton";
 import { PetitionCompose } from "./PetitionCompose";
 import { ScrollComposer } from "./ScrollComposer";
+import { ThemeHerald } from "./ThemeHerald";
 import { VassalLogo } from "./VassalLogo";
-
-const THEME_SWATCH: Record<HallTheme, { a: string; b: string }> = {
-  crimson: { a: "#8b1524", b: "#1a0508" },
-  midnight: { a: "#28468c", b: "#05060a" },
-  goldleaf: { a: "#c9a227", b: "#0a0804" },
-  neon: { a: "#e11d2e", b: "#2a0a18" },
-  atelier: { a: "#f3e6d8", b: "#0c0908" },
-  frost: { a: "#8cbee6", b: "#050810" },
-  verdant: { a: "#286e46", b: "#040805" },
-  slate: { a: "#788291", b: "#08090b" },
-};
 
 export type HallLeaderRow = {
   userId: string;
@@ -1369,27 +1359,30 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               <div className="hall-theme-swatches mt-2">
                 {HALL_THEMES.map((t) => {
                   const active = draft.theme === t;
-                  const swatch = THEME_SWATCH[t];
                   return (
                     <button
                       key={t}
                       type="button"
                       disabled={busy}
+                      aria-pressed={active}
                       className={`hall-theme-swatch ${active ? "hall-theme-swatch-active" : ""}`}
                       onClick={() =>
                         setDraft((prev) => ({ ...prev, theme: t }))
                       }
                     >
                       <span
-                        className="hall-theme-chip"
-                        style={
-                          {
-                            "--swatch-a": swatch.a,
-                            "--swatch-b": swatch.b,
-                          } as CSSProperties
-                        }
-                      />
-                      <span className="block font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.08em]">
+                        className={`hall-theme-vignette hall-theme-vignette-${t}`}
+                        aria-hidden
+                      >
+                        <span className="hall-theme-vignette-frame" />
+                        <span className="hall-theme-vignette-weave" />
+                        <ThemeHerald
+                          theme={t}
+                          className="hall-theme-herald"
+                        />
+                        <span className="hall-theme-vignette-ribbon" />
+                      </span>
+                      <span className="block font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.1em] uppercase">
                         {THEME_LABEL[t]}
                       </span>
                       <span className="mt-1 block font-[family-name:var(--font-body)] text-[0.7rem] italic text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
