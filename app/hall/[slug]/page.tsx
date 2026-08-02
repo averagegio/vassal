@@ -79,6 +79,7 @@ function toHallData(
       artist: t.artist,
       url: t.url,
       by: t.name,
+      userId: t.user_id,
     })),
     moodboard: bundle.moodboard.map((p) => ({
       id: p.id,

@@ -327,6 +327,32 @@ export async function addPlaylistTrack(input: {
   return rows[0] as DbPlaylistTrack;
 }
 
+export async function removePlaylistTrack(input: {
+  courtId: string;
+  trackId: string;
+  userId: string;
+  isLord: boolean;
+}): Promise<boolean> {
+  await ensureSchema();
+  const db = getDb();
+  if (input.isLord) {
+    const rows = await db`
+      DELETE FROM hall_playlist_tracks
+      WHERE id = ${input.trackId} AND court_id = ${input.courtId}
+      RETURNING id
+    `;
+    return rows.length > 0;
+  }
+  const rows = await db`
+    DELETE FROM hall_playlist_tracks
+    WHERE id = ${input.trackId}
+      AND court_id = ${input.courtId}
+      AND user_id = ${input.userId}
+    RETURNING id
+  `;
+  return rows.length > 0;
+}
+
 export async function listMoodPins(courtId: string): Promise<DbMoodPin[]> {
   await ensureSchema();
   const db = getDb();
@@ -469,7 +495,7 @@ export async function getHallBundle(slug: string) {
   const [leaderboard, playlist, moodboard, apiFeeds, scoreboard, lordRows] =
     await Promise.all([
       listLeaderboard(court.id),
-      court.widget === "playlist" ? listPlaylist(court.id) : Promise.resolve([]),
+      listPlaylist(court.id),
       court.widget === "moodboard" ? listMoodPins(court.id) : Promise.resolve([]),
       court.widget === "api" ? listApiFeeds(court.id) : Promise.resolve([]),
       listScoreboard(season.id),

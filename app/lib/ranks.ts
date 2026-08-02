@@ -57,14 +57,14 @@ export type HallWidget = (typeof HALL_WIDGETS)[number];
 
 export const WIDGET_LABEL: Record<HallWidget, string> = {
   none: "No widget",
-  playlist: "Playlist",
+  playlist: "Community jukebox",
   moodboard: "Mood board",
   api: "API import",
 };
 
 export const WIDGET_BLURB: Record<HallWidget, string> = {
-  none: "Scoreboard and petitions only",
-  playlist: "Shared track queue for the court",
+  none: "Scoreboard and petitions only — Lord still runs the hall booth",
+  playlist: "Let vassals queue tracks in the built-in hall player",
   moodboard: "Shared image pins for the court",
   api: "Import a public JSON API feed",
 };

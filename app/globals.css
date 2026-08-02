@@ -1176,6 +1176,271 @@ body {
   background: color-mix(in srgb, var(--vassal-red) 14%, transparent);
 }
 
+/* ── Myspace-style hall music booth ── */
+.hall-booth {
+  margin-top: 1rem;
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 40%, transparent);
+  background:
+    linear-gradient(
+      120deg,
+      color-mix(in srgb, var(--vassal-red) 18%, transparent),
+      color-mix(in srgb, var(--vassal-black) 88%, transparent) 45%,
+      color-mix(in srgb, var(--vassal-stone) 40%, transparent)
+    );
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--vassal-gold) 12%, transparent),
+    0 10px 28px rgba(0, 0, 0, 0.35);
+  padding: 0.85rem 0.9rem;
+}
+
+.hall-booth-live {
+  border-color: color-mix(in srgb, var(--vassal-gold) 65%, transparent);
+}
+
+.hall-booth-empty {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  opacity: 0.92;
+}
+
+.hall-booth-gate {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.9rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  padding: 0.15rem;
+}
+
+.hall-booth-disc {
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, var(--vassal-gold) 55%, transparent);
+  background:
+    radial-gradient(circle at 50% 50%, #1a0a0c 0 18%, transparent 19%),
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      #3a1218 0 2px,
+      #120608 2px 5px
+    );
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.65);
+  animation: hall-booth-spin 8s linear infinite;
+}
+
+.hall-booth-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.hall-booth-eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 2.1rem;
+  width: 1.4rem;
+  flex-shrink: 0;
+  margin-top: 0.35rem;
+}
+
+.hall-booth-eq span {
+  flex: 1;
+  height: 35%;
+  background: color-mix(in srgb, var(--vassal-gold) 70%, transparent);
+  transform-origin: bottom;
+}
+
+.hall-booth-eq[data-playing="true"] span,
+.hall-booth-live .hall-booth-eq span {
+  animation: hall-booth-eq 0.9s ease-in-out infinite;
+}
+
+.hall-booth-eq span:nth-child(2) {
+  animation-delay: 0.12s;
+  height: 55%;
+}
+.hall-booth-eq span:nth-child(3) {
+  animation-delay: 0.24s;
+  height: 80%;
+}
+.hall-booth-eq span:nth-child(4) {
+  animation-delay: 0.36s;
+  height: 45%;
+}
+
+.hall-booth-marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.hall-booth-marquee span {
+  display: inline-block;
+  padding-left: 100%;
+  animation: hall-booth-marquee 12s linear infinite;
+}
+
+.hall-booth-seek input[type="range"] {
+  width: 100%;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--vassal-gold) 0 var(--booth-progress, 0%),
+    color-mix(in srgb, var(--vassal-cream) 18%, transparent) var(--booth-progress, 0%) 100%
+  );
+  outline: none;
+}
+
+.hall-booth-seek input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--vassal-cream);
+  border: 1px solid var(--vassal-gold);
+  cursor: pointer;
+}
+
+.hall-booth-times {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+  font-family: var(--font-display), serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--vassal-cream) 50%, transparent);
+}
+
+.hall-booth-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
+.hall-booth-btn {
+  min-width: 2.1rem;
+  height: 2.1rem;
+  padding: 0 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 40%, transparent);
+  background: color-mix(in srgb, var(--vassal-black) 55%, transparent);
+  color: var(--vassal-cream);
+  font-family: var(--font-display), serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.hall-booth-btn:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--vassal-gold) 70%, transparent);
+  background: color-mix(in srgb, var(--vassal-red) 22%, transparent);
+}
+
+.hall-booth-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.hall-booth-btn-play {
+  min-width: 2.6rem;
+  background: color-mix(in srgb, var(--vassal-red) 32%, transparent);
+  border-color: color-mix(in srgb, var(--vassal-gold) 55%, transparent);
+}
+
+.hall-booth-btn-stage {
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hall-booth-stage {
+  margin-top: 0.85rem;
+  border-top: 1px solid color-mix(in srgb, var(--vassal-gold) 22%, transparent);
+  padding-top: 0.85rem;
+}
+
+.hall-booth-stage iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 220px;
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 28%, transparent);
+  background: #050305;
+}
+
+.hall-booth-external {
+  display: inline-block;
+  margin-top: 0.55rem;
+  font-family: var(--font-display), serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--vassal-gold);
+}
+
+.hall-track-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+
+.hall-track-row .hall-track-btn {
+  flex: 1;
+}
+
+.hall-track-remove {
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 22%, transparent);
+  background: transparent;
+  color: color-mix(in srgb, var(--vassal-cream) 55%, transparent);
+  padding: 0 0.65rem;
+  font-family: var(--font-display), serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.hall-track-remove:hover {
+  border-color: color-mix(in srgb, var(--vassal-blood) 50%, transparent);
+  color: var(--vassal-cream);
+}
+
+@keyframes hall-booth-eq {
+  0%,
+  100% {
+    transform: scaleY(0.45);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes hall-booth-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes hall-booth-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
 .hall-mood-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

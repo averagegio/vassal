@@ -9,6 +9,7 @@ import {
   getHallBundle,
   getMembershipForUser,
   removeApiFeed,
+  removePlaylistTrack,
   updateCourtSettings,
   updateSeasonTargets,
 } from "../../../lib/courts";
@@ -89,6 +90,7 @@ function serializeHall(
       artist: t.artist,
       url: t.url,
       by: t.name,
+      userId: t.user_id,
     })),
     moodboard: bundle.moodboard.map((p) => ({
       id: p.id,
@@ -251,10 +253,18 @@ export async function POST(request: Request, { params }: Params) {
     }
 
     const body = (await request.json()) as {
-      kind?: "playlist" | "moodboard" | "score" | "api" | "api-preview" | "api-remove";
+      kind?:
+        | "playlist"
+        | "playlist-remove"
+        | "moodboard"
+        | "score"
+        | "api"
+        | "api-preview"
+        | "api-remove";
       title?: string;
       artist?: string;
       url?: string;
+      trackId?: string;
       imageUrl?: string;
       sourceUrl?: string;
       label?: string;
@@ -344,9 +354,15 @@ export async function POST(request: Request, { params }: Params) {
     }
 
     if (body.kind === "playlist") {
-      if (bundle.court.widget !== "playlist") {
+      const isLord = membership.role === "lord";
+      // Built-in hall booth: lords can always set music. Vassals queue when
+      // the community playlist widget is enabled.
+      if (!isLord && bundle.court.widget !== "playlist") {
         return NextResponse.json(
-          { error: "This hall is not in playlist mode." },
+          {
+            error:
+              "Only the Lord may set hall music unless the playlist widget is open.",
+          },
           { status: 400 },
         );
       }
@@ -364,8 +380,28 @@ export async function POST(request: Request, { params }: Params) {
           artist: track.artist,
           url: track.url,
           by: session.name,
+          userId: track.user_id,
         },
       });
+    }
+
+    if (body.kind === "playlist-remove") {
+      if (!body.trackId) {
+        return NextResponse.json({ error: "Track required." }, { status: 400 });
+      }
+      const removed = await removePlaylistTrack({
+        courtId: bundle.court.id,
+        trackId: body.trackId,
+        userId: session.userId,
+        isLord: membership.role === "lord",
+      });
+      if (!removed) {
+        return NextResponse.json(
+          { error: "Could not remove that track." },
+          { status: 404 },
+        );
+      }
+      return NextResponse.json({ ok: true, trackId: body.trackId });
     }
 
     if (body.kind === "moodboard") {
