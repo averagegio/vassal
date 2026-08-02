@@ -42,14 +42,14 @@ export const THEME_LABEL: Record<HallTheme, string> = {
 
 /** Short blurb for theme pickers. */
 export const THEME_BLURB: Record<HallTheme, string> = {
-  crimson: "Warm blood-red canopy",
-  midnight: "Cool blue night hall",
-  goldleaf: "Gilded candlelight",
-  neon: "Hot ember accents",
-  atelier: "Soft parchment wash",
-  frost: "Icy blue stone",
-  verdant: "Deep forest green",
-  slate: "Cool grey bastion",
+  crimson: "Bannered throne room",
+  midnight: "Moonlit stone keep",
+  goldleaf: "Gilded candle hall",
+  neon: "Forge-fire gallery",
+  atelier: "Scriptorium chamber",
+  frost: "Icebound battlements",
+  verdant: "Oak-shadowed grove",
+  slate: "Iron bastion walls",
 };
 
 export const HALL_WIDGETS = ["none", "playlist", "moodboard", "api"] as const;

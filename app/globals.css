@@ -519,7 +519,7 @@ body {
 .hall-theme-swatches {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.65rem;
+  gap: 0.75rem;
 }
 
 @media (min-width: 640px) {
@@ -530,26 +530,280 @@ body {
 
 .hall-theme-swatch {
   border: 1px solid color-mix(in srgb, var(--vassal-gold) 28%, transparent);
-  background: color-mix(in srgb, var(--vassal-black) 70%, transparent);
-  padding: 0.65rem 0.7rem;
+  background:
+    linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--vassal-stone) 55%, transparent),
+      color-mix(in srgb, var(--vassal-black) 88%, transparent)
+    );
+  padding: 0.55rem 0.55rem 0.7rem;
   text-align: left;
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .hall-theme-swatch:hover {
   border-color: color-mix(in srgb, var(--vassal-gold) 55%, transparent);
+  transform: translateY(-1px);
+}
+
+.hall-theme-swatch:hover .hall-theme-herald {
+  transform: translate(-50%, -52%) scale(1.04);
 }
 
 .hall-theme-swatch-active {
-  border-color: color-mix(in srgb, var(--vassal-gold) 70%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vassal-gold) 35%, transparent);
+  border-color: color-mix(in srgb, var(--vassal-gold) 75%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--vassal-gold) 40%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--vassal-gold) 18%, transparent);
 }
 
-.hall-theme-chip {
+.hall-theme-swatch-active .hall-theme-vignette-ribbon {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.hall-theme-vignette {
+  position: relative;
   display: block;
-  height: 0.55rem;
-  margin-bottom: 0.5rem;
-  background: linear-gradient(90deg, var(--swatch-a), var(--swatch-b));
+  height: 4.6rem;
+  margin-bottom: 0.55rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 34%, transparent);
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.45);
+}
+
+.hall-theme-vignette-frame {
+  position: absolute;
+  inset: 3px;
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 28%, transparent);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.hall-theme-vignette-frame::before,
+.hall-theme-vignette-frame::after {
+  content: "";
+  position: absolute;
+  width: 0.45rem;
+  height: 0.45rem;
+  border: 1.5px solid color-mix(in srgb, var(--vassal-gold) 70%, transparent);
+}
+
+.hall-theme-vignette-frame::before {
+  top: -1px;
+  left: -1px;
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.hall-theme-vignette-frame::after {
+  right: -1px;
+  bottom: -1px;
+  border-left: 0;
+  border-top: 0;
+}
+
+.hall-theme-vignette-weave {
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 2px,
+      rgba(0, 0, 0, 0.18) 2px 3px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 3px,
+      rgba(255, 255, 255, 0.04) 3px 4px
+    );
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: soft-light;
+}
+
+.hall-theme-herald {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  width: 2.55rem;
+  height: 2.55rem;
+  transform: translate(-50%, -50%);
+  transition: transform 0.25s ease;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.55));
+  z-index: 3;
+}
+
+.hall-theme-vignette-ribbon {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 0.35rem;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--vassal-gold) 80%, transparent),
+    transparent
+  );
+  opacity: 0.45;
+  transform: scaleX(0.7);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 3;
+}
+
+/* Miniature tapestry grounds — each hall theme as a woven scene */
+.hall-theme-vignette-crimson {
+  background:
+    radial-gradient(ellipse 55% 50% at 50% 40%, rgba(176, 16, 32, 0.55), transparent 70%),
+    linear-gradient(160deg, #5a0e18 0%, #1a0508 55%, #0a0304 100%);
+}
+
+.hall-theme-vignette-crimson .hall-theme-vignette-weave {
+  background-image:
+    repeating-linear-gradient(
+      -18deg,
+      transparent 0 6px,
+      rgba(201, 162, 39, 0.08) 6px 7px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 3px,
+      rgba(0, 0, 0, 0.2) 3px 4px
+    );
+  opacity: 0.55;
+}
+
+.hall-theme-vignette-midnight {
+  background:
+    radial-gradient(circle at 78% 22%, rgba(230, 240, 255, 0.35), transparent 10%),
+    radial-gradient(ellipse 60% 45% at 50% 70%, rgba(40, 70, 140, 0.4), transparent 70%),
+    linear-gradient(180deg, #0c1428 0%, #05060a 70%, #030408 100%);
+}
+
+.hall-theme-vignette-midnight .hall-theme-vignette-weave {
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.45), transparent),
+    radial-gradient(1px 1px at 60% 18%, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(1px 1px at 40% 55%, rgba(255, 255, 255, 0.25), transparent),
+    radial-gradient(1px 1px at 75% 48%, rgba(255, 255, 255, 0.3), transparent);
+  opacity: 0.9;
+  mix-blend-mode: screen;
+}
+
+.hall-theme-vignette-goldleaf {
+  background:
+    radial-gradient(ellipse 50% 40% at 50% 35%, rgba(201, 162, 39, 0.35), transparent 65%),
+    linear-gradient(165deg, #3a2e12 0%, #1a1408 50%, #0a0804 100%);
+}
+
+.hall-theme-vignette-goldleaf .hall-theme-vignette-weave {
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0 8px,
+      rgba(201, 162, 39, 0.12) 8px 9px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0 8px,
+      rgba(243, 230, 180, 0.06) 8px 9px
+    );
+  opacity: 0.7;
+}
+
+.hall-theme-vignette-neon {
+  background:
+    radial-gradient(ellipse 40% 50% at 50% 75%, rgba(255, 106, 61, 0.35), transparent 55%),
+    radial-gradient(ellipse 55% 40% at 50% 30%, rgba(225, 29, 46, 0.4), transparent 65%),
+    linear-gradient(180deg, #2a0a14 0%, #100408 60%, #070405 100%);
+}
+
+.hall-theme-vignette-neon .hall-theme-vignette-weave {
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 5px,
+      rgba(255, 106, 61, 0.08) 5px 6px
+    );
+  opacity: 0.65;
+}
+
+.hall-theme-vignette-atelier {
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 40%, rgba(243, 230, 216, 0.14), transparent 70%),
+    linear-gradient(165deg, #2a2218 0%, #14100c 50%, #0c0908 100%);
+}
+
+.hall-theme-vignette-atelier .hall-theme-vignette-weave {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 4px,
+      rgba(120, 90, 50, 0.12) 4px 5px
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='40' height='40' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+  opacity: 0.45;
+  mix-blend-mode: multiply;
+}
+
+.hall-theme-vignette-frost {
+  background:
+    radial-gradient(ellipse 55% 45% at 50% 30%, rgba(140, 190, 230, 0.28), transparent 65%),
+    linear-gradient(180deg, #152030 0%, #0a1018 55%, #050810 100%);
+}
+
+.hall-theme-vignette-frost .hall-theme-vignette-weave {
+  background-image:
+    linear-gradient(
+      135deg,
+      transparent 40%,
+      rgba(200, 230, 255, 0.12) 49%,
+      transparent 58%
+    ),
+    linear-gradient(
+      45deg,
+      transparent 40%,
+      rgba(180, 210, 240, 0.08) 50%,
+      transparent 60%
+    );
+  opacity: 0.85;
+  mix-blend-mode: screen;
+}
+
+.hall-theme-vignette-verdant {
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 60%, rgba(40, 110, 70, 0.4), transparent 70%),
+    linear-gradient(165deg, #0e2418 0%, #07140c 55%, #040805 100%);
+}
+
+.hall-theme-vignette-verdant .hall-theme-vignette-weave {
+  background-image:
+    radial-gradient(ellipse 8px 14px at 18% 70%, rgba(80, 140, 70, 0.25), transparent),
+    radial-gradient(ellipse 10px 16px at 82% 55%, rgba(60, 120, 60, 0.22), transparent),
+    radial-gradient(ellipse 7px 12px at 50% 85%, rgba(40, 100, 50, 0.2), transparent),
+    repeating-linear-gradient(
+      100deg,
+      transparent 0 10px,
+      rgba(100, 160, 80, 0.06) 10px 11px
+    );
+  opacity: 0.8;
+}
+
+.hall-theme-vignette-slate {
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 20%, rgba(120, 130, 145, 0.22), transparent 65%),
+    linear-gradient(180deg, #1a1c22 0%, #0e1014 55%, #08090b 100%);
+}
+
+.hall-theme-vignette-slate .hall-theme-vignette-weave {
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.28) 1px, transparent 1px);
+  background-size: 12px 8px, 18px 12px;
+  opacity: 0.55;
+  mix-blend-mode: multiply;
 }
 
 .hall-widget-options {
