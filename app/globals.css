@@ -671,6 +671,48 @@ body {
   padding-top: 0;
 }
 
+.hall-settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--vassal-gold) 18%, transparent);
+}
+
+.hall-settings-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--vassal-gold) 35%, transparent);
+  background: color-mix(in srgb, var(--vassal-black) 92%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.hall-preview-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.85rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 40%, transparent);
+  background:
+    linear-gradient(
+      120deg,
+      color-mix(in srgb, var(--vassal-red) 22%, transparent),
+      color-mix(in srgb, var(--vassal-black) 80%, transparent)
+    );
+  animation: hall-fade-up 0.35s ease both;
+}
+
 .scroll-composer {
   border-top: 1px solid color-mix(in srgb, var(--vassal-gold) 18%, transparent);
   padding-top: 1.25rem;
