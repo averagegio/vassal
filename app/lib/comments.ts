@@ -221,6 +221,16 @@ export async function removeHallComment(input: {
   return rows.length > 0;
 }
 
+function asBool(value: unknown) {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+  if (typeof value === "string") {
+    const v = value.trim().toLowerCase();
+    return v === "t" || v === "true" || v === "1";
+  }
+  return false;
+}
+
 export function serializeComment(c: DbHallComment) {
   return {
     id: c.id,
@@ -228,7 +238,7 @@ export function serializeComment(c: DbHallComment) {
     body: c.body,
     createdAt: c.created_at,
     cheerCount: Number(c.cheer_count) || 0,
-    cheeredByMe: Boolean(c.cheered_by_me),
+    cheeredByMe: asBool(c.cheered_by_me),
     author: {
       userId: c.user_id,
       name: c.name || "Vassal",
