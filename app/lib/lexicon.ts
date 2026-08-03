@@ -97,7 +97,7 @@ export const LEXICON: LexiconEntry[] = [
     term: "Swear fealty",
     plain: "Join a court",
     detail:
-      "The join action. You become a member of that Lord's court and show up on its roster.",
+      "Request a place on the hall waitlist. The Lord seals grant, defer, or deny — then you become a vassal on the roster. No tribute required to queue.",
   },
   {
     id: "decree",

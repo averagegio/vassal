@@ -13,6 +13,7 @@ import {
   bumpSeasonScore,
   getApiFeedById,
   getHallBundle,
+  getJoinRequestForUser,
   getMembershipForUser,
   removeApiFeed,
   removePlaylistTrack,
@@ -56,6 +57,7 @@ function serializeHall(
     standing: number | null;
     userId?: string | null;
     isFollowingLord: boolean;
+    joinRequestStatus?: "open" | "granted" | "denied" | "deferred" | null;
   },
   lordFollowers: number,
 ) {
@@ -140,6 +142,7 @@ export async function GET(_request: Request, { params }: Params) {
       standing: number | null;
       userId: string | null;
       isFollowingLord: boolean;
+      joinRequestStatus: "open" | "granted" | "denied" | "deferred" | null;
     } = {
       isMember: false,
       isLord: false,
@@ -147,6 +150,7 @@ export async function GET(_request: Request, { params }: Params) {
       standing: null,
       userId: session?.userId ?? null,
       isFollowingLord: false,
+      joinRequestStatus: null,
     };
 
     if (session) {
@@ -160,6 +164,12 @@ export async function GET(_request: Request, { params }: Params) {
           standing: membership.standing,
           userId: session.userId,
         };
+      } else {
+        const joinReq = await getJoinRequestForUser(
+          bundle.court.id,
+          session.userId,
+        );
+        viewer.joinRequestStatus = joinReq?.status ?? null;
       }
       if (bundle.lord && bundle.lord.id !== session.userId) {
         viewer.isFollowingLord = await isFollowing(

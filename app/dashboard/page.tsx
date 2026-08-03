@@ -9,7 +9,11 @@ import {
   listPetitions,
   listTenants,
 } from "../lib/users";
-import { getMembershipForUser } from "../lib/courts";
+import {
+  getMembershipForUser,
+  getOpenJoinRequestByUser,
+  listJoinRequestsForLord,
+} from "../lib/courts";
 import { getFollowCounts } from "../lib/follows";
 import { profileHandle } from "../lib/profile";
 import type { CourtRank } from "../lib/ranks";
@@ -42,6 +46,15 @@ export default async function DashboardPage() {
         getMembershipForUser(session.userId),
         getFollowCounts(session.userId),
       ]);
+
+    const [pendingJoin, waitlist] = await Promise.all([
+      membership
+        ? Promise.resolve(null)
+        : getOpenJoinRequestByUser(session.userId),
+      membership?.role === "lord"
+        ? listJoinRequestsForLord(session.userId, { status: "all" })
+        : Promise.resolve([]),
+    ]);
 
     initialData = {
       user: {
@@ -88,6 +101,23 @@ export default async function DashboardPage() {
             role: membership.role,
           }
         : null,
+      pendingJoin: pendingJoin
+        ? {
+            courtSlug: pendingJoin.court_slug || "",
+            courtName: pendingJoin.court_name || "Court",
+            status: pendingJoin.status,
+          }
+        : null,
+      waitlist: waitlist.map((r) => ({
+        id: r.id,
+        userId: r.user_id,
+        ask: r.ask,
+        status: r.status,
+        createdAt: r.created_at,
+        name: r.name,
+        avatarUrl: r.avatar_url,
+        xUsername: r.x_username,
+      })),
     };
   } catch (err) {
     console.error("dashboard page", err);
