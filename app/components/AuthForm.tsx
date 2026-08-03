@@ -93,12 +93,14 @@ function AuthFormInner({ mode }: AuthFormProps) {
         const joinJson = (await join.json().catch(() => null)) as {
           error?: string;
           court?: { slug: string };
+          pending?: boolean;
+          alreadyMember?: boolean;
         } | null;
         if (join.ok && joinJson?.court?.slug) {
           next = `/hall/${encodeURIComponent(joinJson.court.slug)}`;
         } else {
           next = `/dashboard?courtError=${encodeURIComponent(
-            joinJson?.error || "Could not swear fealty.",
+            joinJson?.error || "Could not join the waitlist.",
           )}`;
         }
       }

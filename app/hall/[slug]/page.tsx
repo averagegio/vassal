@@ -1,7 +1,11 @@
 import { notFound } from "next/navigation";
 import { LordsHall, type HallData } from "../../components/LordsHall";
 import { serializeComment } from "../../lib/comments";
-import { getHallBundle, getMembershipForUser } from "../../lib/courts";
+import {
+  getHallBundle,
+  getJoinRequestForUser,
+  getMembershipForUser,
+} from "../../lib/courts";
 import { getFollowCounts, isFollowing } from "../../lib/follows";
 import type { CourtRank, HallTheme, HallWidget } from "../../lib/ranks";
 import { getSession } from "../../lib/session";
@@ -121,6 +125,7 @@ export default async function HallPage({ params, searchParams }: PageProps) {
     standing: null,
     userId: session?.userId ?? null,
     isFollowingLord: false,
+    joinRequestStatus: null,
   };
 
   if (session) {
@@ -136,6 +141,12 @@ export default async function HallPage({ params, searchParams }: PageProps) {
         standing: membership.standing,
         userId: session.userId,
       };
+    } else {
+      const joinReq = await getJoinRequestForUser(
+        bundle.court.id,
+        session.userId,
+      ).catch(() => null);
+      viewer.joinRequestStatus = joinReq?.status ?? null;
     }
     if (bundle.lord && bundle.lord.id !== session.userId) {
       viewer.isFollowingLord = await isFollowing(

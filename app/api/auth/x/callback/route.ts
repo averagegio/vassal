@@ -1,6 +1,9 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { getMembershipForUser, joinCourt } from "../../../../lib/courts";
+import {
+  getMembershipForUser,
+  requestJoinCourt,
+} from "../../../../lib/courts";
 import { holdingHomeHref } from "../../../../lib/home";
 import { writeSessionCookie } from "../../../../lib/session";
 import { upsertUserFromX } from "../../../../lib/users";
@@ -92,14 +95,14 @@ export async function GET(request: Request) {
     let nextPath = "/dashboard";
     if (courtSlug) {
       try {
-        const { court } = await joinCourt({
+        const { court } = await requestJoinCourt({
           userId: user.id,
           slug: courtSlug,
         });
         nextPath = `/hall/${encodeURIComponent(court.slug)}`;
       } catch {
         nextPath = `/dashboard?courtError=${encodeURIComponent(
-          "Signed in, but could not swear fealty to that court.",
+          "Signed in, but could not join that court's waitlist.",
         )}`;
       }
     } else {

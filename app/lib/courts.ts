@@ -229,6 +229,216 @@ export async function joinCourt(input: {
   return { court, member };
 }
 
+export type JoinRequestStatus = "open" | "granted" | "denied" | "deferred";
+
+export type DbJoinRequest = {
+  id: string;
+  court_id: string;
+  user_id: string;
+  ask: string;
+  status: JoinRequestStatus;
+  created_at: string;
+  sealed_at: string | null;
+  name?: string;
+  avatar_url?: string | null;
+  x_username?: string | null;
+  court_slug?: string;
+  court_name?: string;
+};
+
+/** Open waitlist — no tribute/tier gate; Lord seals later. */
+export async function requestJoinCourt(input: {
+  userId: string;
+  slug: string;
+  ask?: string;
+}): Promise<{
+  court: DbCourt;
+  request: DbJoinRequest;
+  alreadyMember: boolean;
+}> {
+  await ensureSchema();
+  const court = await getCourtBySlug(input.slug);
+  if (!court) throw new Error("Court not found.");
+
+  if (court.lord_user_id === input.userId) {
+    throw new Error("You already hold this hall as Lord.");
+  }
+
+  const membership = await getMembershipForUser(input.userId);
+  if (membership && membership.court_id === court.id) {
+    const db = getDb();
+    const rows = await db`
+      SELECT id, court_id, user_id, ask, status, created_at, sealed_at
+      FROM court_join_requests
+      WHERE court_id = ${court.id} AND user_id = ${input.userId}
+      LIMIT 1
+    `;
+    return {
+      court,
+      alreadyMember: true,
+      request: (rows[0] as DbJoinRequest | undefined) ?? {
+        id: "",
+        court_id: court.id,
+        user_id: input.userId,
+        ask: "",
+        status: "granted",
+        created_at: new Date().toISOString(),
+        sealed_at: new Date().toISOString(),
+      },
+    };
+  }
+  if (membership && membership.court_id !== court.id) {
+    throw new Error("Already sworn to another court. One court per vassal for now.");
+  }
+
+  const ask = (input.ask ?? "").trim().slice(0, 400);
+  const db = getDb();
+  const rows = await db`
+    INSERT INTO court_join_requests (court_id, user_id, ask, status)
+    VALUES (${court.id}, ${input.userId}, ${ask}, 'open')
+    ON CONFLICT (court_id, user_id) DO UPDATE
+      SET ask = CASE
+            WHEN EXCLUDED.ask <> '' THEN EXCLUDED.ask
+            ELSE court_join_requests.ask
+          END,
+          status = CASE
+            WHEN court_join_requests.status = 'granted' THEN court_join_requests.status
+            ELSE 'open'
+          END,
+          sealed_at = CASE
+            WHEN court_join_requests.status = 'granted' THEN court_join_requests.sealed_at
+            ELSE NULL
+          END,
+          created_at = CASE
+            WHEN court_join_requests.status = 'open' THEN court_join_requests.created_at
+            WHEN court_join_requests.status = 'granted' THEN court_join_requests.created_at
+            ELSE NOW()
+          END
+    RETURNING id, court_id, user_id, ask, status, created_at, sealed_at
+  `;
+  return {
+    court,
+    alreadyMember: false,
+    request: rows[0] as DbJoinRequest,
+  };
+}
+
+export async function getJoinRequestForUser(
+  courtId: string,
+  userId: string,
+): Promise<DbJoinRequest | null> {
+  await ensureSchema();
+  const db = getDb();
+  const rows = await db`
+    SELECT id, court_id, user_id, ask, status, created_at, sealed_at
+    FROM court_join_requests
+    WHERE court_id = ${courtId} AND user_id = ${userId}
+    LIMIT 1
+  `;
+  return (rows[0] as DbJoinRequest | undefined) ?? null;
+}
+
+export async function getOpenJoinRequestByUser(
+  userId: string,
+): Promise<DbJoinRequest | null> {
+  await ensureSchema();
+  const db = getDb();
+  const rows = await db`
+    SELECT r.id, r.court_id, r.user_id, r.ask, r.status, r.created_at, r.sealed_at,
+           c.slug AS court_slug, c.name AS court_name
+    FROM court_join_requests r
+    JOIN courts c ON c.id = r.court_id
+    WHERE r.user_id = ${userId} AND r.status = 'open'
+    ORDER BY r.created_at ASC
+    LIMIT 1
+  `;
+  return (rows[0] as DbJoinRequest | undefined) ?? null;
+}
+
+export async function listJoinRequestsForLord(
+  lordUserId: string,
+  opts?: { status?: JoinRequestStatus | "all" },
+): Promise<DbJoinRequest[]> {
+  await ensureSchema();
+  const court = await getCourtByLord(lordUserId);
+  if (!court) return [];
+  const db = getDb();
+  const status = opts?.status ?? "open";
+  if (status === "all") {
+    const rows = await db`
+      SELECT r.id, r.court_id, r.user_id, r.ask, r.status, r.created_at, r.sealed_at,
+             u.name, u.avatar_url, u.x_username
+      FROM court_join_requests r
+      JOIN users u ON u.id = r.user_id
+      WHERE r.court_id = ${court.id}
+      ORDER BY
+        CASE r.status WHEN 'open' THEN 0 WHEN 'deferred' THEN 1 ELSE 2 END,
+        r.created_at ASC
+      LIMIT 80
+    `;
+    return rows as DbJoinRequest[];
+  }
+  const rows = await db`
+    SELECT r.id, r.court_id, r.user_id, r.ask, r.status, r.created_at, r.sealed_at,
+           u.name, u.avatar_url, u.x_username
+    FROM court_join_requests r
+    JOIN users u ON u.id = r.user_id
+    WHERE r.court_id = ${court.id} AND r.status = ${status}
+    ORDER BY r.created_at ASC
+    LIMIT 80
+  `;
+  return rows as DbJoinRequest[];
+}
+
+export async function sealJoinRequest(input: {
+  lordUserId: string;
+  requestId: string;
+  status: Exclude<JoinRequestStatus, "open">;
+}): Promise<{ request: DbJoinRequest; member?: DbCourtMember; court?: DbCourt }> {
+  await ensureSchema();
+  const court = await getCourtByLord(input.lordUserId);
+  if (!court) throw new Error("Only the Lord may seal the waitlist.");
+
+  const db = getDb();
+  const existing = await db`
+    SELECT id, court_id, user_id, ask, status, created_at, sealed_at
+    FROM court_join_requests
+    WHERE id = ${input.requestId} AND court_id = ${court.id}
+    LIMIT 1
+  `;
+  const row = existing[0] as DbJoinRequest | undefined;
+  if (!row) throw new Error("Waitlist entry not found.");
+  if (row.status === "granted") {
+    return { request: row, court };
+  }
+
+  if (input.status === "granted") {
+    const joined = await joinCourt({
+      userId: row.user_id,
+      slug: court.slug,
+    });
+    const sealed = await db`
+      UPDATE court_join_requests
+      SET status = 'granted', sealed_at = NOW()
+      WHERE id = ${row.id}
+      RETURNING id, court_id, user_id, ask, status, created_at, sealed_at
+    `;
+    return {
+      request: sealed[0] as DbJoinRequest,
+      member: joined.member,
+      court: joined.court,
+    };
+  }
+
+  const sealed = await db`
+    UPDATE court_join_requests
+    SET status = ${input.status}, sealed_at = NOW()
+    WHERE id = ${row.id}
+    RETURNING id, court_id, user_id, ask, status, created_at, sealed_at
+  `;
+  return { request: sealed[0] as DbJoinRequest, court };
+}
+
 export async function updateCourtSettings(
   lordUserId: string,
   patch: {

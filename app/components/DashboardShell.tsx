@@ -6,7 +6,12 @@ import { useRef, useState, type ReactNode } from "react";
 import type { Petition } from "../lib/features";
 import { holdingHomeHref, LANDING_HREF } from "../lib/home";
 import type { CourtRank } from "../lib/ranks";
-import { CourtPanel, type CourtMembershipSummary } from "./CourtPanel";
+import {
+  CourtPanel,
+  type CourtMembershipSummary,
+  type PendingJoinSummary,
+} from "./CourtPanel";
+import { FealtyQueue, type FealtyQueueItem } from "./FealtyQueue";
 import { PetitionCompose } from "./PetitionCompose";
 import { PetitionCourt } from "./PetitionCourt";
 import { VassalLogo } from "./VassalLogo";
@@ -48,6 +53,8 @@ export type DashboardData = {
     status: string;
   }>;
   court: CourtMembershipSummary | null;
+  pendingJoin?: PendingJoinSummary | null;
+  waitlist?: FealtyQueueItem[];
 };
 
 type DashboardShellProps = {
@@ -582,6 +589,10 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
               <CourtPanel
                 holding={data.user.holding}
                 membership={data.court}
+                pendingJoin={data.pendingJoin ?? null}
+                onPendingJoin={(pendingJoin) =>
+                  setData({ ...data, pendingJoin })
+                }
                 onMembership={(court) =>
                   setData({
                     ...data,
@@ -591,9 +602,16 @@ export function DashboardShell({ initialData, loadError }: DashboardShellProps) 
                           rank: (court.rank as CourtRank) || "serf",
                         }
                       : null,
+                    pendingJoin: null,
                   })
                 }
               />
+              {data.court?.role === "lord" ? (
+                <FealtyQueue
+                  seed={data.waitlist ?? []}
+                  onChange={(waitlist) => setData({ ...data, waitlist })}
+                />
+              ) : null}
             </section>
           )}
 

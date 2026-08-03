@@ -206,3 +206,21 @@ CREATE INDEX IF NOT EXISTS court_scrolls_court_idx ON court_scrolls(court_id);
 CREATE INDEX IF NOT EXISTS hall_comments_court_id_idx ON hall_comments(court_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS hall_comments_parent_id_idx ON hall_comments(parent_id);
 CREATE INDEX IF NOT EXISTS hall_comment_cheers_comment_id_idx ON hall_comment_cheers(comment_id);
+
+-- Open waitlist: request fealty → Lord seals grant / deny / defer (no tribute gate)
+CREATE TABLE IF NOT EXISTS court_join_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  court_id UUID NOT NULL REFERENCES courts(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  ask TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'open'
+    CHECK (status IN ('open', 'granted', 'denied', 'deferred')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  sealed_at TIMESTAMPTZ,
+  UNIQUE (court_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS court_join_requests_court_status_idx
+  ON court_join_requests(court_id, status, created_at ASC);
+CREATE INDEX IF NOT EXISTS court_join_requests_user_id_idx
+  ON court_join_requests(user_id);

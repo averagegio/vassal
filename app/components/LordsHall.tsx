@@ -108,6 +108,8 @@ export type HallData = {
     standing: number | null;
     userId?: string | null;
     isFollowingLord?: boolean;
+    /** Open waitlist status when not yet a member. */
+    joinRequestStatus?: "open" | "granted" | "denied" | "deferred" | null;
   };
 };
 
@@ -401,7 +403,12 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "join", slug: data.court.slug }),
       });
-      const json = (await res.json()) as { error?: string };
+      const json = (await res.json()) as {
+        error?: string;
+        pending?: boolean;
+        alreadyMember?: boolean;
+        request?: { status?: string };
+      };
       if (res.status === 401) {
         router.push(
           `/signup?court=${encodeURIComponent(data.court.slug)}&holding=fan`,
@@ -409,12 +416,27 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
         return;
       }
       if (!res.ok) {
-        setMessage(json.error || "Could not swear fealty.");
+        setMessage(json.error || "Could not join the waitlist.");
         return;
       }
-      await refresh();
-      setMessage("Fealty sworn. Welcome to the community hall.");
-      setTab("community");
+      if (json.alreadyMember) {
+        await refresh();
+        setMessage("You are already sworn to this hall.");
+        setTab("community");
+        return;
+      }
+      setData((prev) => ({
+        ...prev,
+        viewer: {
+          ...prev.viewer,
+          joinRequestStatus:
+            (json.request?.status as HallData["viewer"]["joinRequestStatus"]) ??
+            "open",
+        },
+      }));
+      setMessage(
+        "Joined the waitlist. The Lord must seal your fealty before you enter.",
+      );
     } finally {
       setBusy(false);
     }
@@ -422,7 +444,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
 
   const postComment = async (body: string, parentId?: string | null) => {
     if (!data.viewer.isMember) {
-      setMessage("Swear fealty to speak in this hall.");
+      setMessage("Join the waitlist — the Lord must seal before you speak.");
       return false;
     }
     setBusy(true);
@@ -470,7 +492,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
 
   const cheerComment = async (commentId: string) => {
     if (!data.viewer.isMember) {
-      setMessage("Swear fealty to cheer in this hall.");
+      setMessage("Join the waitlist — the Lord must seal before you cheer.");
       return;
     }
     setBusy(true);
@@ -771,6 +793,10 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               {RANK_LABEL[(data.viewer.rank as CourtRank) || "serf"] || "Member"}
               {myScore ? ` · ${seasonPoints(myScore)} pts` : ""}
             </p>
+          ) : data.viewer.joinRequestStatus === "open" ? (
+            <p className="font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
+              Waitlist · awaiting seal
+            </p>
           ) : (
             <button
               type="button"
@@ -778,7 +804,10 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               onClick={() => void swearFealty()}
               className="border border-[color-mix(in_srgb,var(--vassal-gold)_45%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_35%,transparent)] px-3 py-1.5 font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.16em] uppercase"
             >
-              Swear fealty
+              {data.viewer.joinRequestStatus === "denied" ||
+              data.viewer.joinRequestStatus === "deferred"
+                ? "Rejoin waitlist"
+                : "Join waitlist"}
             </button>
           )}
         </div>
@@ -952,8 +981,8 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               </div>
             ) : (
               <p className="mt-4 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
-                Swear fealty, then speak in the community hall to climb the
-                board.
+                Join the waitlist, get sealed, then speak in the hall to climb
+                the board.
               </p>
             )}
 
@@ -1044,6 +1073,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               courtSlug={data.court.slug}
               isMember={data.viewer.isMember}
               isLord={data.viewer.isLord}
+              waitlisted={data.viewer.joinRequestStatus === "open"}
               viewerUserId={data.viewer.userId}
               busy={busy}
               onPost={postComment}
@@ -1076,7 +1106,8 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
             ) : null}
             {!data.viewer.isMember ? (
               <p className="mb-6 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
-                Swear fealty to file a petition with this Lord.
+                Join the waitlist and get sealed to file a petition with this
+                Lord.
               </p>
             ) : null}
 
@@ -1284,7 +1315,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                   </div>
                 ) : (
                   <p className="mt-4 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
-                    Swear fealty to import your own API feed.
+                    Join the waitlist and get sealed to import an API feed.
                   </p>
                 )}
 

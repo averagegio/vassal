@@ -24,13 +24,27 @@ export type CourtMembershipSummary = {
   widget?: HallWidget;
 };
 
+export type PendingJoinSummary = {
+  courtSlug: string;
+  courtName: string;
+  status: "open" | "granted" | "denied" | "deferred";
+};
+
 type CourtPanelProps = {
   holding: "fan" | "estate";
   membership: CourtMembershipSummary | null;
+  pendingJoin?: PendingJoinSummary | null;
   onMembership: (m: CourtMembershipSummary | null) => void;
+  onPendingJoin?: (p: PendingJoinSummary | null) => void;
 };
 
-export function CourtPanel({ holding, membership, onMembership }: CourtPanelProps) {
+export function CourtPanel({
+  holding,
+  membership,
+  pendingJoin = null,
+  onMembership,
+  onPendingJoin,
+}: CourtPanelProps) {
   const [mode, setMode] = useState<"idle" | "create" | "join">("idle");
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -38,6 +52,7 @@ export function CourtPanel({ holding, membership, onMembership }: CourtPanelProp
   const [widget, setWidget] = useState<HallWidget>("none");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
 
   if (holding !== "fan") {
     return (
@@ -90,13 +105,36 @@ export function CourtPanel({ holding, membership, onMembership }: CourtPanelProp
     );
   }
 
+  if (pendingJoin?.status === "open") {
+    return (
+      <section className="dash-panel p-5">
+        <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
+          On the waitlist
+        </h2>
+        <p className="mt-3 font-[family-name:var(--font-display)] text-xl tracking-[0.08em]">
+          {pendingJoin.courtName}
+        </p>
+        <p className="mt-2 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)]">
+          Awaiting the Lord&apos;s seal. You can still visit the hall and read
+          while you wait.
+        </p>
+        <Link
+          href={`/hall/${pendingJoin.courtSlug}`}
+          className="mt-5 inline-flex border border-[color-mix(in_srgb,var(--vassal-gold)_45%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_30%,transparent)] px-4 py-2.5 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.18em] uppercase transition hover:bg-[color-mix(in_srgb,var(--vassal-red)_45%,transparent)]"
+        >
+          Visit hall
+        </Link>
+      </section>
+    );
+  }
+
   return (
     <section className="dash-panel p-5">
       <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
         Join the fealty game
       </h2>
       <p className="mt-2 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)]">
-        Open a hall as Lord, or swear into one with a slug.
+        Open a hall as Lord, or join a waitlist with a slug — no tribute gate.
       </p>
 
       {mode === "idle" ? (
@@ -113,7 +151,7 @@ export function CourtPanel({ holding, membership, onMembership }: CourtPanelProp
             onClick={() => setMode("join")}
             className="border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] px-3 py-3 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.16em] uppercase"
           >
-            Swear fealty
+            Join waitlist
           </button>
         </div>
       ) : null}
@@ -229,6 +267,7 @@ export function CourtPanel({ holding, membership, onMembership }: CourtPanelProp
             void (async () => {
               setBusy(true);
               setError("");
+              setInfo("");
               try {
                 const res = await fetch("/api/court", {
                   method: "POST",
@@ -238,19 +277,24 @@ export function CourtPanel({ holding, membership, onMembership }: CourtPanelProp
                 const json = (await res.json()) as {
                   error?: string;
                   court?: { slug: string; name: string };
-                  member?: { rank: string; standing: number; role: "lord" | "vassal" };
+                  pending?: boolean;
+                  alreadyMember?: boolean;
+                  request?: { status: PendingJoinSummary["status"] };
                 };
-                if (!res.ok || !json.court || !json.member) {
-                  setError(json.error || "Could not join.");
+                if (!res.ok || !json.court) {
+                  setError(json.error || "Could not join waitlist.");
                   return;
                 }
-                onMembership({
-                  slug: json.court.slug,
-                  name: json.court.name,
-                  rank: json.member.rank,
-                  standing: json.member.standing,
-                  role: json.member.role,
+                if (json.alreadyMember) {
+                  setInfo("You are already sworn to that hall.");
+                  return;
+                }
+                onPendingJoin?.({
+                  courtSlug: json.court.slug,
+                  courtName: json.court.name,
+                  status: json.request?.status ?? "open",
                 });
+                setInfo("On the waitlist — await the Lord\u2019s seal.");
               } finally {
                 setBusy(false);
               }
@@ -266,6 +310,9 @@ export function CourtPanel({ holding, membership, onMembership }: CourtPanelProp
           {error ? (
             <p className="text-[0.7rem] text-[var(--vassal-blood)]">{error}</p>
           ) : null}
+          {info ? (
+            <p className="text-[0.7rem] text-[var(--vassal-gold)]">{info}</p>
+          ) : null}
           <div className="flex gap-2">
             <button
               type="button"
@@ -279,7 +326,7 @@ export function CourtPanel({ holding, membership, onMembership }: CourtPanelProp
               disabled={busy}
               className="border border-[color-mix(in_srgb,var(--vassal-gold)_45%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_30%,transparent)] px-4 py-2 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.16em] uppercase disabled:opacity-60"
             >
-              {busy ? "Swearing…" : "Swear fealty"}
+              {busy ? "Joining…" : "Join waitlist"}
             </button>
           </div>
         </form>

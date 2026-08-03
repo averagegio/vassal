@@ -11,6 +11,7 @@ export type CommunityHallProps = {
   courtSlug: string;
   isMember: boolean;
   isLord: boolean;
+  waitlisted?: boolean;
   viewerUserId?: string | null;
   busy?: boolean;
   onPost: (body: string, parentId?: string | null) => Promise<boolean>;
@@ -38,6 +39,7 @@ export function CommunityHall({
   courtSlug,
   isMember,
   isLord,
+  waitlisted,
   viewerUserId,
   busy,
   onPost,
@@ -138,7 +140,9 @@ export function CommunityHall({
         </div>
       ) : (
         <p className="mt-4 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_60%,transparent)]">
-          Swear fealty to speak in this hall. Visitors can still read the court.
+          {waitlisted
+            ? "You are on the waitlist — the Lord must seal before you speak. Visitors can still read."
+            : "Join the waitlist to speak. Visitors can still read the court."}
         </p>
       )}
 
