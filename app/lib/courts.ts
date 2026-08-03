@@ -1,5 +1,6 @@
 import { ensureSchema, getDb } from "./db";
 import { safePublicApiUrl, sanitizeJsonPath } from "./api-feed";
+import { listHallComments, type DbHallComment } from "./comments";
 import {
   type CourtRank,
   type HallTheme,
@@ -487,18 +488,29 @@ export async function removeApiFeed(input: {
   return rows.length > 0;
 }
 
-export async function getHallBundle(slug: string) {
+export async function getHallBundle(
+  slug: string,
+  viewerUserId?: string | null,
+) {
   const court = await getCourtBySlug(slug);
   if (!court) return null;
 
   const season = await ensureActiveSeason(court.id, court.lord_user_id);
-  const [leaderboard, playlist, moodboard, apiFeeds, scoreboard, lordRows] =
-    await Promise.all([
+  const [
+    leaderboard,
+    playlist,
+    moodboard,
+    apiFeeds,
+    scoreboard,
+    comments,
+    lordRows,
+  ] = await Promise.all([
       listLeaderboard(court.id),
       listPlaylist(court.id),
       court.widget === "moodboard" ? listMoodPins(court.id) : Promise.resolve([]),
       court.widget === "api" ? listApiFeeds(court.id) : Promise.resolve([]),
       listScoreboard(season.id),
+      listHallComments(court.id, viewerUserId),
       (async () => {
         const db = getDb();
         return db`
@@ -532,10 +544,19 @@ export async function getHallBundle(slug: string) {
     playlist,
     moodboard,
     apiFeeds,
+    comments: comments as DbHallComment[],
     season,
     scoreboard: scores,
     lord: lord ?? null,
   };
+}
+
+/** Reload hall comments with viewer-specific cheer state. */
+export async function getHallCommentsForViewer(
+  courtId: string,
+  viewerUserId?: string | null,
+) {
+  return listHallComments(courtId, viewerUserId);
 }
 
 export type DbSeason = {
@@ -668,7 +689,10 @@ function clampTarget(n: number) {
   return Math.max(1, Math.min(9999, Math.round(n)));
 }
 
-/** Record self-reported season service until X sync lands. */
+/**
+ * Award season points for hall-native service.
+ * Column map (kept for migration): replies=Words, reposts=Cheers, mentions=Replies.
+ */
 export async function bumpSeasonScore(input: {
   courtId: string;
   userId: string;

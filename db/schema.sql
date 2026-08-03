@@ -117,12 +117,37 @@ CREATE TABLE IF NOT EXISTS court_seasons (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   court_id UUID NOT NULL REFERENCES courts(id) ON DELETE CASCADE,
   title TEXT NOT NULL DEFAULT 'Season of Service',
-  target_replies INTEGER NOT NULL DEFAULT 60,
-  target_reposts INTEGER NOT NULL DEFAULT 20,
-  target_mentions INTEGER NOT NULL DEFAULT 15,
+  -- Hall-native season metrics (columns kept for migration):
+  -- replies = Words (top-level hall posts),
+  -- reposts = Cheers, mentions = Replies in-thread.
+  target_replies INTEGER NOT NULL DEFAULT 40,
+  target_reposts INTEGER NOT NULL DEFAULT 30,
+  target_mentions INTEGER NOT NULL DEFAULT 25,
   starts_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   ends_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '30 days'),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE court_seasons ALTER COLUMN target_replies SET DEFAULT 40;
+ALTER TABLE court_seasons ALTER COLUMN target_reposts SET DEFAULT 30;
+ALTER TABLE court_seasons ALTER COLUMN target_mentions SET DEFAULT 25;
+
+-- Public community hall conversation (stays on Vassal — not X)
+CREATE TABLE IF NOT EXISTS hall_comments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  court_id UUID NOT NULL REFERENCES courts(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  parent_id UUID REFERENCES hall_comments(id) ON DELETE CASCADE,
+  body TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS hall_comment_cheers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  comment_id UUID NOT NULL REFERENCES hall_comments(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (comment_id, user_id)
 );
 
 CREATE TABLE IF NOT EXISTS season_scores (
@@ -177,3 +202,7 @@ CREATE TABLE IF NOT EXISTS court_scrolls (
 CREATE INDEX IF NOT EXISTS court_scrolls_token_idx ON court_scrolls(token);
 CREATE INDEX IF NOT EXISTS court_scrolls_author_idx ON court_scrolls(author_user_id);
 CREATE INDEX IF NOT EXISTS court_scrolls_court_idx ON court_scrolls(court_id);
+
+CREATE INDEX IF NOT EXISTS hall_comments_court_id_idx ON hall_comments(court_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS hall_comments_parent_id_idx ON hall_comments(parent_id);
+CREATE INDEX IF NOT EXISTS hall_comment_cheers_comment_id_idx ON hall_comment_cheers(comment_id);

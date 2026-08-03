@@ -72,19 +72,19 @@ export function CourtPanel({ holding, membership, onMembership }: CourtPanelProp
           href={
             membership.role === "lord"
               ? `/hall/${membership.slug}?tab=setup`
-              : `/hall/${membership.slug}`
+              : `/hall/${membership.slug}?tab=community`
           }
           className="mt-5 inline-flex border border-[color-mix(in_srgb,var(--vassal-gold)_45%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_30%,transparent)] px-4 py-2.5 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.18em] uppercase transition hover:bg-[color-mix(in_srgb,var(--vassal-red)_45%,transparent)]"
         >
           {membership.role === "lord"
             ? "Open Lord setup"
-            : "Enter Lord\u2019s Hall"}
+            : "Enter community hall"}
         </Link>
         <p className="mt-3 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
-          Shared season scoreboard for every vassal
+          Community hall + season board for every vassal
           {membership.role === "lord"
             ? ", plus Lord setup for themes, widgets, and vassal summons."
-            : " — and scrolls to nominate a new Lord."}
+            : " — speak, cheer, and nominate a new Lord."}
         </p>
       </section>
     );

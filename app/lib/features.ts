@@ -24,6 +24,11 @@ export type Petition = {
 
 export const FAN_FEATURES: FeatureItem[] = [
   {
+    id: "community-hall",
+    title: "Community hall",
+    body: "Public comments, replies, and cheers — loyalty that stays in Fan Court, not on X.",
+  },
+  {
     id: "tenure",
     title: "Paid tiers",
     body: "Fans pay for a membership level — not just a noisy feed.",
@@ -34,11 +39,6 @@ export const FAN_FEATURES: FeatureItem[] = [
     body: "Members ask for access or favors. You approve each one.",
   },
   {
-    id: "audiences",
-    title: "Live slots",
-    body: "Timed sessions with you. Loyal fans go first.",
-  },
-  {
     id: "decrees",
     title: "Updates",
     body: "The Steward drafts posts. You approve before they go out.",
@@ -46,12 +46,12 @@ export const FAN_FEATURES: FeatureItem[] = [
   {
     id: "ranks",
     title: "Ranks",
-    body: "Public status ladder — earn recognition in the open.",
+    body: "Public status from hall service — words, cheers, and replies.",
   },
   {
     id: "campaigns",
     title: "Seasons",
-    body: "Time-boxed challenges and titles so membership has a story.",
+    body: "Time-boxed hall challenges so membership has a story on your court.",
   },
 ];
 

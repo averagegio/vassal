@@ -1132,6 +1132,67 @@ body {
   border: 1px dashed color-mix(in srgb, var(--vassal-gold) 28%, transparent);
 }
 
+.hall-community {
+  animation: hall-fade-up 0.4s ease both;
+}
+
+.hall-comment-compose {
+  border: 1px solid color-mix(in srgb, var(--vassal-gold) 22%, transparent);
+  background:
+    linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--vassal-red) 12%, transparent),
+      transparent 55%
+    ),
+    color-mix(in srgb, var(--vassal-black) 35%, transparent);
+  padding: 0.9rem 1rem 1rem;
+}
+
+.hall-comment-thread {
+  border-top: 1px solid color-mix(in srgb, var(--vassal-gold) 16%, transparent);
+  padding-top: 1rem;
+}
+
+.hall-comment-thread:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.hall-comment {
+  border-left: 2px solid transparent;
+  padding-left: 0.15rem;
+}
+
+.hall-comment-lord {
+  border-left-color: color-mix(in srgb, var(--vassal-gold) 55%, transparent);
+}
+
+.hall-comment-nested {
+  border-left: 1px solid color-mix(in srgb, var(--vassal-gold) 22%, transparent);
+  padding-left: 0.85rem;
+}
+
+.hall-comment-replies {
+  margin-left: 0.25rem;
+  padding-left: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .hall-comment-replies {
+    margin-left: 2.5rem;
+  }
+}
+
+.hall-chip-active {
+  border-color: color-mix(in srgb, var(--vassal-gold) 55%, transparent);
+  background: color-mix(in srgb, var(--vassal-red) 28%, transparent);
+  color: var(--vassal-cream);
+}
+
+.hall-chip-muted {
+  opacity: 0.72;
+}
+
 .hall-chip {
   border: 1px solid color-mix(in srgb, var(--vassal-gold) 35%, transparent);
   background: color-mix(in srgb, var(--vassal-red) 18%, transparent);
@@ -1146,6 +1207,11 @@ body {
 
 .hall-chip:hover {
   background: color-mix(in srgb, var(--vassal-red) 32%, transparent);
+}
+
+.hall-chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .hall-player {

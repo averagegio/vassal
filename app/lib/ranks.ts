@@ -63,7 +63,7 @@ export const WIDGET_LABEL: Record<HallWidget, string> = {
 };
 
 export const WIDGET_BLURB: Record<HallWidget, string> = {
-  none: "Scoreboard and petitions only — Lord still runs the hall booth",
+  none: "Community hall + petitions — Lord still runs the hall booth",
   playlist: "Let vassals queue tracks in the built-in hall player",
   moodboard: "Shared image pins for the court",
   api: "Import a public JSON API feed",

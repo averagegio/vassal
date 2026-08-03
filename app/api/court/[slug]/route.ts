@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { fetchApiFeed } from "../../../lib/api-feed";
 import {
+  addHallComment,
+  cheerHallComment,
+  removeHallComment,
+  serializeComment,
+} from "../../../lib/comments";
+import {
   addApiFeed,
   addMoodPin,
   addPlaylistTrack,
@@ -23,6 +29,23 @@ import {
 import { getSession } from "../../../lib/session";
 
 type Params = { params: Promise<{ slug: string }> };
+
+function mapScoreboard(
+  bundle: NonNullable<Awaited<ReturnType<typeof getHallBundle>>>,
+) {
+  return bundle.scoreboard.map((m) => ({
+    userId: m.user_id,
+    name: m.name,
+    avatarUrl: m.avatar_url,
+    xUsername: m.x_username,
+    rank: m.rank,
+    role: m.role,
+    standing: m.standing,
+    replies: m.replies,
+    reposts: m.reposts,
+    mentions: m.mentions,
+  }));
+}
 
 function serializeHall(
   bundle: NonNullable<Awaited<ReturnType<typeof getHallBundle>>>,
@@ -63,18 +86,7 @@ function serializeHall(
       startsAt: bundle.season.starts_at,
       endsAt: bundle.season.ends_at,
     },
-    scoreboard: bundle.scoreboard.map((m) => ({
-      userId: m.user_id,
-      name: m.name,
-      avatarUrl: m.avatar_url,
-      xUsername: m.x_username,
-      rank: m.rank,
-      role: m.role,
-      standing: m.standing,
-      replies: m.replies,
-      reposts: m.reposts,
-      mentions: m.mentions,
-    })),
+    scoreboard: mapScoreboard(bundle),
     leaderboard: bundle.leaderboard.map((m) => ({
       userId: m.user_id,
       name: m.name,
@@ -107,6 +119,7 @@ function serializeHall(
       by: f.name,
       userId: f.user_id,
     })),
+    comments: bundle.comments.map(serializeComment),
     viewer,
   };
 }
@@ -114,12 +127,12 @@ function serializeHall(
 export async function GET(_request: Request, { params }: Params) {
   try {
     const { slug } = await params;
-    const bundle = await getHallBundle(slug);
+    const session = await getSession();
+    const bundle = await getHallBundle(slug, session?.userId);
     if (!bundle) {
       return NextResponse.json({ error: "Hall not found." }, { status: 404 });
     }
 
-    const session = await getSession();
     let viewer: {
       isMember: boolean;
       isLord: boolean;
@@ -258,6 +271,9 @@ export async function POST(request: Request, { params }: Params) {
         | "playlist-remove"
         | "moodboard"
         | "score"
+        | "comment"
+        | "comment-cheer"
+        | "comment-remove"
         | "api"
         | "api-preview"
         | "api-remove";
@@ -271,6 +287,9 @@ export async function POST(request: Request, { params }: Params) {
       apiUrl?: string;
       jsonPath?: string;
       feedId?: string;
+      body?: string;
+      parentId?: string | null;
+      commentId?: string;
       replies?: number;
       reposts?: number;
       mentions?: number;
@@ -312,44 +331,95 @@ export async function POST(request: Request, { params }: Params) {
     }
 
     if (body.kind === "score") {
-      const replies = Math.max(0, Math.min(50, Math.round(body.replies ?? 0)));
-      const reposts = Math.max(0, Math.min(50, Math.round(body.reposts ?? 0)));
-      const mentions = Math.max(0, Math.min(50, Math.round(body.mentions ?? 0)));
-      if (replies + reposts + mentions < 1) {
+      return NextResponse.json(
+        {
+          error:
+            "Season points come from the community hall — speak, reply, or cheer there.",
+        },
+        { status: 400 },
+      );
+    }
+
+    if (body.kind === "comment") {
+      const comment = await addHallComment({
+        courtId: bundle.court.id,
+        userId: session.userId,
+        body: body.body ?? "",
+        parentId: body.parentId,
+      });
+      if (comment.parent_id) {
+        await bumpSeasonScore({
+          courtId: bundle.court.id,
+          userId: session.userId,
+          mentions: 1,
+        });
+      } else {
+        await bumpSeasonScore({
+          courtId: bundle.court.id,
+          userId: session.userId,
+          replies: 1,
+        });
+      }
+      const fresh = await getHallBundle(slug, session.userId);
+      return NextResponse.json({
+        comment: serializeComment(comment),
+        comments: fresh?.comments.map(serializeComment) ?? [],
+        scoreboard: fresh ? mapScoreboard(fresh) : [],
+      });
+    }
+
+    if (body.kind === "comment-cheer") {
+      if (!body.commentId) {
         return NextResponse.json(
-          { error: "Log at least one reply, repost, or mention." },
+          { error: "Comment required." },
           { status: 400 },
         );
       }
-      const row = await bumpSeasonScore({
+      const result = await cheerHallComment({
         courtId: bundle.court.id,
+        commentId: body.commentId,
         userId: session.userId,
-        replies,
-        reposts,
-        mentions,
       });
-      const fresh = await getHallBundle(slug);
+      if (result.cheered) {
+        await bumpSeasonScore({
+          courtId: bundle.court.id,
+          userId: session.userId,
+          reposts: 1,
+        });
+      }
+      const fresh = await getHallBundle(slug, session.userId);
       return NextResponse.json({
-        score: row
-          ? {
-              userId: row.user_id,
-              replies: row.replies,
-              reposts: row.reposts,
-              mentions: row.mentions,
-              standing: row.standing,
-            }
-          : null,
-        scoreboard: fresh?.scoreboard.map((m) => ({
-          userId: m.user_id,
-          name: m.name,
-          avatarUrl: m.avatar_url,
-          rank: m.rank,
-          role: m.role,
-          standing: m.standing,
-          replies: m.replies,
-          reposts: m.reposts,
-          mentions: m.mentions,
-        })),
+        ...result,
+        comments: fresh?.comments.map(serializeComment) ?? [],
+        scoreboard: fresh ? mapScoreboard(fresh) : [],
+      });
+    }
+
+    if (body.kind === "comment-remove") {
+      if (!body.commentId) {
+        return NextResponse.json(
+          { error: "Comment required." },
+          { status: 400 },
+        );
+      }
+      const removed = await removeHallComment({
+        courtId: bundle.court.id,
+        commentId: body.commentId,
+        userId: session.userId,
+        isLord: membership.role === "lord",
+      });
+      if (!removed) {
+        return NextResponse.json(
+          { error: "Could not remove that word." },
+          { status: 404 },
+        );
+      }
+      const fresh = await getHallBundle(slug, session.userId);
+      return NextResponse.json({
+        ok: true,
+        commentId: body.commentId,
+        comments: fresh?.comments.map(serializeComment) ?? [],
+        scoreboard: fresh ? mapScoreboard(fresh) : [],
       });
     }
 
