@@ -132,7 +132,7 @@ ALTER TABLE court_seasons ALTER COLUMN target_replies SET DEFAULT 40;
 ALTER TABLE court_seasons ALTER COLUMN target_reposts SET DEFAULT 30;
 ALTER TABLE court_seasons ALTER COLUMN target_mentions SET DEFAULT 25;
 
--- Public community hall conversation (stays on Vassal — not X)
+-- Public community hall conversation
 CREATE TABLE IF NOT EXISTS hall_comments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   court_id UUID NOT NULL REFERENCES courts(id) ON DELETE CASCADE,

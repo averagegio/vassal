@@ -99,8 +99,8 @@ export function CommunityHall({
             Community hall
           </h2>
           <p className="mt-1 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
-            Speak here — season points come from words, replies, and cheers in
-            this court, not from X.
+            Speak, reply, and cheer — season points come from service in this
+            court.
           </p>
         </div>
         <span className="font-[family-name:var(--font-display)] text-[0.55rem] tracking-[0.14em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_45%,transparent)]">

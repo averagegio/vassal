@@ -41,7 +41,7 @@ export const LEXICON: LexiconEntry[] = [
     term: "Fan Court",
     plain: "A paid creator community",
     detail:
-      "Fans join your court, speak in the community hall, climb ranks, send requests, and earn recognition — engagement that stays on Vassal.",
+      "Fans join your court, speak in the community hall, climb ranks, send requests, and earn recognition.",
   },
   {
     id: "estate",
@@ -81,16 +81,16 @@ export const LEXICON: LexiconEntry[] = [
   {
     id: "hall",
     term: "Lord's Hall",
-    plain: "The court's public home page",
+    plain: "The court's public page",
     detail:
-      "Where visitors read the community hall, members speak and cheer, and Lords run setup. Season points come from hall activity — not from X.",
+      "Where visitors read the community hall, members speak and cheer, and Lords run setup. Season points come from hall activity.",
   },
   {
     id: "community-hall",
     term: "Community hall",
     plain: "The court's public comment feed",
     detail:
-      "Front-facing words, replies, and cheers inside Fan Court. This is where loyalty shows — so fans stay here instead of performing only on X.",
+      "Words, replies, and cheers inside Fan Court. Members earn season standing by taking part here.",
   },
   {
     id: "fealty",

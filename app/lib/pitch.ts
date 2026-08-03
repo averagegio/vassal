@@ -72,7 +72,7 @@ export const SITE_FLOW: PitchStep[] = [
   {
     n: "05",
     title: "Loyalty loop",
-    body: "Fans speak and cheer in-court — standing rises on Vassal, not as unpaid growth for X.",
+    body: "Standing rises from hall service, ranks show, Steward drafts, you seal — retention compounds.",
   },
 ];
 

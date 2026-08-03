@@ -496,11 +496,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
         comments: json.comments ?? prev.comments,
         scoreboard: json.scoreboard ?? prev.scoreboard,
       }));
-      setMessage(
-        json.cheered
-          ? "Cheer recorded — stays in Fan Court."
-          : "Cheer withdrawn.",
-      );
+      setMessage(json.cheered ? "Cheer recorded." : "Cheer withdrawn.");
     } finally {
       setBusy(false);
     }

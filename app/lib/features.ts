@@ -26,7 +26,7 @@ export const FAN_FEATURES: FeatureItem[] = [
   {
     id: "community-hall",
     title: "Community hall",
-    body: "Public comments, replies, and cheers — loyalty that stays in Fan Court, not on X.",
+    body: "Public comments, replies, and cheers for your court.",
   },
   {
     id: "tenure",
