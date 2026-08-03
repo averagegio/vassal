@@ -37,8 +37,8 @@ export const LANDING_TOUR_STEPS: TourStep[] = [
     id: "fan",
     target: "[data-tour='fan']",
     eyebrow: "Fan Court",
-    title: "Membership that ranks",
-    body: "Fans pay for tiers, send requests, and climb a public rank ladder in your community.",
+    title: "Loyalty that stays home",
+    body: "Fans speak in your community hall, send requests, and climb ranks — engagement that grows Fan Court, not X.",
   },
   {
     id: "estate",

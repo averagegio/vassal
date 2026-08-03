@@ -67,12 +67,12 @@ export const SITE_FLOW: PitchStep[] = [
   {
     n: "04",
     title: "Lord’s Hall",
-    body: "Public court home: season scoreboard, community widgets, Lord setup.",
+    body: "Public community hall with comments, season board, widgets, and Lord setup.",
   },
   {
     n: "05",
     title: "Loyalty loop",
-    body: "Standing rises, ranks show, Steward drafts, you seal — retention compounds.",
+    body: "Fans speak and cheer in-court — standing rises on Vassal, not as unpaid growth for X.",
   },
 ];
 

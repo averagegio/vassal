@@ -16,6 +16,8 @@ import {
   HALL_THEMES,
   HALL_WIDGETS,
 } from "../lib/ranks";
+import type { HallCommentJson } from "../lib/comments";
+import { CommunityHall } from "./CommunityHall";
 import { FollowButton } from "./FollowButton";
 import { HallMusicPlayer } from "./HallMusicPlayer";
 import { PetitionCompose } from "./PetitionCompose";
@@ -98,6 +100,7 @@ export type HallData = {
     by?: string;
     userId?: string;
   }>;
+  comments: HallCommentJson[];
   viewer: {
     isMember: boolean;
     isLord: boolean;
@@ -151,7 +154,7 @@ function resolveInitialTab(
   if (requested === "setup" && initial.viewer.isLord) return "setup";
   if (requested === "community") return "community";
   if (requested === "scoreboard") return "scoreboard";
-  return "scoreboard";
+  return "community";
 }
 
 type HallSettingsDraft = {
@@ -170,9 +173,9 @@ function draftFromHall(hall: HallData): HallSettingsDraft {
     widget: hall.court.widget,
     tagline: hall.court.tagline,
     seasonTitle: hall.season?.title ?? "Season of Service",
-    targetReplies: String(hall.season?.targetReplies ?? 60),
-    targetReposts: String(hall.season?.targetReposts ?? 20),
-    targetMentions: String(hall.season?.targetMentions ?? 15),
+    targetReplies: String(hall.season?.targetReplies ?? 40),
+    targetReposts: String(hall.season?.targetReposts ?? 30),
+    targetMentions: String(hall.season?.targetMentions ?? 25),
   };
 }
 
@@ -183,6 +186,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
     apiFeeds: initial.apiFeeds ?? [],
     playlist: initial.playlist ?? [],
     moodboard: initial.moodboard ?? [],
+    comments: initial.comments ?? [],
   }));
   const [tab, setTab] = useState<HallTab>(() =>
     resolveInitialTab(initial, initialTab),
@@ -325,6 +329,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
       apiFeeds: json.apiFeeds ?? [],
       playlist: json.playlist ?? [],
       moodboard: json.moodboard ?? [],
+      comments: json.comments ?? [],
     };
     setData(next);
     if (opts?.syncDraft !== false) {
@@ -340,7 +345,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
 
   const previewDraft = () => {
     setPreviewing(true);
-    setTab("scoreboard");
+    setTab("community");
     setMessage("Previewing unsaved hall settings.");
   };
 
@@ -408,16 +413,64 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
         return;
       }
       await refresh();
-      setMessage("Fealty sworn. Welcome to the hall.");
-      setTab("scoreboard");
+      setMessage("Fealty sworn. Welcome to the community hall.");
+      setTab("community");
     } finally {
       setBusy(false);
     }
   };
 
-  const logService = async (field: "replies" | "reposts" | "mentions") => {
+  const postComment = async (body: string, parentId?: string | null) => {
     if (!data.viewer.isMember) {
-      setMessage("Swear fealty to appear on the scoreboard.");
+      setMessage("Swear fealty to speak in this hall.");
+      return false;
+    }
+    setBusy(true);
+    setMessage(null);
+    try {
+      const res = await fetch(`/api/court/${data.court.slug}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "comment",
+          body,
+          parentId: parentId ?? null,
+        }),
+      });
+      const json = (await res.json()) as {
+        error?: string;
+        comments?: HallCommentJson[];
+        scoreboard?: HallScoreRow[];
+      };
+      if (res.status === 401) {
+        router.push(
+          `/signup?court=${encodeURIComponent(data.court.slug)}&holding=fan`,
+        );
+        return false;
+      }
+      if (!res.ok) {
+        setMessage(json.error || "Could not post to the hall.");
+        return false;
+      }
+      setData((prev) => ({
+        ...prev,
+        comments: json.comments ?? prev.comments,
+        scoreboard: json.scoreboard ?? prev.scoreboard,
+      }));
+      setMessage(
+        parentId
+          ? "Reply posted — season replies credited."
+          : "Spoken in the hall — season words credited.",
+      );
+      return true;
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const cheerComment = async (commentId: string) => {
+    if (!data.viewer.isMember) {
+      setMessage("Swear fealty to cheer in this hall.");
       return;
     }
     setBusy(true);
@@ -426,26 +479,57 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
       const res = await fetch(`/api/court/${data.court.slug}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind: "score", [field]: 1 }),
+        body: JSON.stringify({ kind: "comment-cheer", commentId }),
       });
       const json = (await res.json()) as {
         error?: string;
+        comments?: HallCommentJson[];
+        scoreboard?: HallScoreRow[];
+        cheered?: boolean;
+      };
+      if (!res.ok) {
+        setMessage(json.error || "Could not cheer.");
+        return;
+      }
+      setData((prev) => ({
+        ...prev,
+        comments: json.comments ?? prev.comments,
+        scoreboard: json.scoreboard ?? prev.scoreboard,
+      }));
+      setMessage(
+        json.cheered
+          ? "Cheer recorded — stays in Fan Court."
+          : "Cheer withdrawn.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removeComment = async (commentId: string) => {
+    setBusy(true);
+    setMessage(null);
+    try {
+      const res = await fetch(`/api/court/${data.court.slug}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "comment-remove", commentId }),
+      });
+      const json = (await res.json()) as {
+        error?: string;
+        comments?: HallCommentJson[];
         scoreboard?: HallScoreRow[];
       };
-      if (res.status === 401 || res.status === 404) {
-        setMessage("Sign in to log service on the board.");
-        return;
-      }
       if (!res.ok) {
-        setMessage(json.error || "Could not log service.");
+        setMessage(json.error || "Could not remove that word.");
         return;
       }
-      if (json.scoreboard) {
-        setData((prev) => ({ ...prev, scoreboard: json.scoreboard! }));
-      } else {
-        await refresh();
-      }
-      setMessage("Service logged on the season board.");
+      setData((prev) => ({
+        ...prev,
+        comments: json.comments ?? prev.comments,
+        scoreboard: json.scoreboard ?? prev.scoreboard,
+      }));
+      setMessage("Removed from the hall.");
     } finally {
       setBusy(false);
     }
@@ -671,8 +755,8 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
   };
 
   const tabs: Array<{ id: HallTab; label: string; show: boolean }> = [
-    { id: "scoreboard", label: "Scoreboard", show: true },
     { id: "community", label: "Community", show: true },
+    { id: "scoreboard", label: "Scoreboard", show: true },
     { id: "setup", label: "Lord setup", show: data.viewer.isLord },
   ];
 
@@ -845,7 +929,8 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                   {displaySeasonTitle}
                 </h2>
                 <p className="mt-1 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
-                  Every vassal sees the same board — replies, reposts, mentions.
+                  Shared board for hall service — words, cheers, and replies in
+                  Fan Court.
                   {previewing && settingsDirty ? " (draft preview)" : ""}
                 </p>
               </div>
@@ -859,31 +944,20 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
             {data.viewer.isMember ? (
               <div className="hall-log-row mt-4">
                 <span className="font-[family-name:var(--font-display)] text-[0.55rem] tracking-[0.16em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
-                  Log service
+                  Earn points in Community
                 </span>
-                <div className="flex flex-wrap gap-2">
-                  {(
-                    [
-                      ["replies", "Reply"],
-                      ["reposts", "Repost"],
-                      ["mentions", "Mention"],
-                    ] as const
-                  ).map(([field, label]) => (
-                    <button
-                      key={field}
-                      type="button"
-                      disabled={busy}
-                      onClick={() => void logService(field)}
-                      className="hall-chip"
-                    >
-                      +1 {label}
-                    </button>
-                  ))}
-                </div>
+                <button
+                  type="button"
+                  className="hall-chip"
+                  onClick={() => setTab("community")}
+                >
+                  Open community hall
+                </button>
               </div>
             ) : (
               <p className="mt-4 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_55%,transparent)]">
-                Swear fealty to claim a row and log service.
+                Swear fealty, then speak in the community hall to climb the
+                board.
               </p>
             )}
 
@@ -945,17 +1019,17 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                       </div>
                       <div className="mt-3 grid gap-2">
                         <Meter
-                          label="Replies"
+                          label="Words"
                           value={row.replies}
                           target={displayTargets.replies}
                         />
                         <Meter
-                          label="Reposts"
+                          label="Cheers"
                           value={row.reposts}
                           target={displayTargets.reposts}
                         />
                         <Meter
-                          label="Mentions"
+                          label="Replies"
                           value={row.mentions}
                           target={displayTargets.mentions}
                         />
@@ -969,6 +1043,24 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
 
         {tab === "community" ? (
           <section className="dash-panel hall-panel-enter mt-5 p-4">
+            <CommunityHall
+              comments={data.comments}
+              courtSlug={data.court.slug}
+              isMember={data.viewer.isMember}
+              isLord={data.viewer.isLord}
+              viewerUserId={data.viewer.userId}
+              busy={busy}
+              onPost={postComment}
+              onCheer={cheerComment}
+              onRemove={removeComment}
+              onNeedAuth={() =>
+                router.push(
+                  `/signup?court=${encodeURIComponent(data.court.slug)}&holding=fan`,
+                )
+              }
+            />
+
+            <div className="mt-10 border-t border-[color-mix(in_srgb,var(--vassal-gold)_20%,transparent)] pt-8">
             {data.viewer.isMember && !data.viewer.isLord ? (
               <div className="mb-8 border-b border-[color-mix(in_srgb,var(--vassal-gold)_20%,transparent)] pb-8">
                 <PetitionCompose
@@ -1320,27 +1412,23 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               </>
             ) : null}
 
-            {displayWidget === "none" ? (
-              <div>
+            {displayWidget === "none" && data.viewer.isLord ? (
+              <div className="mt-8">
                 <h2 className="font-[family-name:var(--font-display)] text-sm tracking-[0.16em] uppercase text-[var(--vassal-gold)]">
-                  Community space
+                  Optional widget
                 </h2>
                 <p className="mt-2 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
-                  {data.viewer.isLord
-                    ? previewing && draft.widget === "none"
-                      ? "Draft preview: no extra community widget. The hall booth still plays above."
-                      : "The hall booth is built in. Open Lord setup to add a jukebox, mood board, or API import widget."
-                    : "No extra community widget yet — the hall booth still plays above when the Lord sets a song."}
+                  {previewing && draft.widget === "none"
+                    ? "Draft preview: conversation is always on. Add a jukebox, mood board, or API import if you want."
+                    : "The community hall above is always open. Add a jukebox, mood board, or API import in Lord setup."}
                 </p>
-                {data.viewer.isLord ? (
-                  <button
-                    type="button"
-                    className="mt-4 border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] px-4 py-2 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.16em] uppercase"
-                    onClick={() => setTab("setup")}
-                  >
-                    Open Lord setup
-                  </button>
-                ) : null}
+                <button
+                  type="button"
+                  className="mt-4 border border-[color-mix(in_srgb,var(--vassal-gold)_40%,transparent)] px-4 py-2 font-[family-name:var(--font-display)] text-[0.65rem] tracking-[0.16em] uppercase"
+                  onClick={() => setTab("setup")}
+                >
+                  Open Lord setup
+                </button>
               </div>
             ) : null}
 
@@ -1349,6 +1437,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                 <ScrollComposer kind="nominate_lord" courtSlug={data.court.slug} />
               </div>
             ) : null}
+            </div>
           </section>
         ) : null}
 
@@ -1468,7 +1557,8 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                 Season targets
               </h3>
               <p className="mt-1 font-[family-name:var(--font-body)] text-sm italic text-[color-mix(in_srgb,var(--vassal-cream)_65%,transparent)]">
-                Goals every vassal sees on the shared scoreboard.
+                Goals for hall service — words spoken, cheers given, and replies
+                in the community hall.
               </p>
               <label className="mt-4 block">
                 <span className="font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.18em] uppercase text-[var(--vassal-gold)]">
@@ -1488,7 +1578,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
               <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <label className="block">
                   <span className="font-[family-name:var(--font-display)] text-[0.55rem] tracking-[0.14em] uppercase text-[var(--vassal-gold)]">
-                    Replies
+                    Words
                   </span>
                   <input
                     type="number"
@@ -1505,7 +1595,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                 </label>
                 <label className="block">
                   <span className="font-[family-name:var(--font-display)] text-[0.55rem] tracking-[0.14em] uppercase text-[var(--vassal-gold)]">
-                    Reposts
+                    Cheers
                   </span>
                   <input
                     type="number"
@@ -1522,7 +1612,7 @@ export function LordsHall({ initial, initialTab }: LordsHallProps) {
                 </label>
                 <label className="block">
                   <span className="font-[family-name:var(--font-display)] text-[0.55rem] tracking-[0.14em] uppercase text-[var(--vassal-gold)]">
-                    Mentions
+                    Replies
                   </span>
                   <input
                     type="number"

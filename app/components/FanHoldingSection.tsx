@@ -18,10 +18,11 @@ export function FanHoldingSection() {
             <LexiconTerm id="fan-court">Fan Court</LexiconTerm>
           </p>
           <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl tracking-[0.1em] text-[var(--vassal-cream)] sm:text-4xl">
-            Membership that ranks
+            Loyalty that stays home
           </h2>
           <p className="mt-3 font-[family-name:var(--font-body)] text-base italic text-[color-mix(in_srgb,var(--vassal-cream)_78%,transparent)]">
-            Fans pay for tiers, send requests, and earn public status.
+            Fans speak in your community hall, climb ranks, and send requests —
+            engagement that grows Fan Court, not X.
           </p>
         </header>
 

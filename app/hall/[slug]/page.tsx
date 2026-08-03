@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { LordsHall, type HallData } from "../../components/LordsHall";
+import { serializeComment } from "../../lib/comments";
 import { getHallBundle, getMembershipForUser } from "../../lib/courts";
 import { getFollowCounts, isFollowing } from "../../lib/follows";
 import type { CourtRank, HallTheme, HallWidget } from "../../lib/ranks";
@@ -96,6 +97,7 @@ function toHallData(
       by: f.name,
       userId: f.user_id,
     })),
+    comments: bundle.comments.map(serializeComment),
     viewer,
   };
 }
@@ -103,15 +105,15 @@ function toHallData(
 export default async function HallPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const query = await searchParams;
+  const session = await getSession();
   let bundle: Awaited<ReturnType<typeof getHallBundle>> = null;
   try {
-    bundle = await getHallBundle(slug);
+    bundle = await getHallBundle(slug, session?.userId);
   } catch (err) {
     console.error("hall page", err);
   }
   if (!bundle) notFound();
 
-  const session = await getSession();
   let viewer: HallData["viewer"] = {
     isMember: false,
     isLord: false,

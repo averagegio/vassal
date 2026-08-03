@@ -18,7 +18,8 @@ export type LexiconTermId =
   | "serf"
   | "retinue"
   | "seal"
-  | "scroll";
+  | "scroll"
+  | "community-hall";
 
 export type LexiconEntry = {
   id: LexiconTermId;
@@ -40,7 +41,7 @@ export const LEXICON: LexiconEntry[] = [
     term: "Fan Court",
     plain: "A paid creator community",
     detail:
-      "Fans join your court, climb ranks, send requests, and earn recognition. Think membership with status.",
+      "Fans join your court, speak in the community hall, climb ranks, send requests, and earn recognition — engagement that stays on Vassal.",
   },
   {
     id: "estate",
@@ -61,14 +62,14 @@ export const LEXICON: LexiconEntry[] = [
     term: "Court",
     plain: "Your creator community space",
     detail:
-      "The group fans join under a Lord. Each court has a Hall page, ranks, and a shared season scoreboard.",
+      "The group fans join under a Lord. Each court has a Hall page with a public community feed, ranks, and a season scoreboard earned in-hall.",
   },
   {
     id: "lord",
     term: "Lord",
     plain: "The owner of a court",
     detail:
-      "The person who opens the court, picks a hall theme, sets the built-in hall music booth, enables a community widget (jukebox, mood board, or API import), and runs Lord setup.",
+      "The person who opens the court, hosts the community hall, picks a hall theme, sets the built-in hall music booth, enables optional widgets, and runs Lord setup.",
   },
   {
     id: "vassal",
@@ -82,7 +83,14 @@ export const LEXICON: LexiconEntry[] = [
     term: "Lord's Hall",
     plain: "The court's public home page",
     detail:
-      "Where members see the scoreboard, community widgets, and (for Lords) setup tools.",
+      "Where visitors read the community hall, members speak and cheer, and Lords run setup. Season points come from hall activity — not from X.",
+  },
+  {
+    id: "community-hall",
+    term: "Community hall",
+    plain: "The court's public comment feed",
+    detail:
+      "Front-facing words, replies, and cheers inside Fan Court. This is where loyalty shows — so fans stay here instead of performing only on X.",
   },
   {
     id: "fealty",
@@ -117,7 +125,7 @@ export const LEXICON: LexiconEntry[] = [
     term: "Standing",
     plain: "Reputation score",
     detail:
-      "How trusted a member or tenant is. On-time behavior and helpfulness raise standing and unlock perks.",
+      "How trusted a member or tenant is. In Fan Court, speaking, replying, and cheering in the hall raise standing for the season.",
   },
   {
     id: "freehold",
