@@ -55,3 +55,14 @@ npm run dev
 - `/u/[handle]` public profile (follow / unfollow, lists)
 - `/hall/[slug]` Lord's Hall (scoreboard, follow Lord, themes, widgets including API import, scrolls)
 - `/scroll/[token]` Custom parchment invite (vassal summons or Lord nomination)
+- `/pitch` investor pitch deck
+- `/demo/cast` investor video demo cast + storyboard
+
+### demo seed
+
+```bash
+npx vercel env pull .env.local
+npm run demo:seed
+```
+
+Seeds `*@demo.vassal` personas (password `vassal-demo`), Rowan Court, and Astra Freehold sample petitions/tenants. See `docs/demos/investor-cast.md`.

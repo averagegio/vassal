@@ -52,6 +52,12 @@ export function PitchDeck() {
               </a>
             ))}
             <Link
+              href="/demo/cast"
+              className="hidden font-[family-name:var(--font-display)] text-[0.58rem] tracking-[0.16em] uppercase text-[color-mix(in_srgb,var(--vassal-cream)_70%,transparent)] transition hover:text-[var(--vassal-blood)] md:inline"
+            >
+              Cast
+            </Link>
+            <Link
               href="/signup"
               className="border border-[color-mix(in_srgb,var(--vassal-gold)_45%,transparent)] bg-[color-mix(in_srgb,var(--vassal-red)_35%,transparent)] px-3 py-1.5 font-[family-name:var(--font-display)] text-[0.6rem] tracking-[0.18em] uppercase transition hover:bg-[color-mix(in_srgb,var(--vassal-red)_55%,transparent)]"
             >

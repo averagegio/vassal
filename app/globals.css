@@ -2002,6 +2002,21 @@ body {
   }
 }
 
+.cast-card {
+  animation: pitch-fade-up 0.65s ease-out both;
+}
+
+.cast-card img {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  filter: saturate(1.05);
+  transition: transform 0.45s ease, filter 0.45s ease;
+}
+
+.cast-card:hover img {
+  transform: translateY(-3px) scale(1.02);
+  filter: saturate(1.12) brightness(1.04);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .flag-cloth-stage,
   .flag-billow-track,
@@ -2018,8 +2033,15 @@ body {
   .tour-panel,
   .lexicon-veil,
   .lexicon-panel,
-  .pitch-fade {
+  .pitch-fade,
+  .cast-card {
     animation: none !important;
+  }
+
+  .cast-card img,
+  .cast-card:hover img {
+    transition: none !important;
+    transform: none !important;
   }
 
   .flag-cloth-svg rect {
